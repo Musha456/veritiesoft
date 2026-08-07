@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <!--    ########## Hotel Main Menu ##########-->
+    <menuitem id="menu_hotel_main"
+              name="Hotel"
+              web_icon="vs_hotel_management,static/description/icon.png"
+              sequence="1"/>
+
+    <!--    ########## Hotel Room Configuration Menu ##########-->
+    <menuitem id="manu_hotel_room_configuration"
+              name="Rooms"
+              parent="menu_hotel_main"
+              sequence="20"/>
+
+    <!--    Hotel Amenity Type Menu-->
+    <menuitem
+            id="menu_hotel_configuration_amenity_type"
+            name="Amenity Types"
+            parent="manu_hotel_room_configuration"
+            sequence="1"
+            action="action_hotel_amenity_type"/>
+
+    <!--    Hotel Amenity Menu-->
+    <menuitem
+            id="menu_hotel_configuration_amenity"
+            name="Amenities"
+            parent="manu_hotel_room_configuration"
+            sequence="2"
+            action="action_hotel_amenity"/>
+
+    <!--    Hotel Bed Type Menu-->
+    <menuitem
+            id="menu_hotel_configuration_bed_type"
+            name="Bed Types"
+            parent="manu_hotel_room_configuration"
+            sequence="3"
+            action="action_hotel_bed_type"/>
+
+    <!--    Hotel Room Categories Menu-->
+    <menuitem
+            id="menu_hotel_configuration_room_categories"
+            name="Room Categories"
+            parent="manu_hotel_room_configuration"
+            sequence="4"
+            action="action_hotel_room_categories"/>
+
+    <!--    Hotel Room Menu-->
+    <menuitem
+            id="menu_hotel_configuration_room_room"
+            name="Room"
+            parent="manu_hotel_room_configuration"
+            sequence="5"
+            action="action_hotel_room"/>
+
+    <!--    Hotel Building Menu-->
+    <menuitem
+            id="menu_hotel_configuration_building"
+            name="Building"
+            parent="manu_hotel_room_configuration"
+            sequence="6"
+            action="action_hotel_building"/>
+
+    <!--    Hotel Building Floor Menu-->
+    <menuitem
+            id="menu_hotel_configuration_building_floor"
+            name="Floor"
+            parent="manu_hotel_room_configuration"
+            sequence="7"
+            action="action_hotel_building_floor"/>
+
+    <!--    Hotel Menu-->
+    <menuitem
+            id="menu_hotel_configuration_hotel"
+            name="Hotel"
+            parent="manu_hotel_room_configuration"
+            sequence="8"
+            action="action_hotel_hotel"/>
+
+    <menuitem
+            id="menu_hotel_configuration"
+            name="Configuration"
+            parent="menu_hotel_main"
+            sequence="9"/>
+
+    <menuitem
+            id="menu_hotel_configuration_settings"
+            name="Settings"
+            parent="menu_hotel_configuration"
+            action="action_hotel_config_settings"
+            sequence="10"/>
+
+    <menuitem
+            id="menu_hotel_configuration_service"
+            name="Services"
+            parent="manu_hotel_room_configuration"
+            action="action_hotel_service"
+            sequence="10"/>
+
+
+    <menuitem
+            id="menu_hotel_configuration_rate_plan"
+            name="Rating Plan"
+            parent="manu_hotel_room_configuration"
+            action="action_hotel_rate_plan"
+            sequence="10"/>
+
+    <menuitem
+            id="menu_hotel_discount"
+            name="Discounts"
+            parent="manu_hotel_room_configuration"
+            sequence="80"
+            action="action_hotel_discount"/>
+
+</odoo>

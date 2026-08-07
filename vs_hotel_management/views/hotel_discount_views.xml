@@ -1,0 +1,698 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="view_hotel_discount_form" model="ir.ui.view">
+        <field name="name">hotel.discount.form</field>
+        <field name="model">hotel.discount</field>
+        <field name="arch" type="xml">
+
+            <form string="Discount">
+
+                <header>
+
+                    <button
+                            name="action_activate"
+                            type="object"
+                            string="Activate"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+
+                    <button
+                            name="action_expire"
+                            type="object"
+                            string="Expire"
+                            invisible="state != 'active'"/>
+
+                    <button
+                            name="action_reset_to_draft"
+                            type="object"
+                            string="Reset to Draft"
+                            invisible="state != 'expired'"/>
+
+                    <field
+                            name="state"
+                            widget="statusbar"
+                            statusbar_visible="draft,active,expired"/>
+
+                </header>
+
+                <sheet>
+
+                    <!-- Smart Buttons -->
+                    <!--                <div class="oe_button_box" name="button_box">-->
+
+                    <!--                    <button class="oe_stat_button"-->
+                    <!--                            type="object"-->
+                    <!--                            name="action_view_reservations"-->
+                    <!--                            icon="fa-calendar"-->
+                    <!--                            invisible="not reservation_count">-->
+
+                    <!--                        <field-->
+                    <!--                                name="reservation_count"-->
+                    <!--                                widget="statinfo"-->
+                    <!--                                string="Reservations"/>-->
+
+                    <!--                    </button>-->
+
+                    <!--                </div>-->
+
+                    <!-- Title -->
+
+                    <div class="oe_title mb24">
+
+                        <h1>
+
+                            <field
+                                    name="name"
+                                    placeholder="e.g. Summer Sale"/>
+
+                        </h1>
+
+                    </div>
+
+                    <!-- Top Information -->
+
+                    <group col="4">
+
+                        <group colspan="2" string="General Information">
+
+                            <group>
+
+                                <field name="code"/>
+
+                                <field name="hotel_id"/>
+
+                                <field name="discount_type"/>
+
+                                <field name="discount"/>
+
+                            </group>
+
+                            <group>
+
+                                <field name="maximum_discount"
+                                       invisible="discount_type != 'percentage'"/>
+
+                                <field name="active"
+                                       widget="boolean_toggle"/>
+
+                                <field name="company_id"
+                                       groups="base.group_multi_company"/>
+
+                            </group>
+
+                        </group>
+
+                        <group colspan="2" string="Statistics">
+
+                            <field
+                                    name="discount_amount"
+                                    widget="monetary"
+                                    readonly="1"/>
+
+                        </group>
+
+                    </group>
+
+                    <notebook>
+
+                        <!-- ===================================================== -->
+                        <!-- General -->
+                        <!-- ===================================================== -->
+
+                        <page string="General">
+
+                            <group col="4">
+
+                                <group colspan="2" string="Applicability">
+
+                                    <group>
+
+                                        <field
+                                                name="rate_plan_ids"
+                                                widget="many2many_tags"/>
+
+                                    </group>
+
+                                    <group>
+
+                                        <field
+                                                name="room_category_ids"
+                                                widget="many2many_tags"/>
+
+                                    </group>
+
+                                </group>
+
+                                <group colspan="2" string="Configuration">
+
+                                    <group>
+
+                                        <field name="priority"/>
+
+                                        <field name="is_default"/>
+
+                                    </group>
+
+                                    <group>
+
+                                        <field name="website_published"/>
+
+                                        <field name="combinable"/>
+
+                                    </group>
+
+                                </group>
+
+                            </group>
+
+                        </page>
+
+                        <!-- ===================================================== -->
+                        <!-- Availability -->
+                        <!-- ===================================================== -->
+
+                        <page string="Availability">
+
+                            <group string="Validity" col="4">
+
+                                <group colspan="2">
+
+                                    <field name="date_start"/>
+
+                                </group>
+
+                                <group colspan="2">
+
+                                    <field name="date_end"/>
+
+                                </group>
+
+                            </group>
+
+                            <group string="Available Days"
+                                   col="4">
+
+                                <group colspan="1">
+
+                                    <field name="monday"/>
+
+                                </group>
+
+                                <group colspan="1">
+
+                                    <field name="tuesday"/>
+
+                                </group>
+
+                                <group colspan="1">
+
+                                    <field name="wednesday"/>
+
+                                </group>
+
+                                <group colspan="1">
+
+                                    <field name="thursday"/>
+
+                                </group>
+
+                                <group colspan="1">
+
+                                    <field name="friday"/>
+
+                                </group>
+
+                                <group colspan="1">
+
+                                    <field name="saturday"/>
+
+                                </group>
+
+                                <group colspan="1">
+
+                                    <field name="sunday"/>
+
+                                </group>
+
+                            </group>
+
+                        </page>
+
+                        <!-- ===================================================== -->
+                        <!-- Booking Rules -->
+                        <!-- ===================================================== -->
+
+                        <page string="Booking Rules">
+
+                            <group string="Stay Rules"
+                                   col="4">
+
+                                <group colspan="1">
+
+                                    <field name="minimum_nights"/>
+
+                                </group>
+
+                                <group colspan="1">
+
+                                    <field name="maximum_nights"/>
+
+                                </group>
+
+                                <group colspan="2">
+
+                                    <field name="minimum_amount"
+                                           widget="monetary"/>
+
+                                </group>
+
+                            </group>
+
+                            <group string="Guest Rules"
+                                   col="4">
+
+                                <group colspan="2">
+
+                                    <field name="minimum_adults"/>
+
+                                </group>
+
+                                <group colspan="2">
+
+                                    <field name="minimum_children"/>
+
+                                </group>
+
+                            </group>
+
+                            <group string="Advance Booking"
+                                   col="4">
+
+                                <group colspan="2">
+
+                                    <field name="minimum_advance_days"/>
+
+                                </group>
+
+                                <group colspan="2">
+
+                                    <field name="maximum_advance_days"/>
+
+                                </group>
+
+                            </group>
+
+                            <group string="Coupon"
+                                   col="4">
+
+                                <group colspan="2">
+
+                                    <field name="coupon_required"/>
+
+                                </group>
+
+                                <group colspan="2">
+
+                                    <field name="coupon_code"
+                                           invisible="not coupon_required"/>
+
+                                </group>
+
+                            </group>
+
+                        </page>
+
+                        <!-- ===================================================== -->
+                        <!-- Description -->
+                        <!-- ===================================================== -->
+
+                        <page string="Description">
+
+                            <group string="Description">
+
+                                <field
+                                        name="description"
+                                        nolabel="1"
+                                        placeholder="Describe the discount, conditions, and applicability..."/>
+
+                            </group>
+
+                            <group string="Internal Notes">
+
+                                <field
+                                        name="internal_note"
+                                        nolabel="1"
+                                        placeholder="Internal notes visible only to hotel staff..."/>
+
+                            </group>
+
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+
+    </record>
+    <record id="view_hotel_discount_list" model="ir.ui.view">
+
+        <field name="name">hotel.discount.list</field>
+
+        <field name="model">hotel.discount</field>
+
+        <field name="arch" type="xml">
+
+            <list
+                    decoration-info="state == 'draft'"
+                    decoration-success="state == 'active'"
+                    decoration-warning="state == 'expired'"
+                    default_order="sequence,name">
+
+                <field
+                        name="sequence"
+                        widget="handle"/>
+
+                <field name="name"/>
+
+                <field name="code"/>
+
+                <field name="hotel_id"/>
+
+                <field name="discount_type"/>
+
+                <field name="discount"/>
+
+                <field
+                        name="maximum_discount"
+                        optional="hide"/>
+
+                <field
+                        name="priority"
+                        widget="priority"
+                        optional="show"/>
+
+                <field
+                        name="is_default"
+                        widget="boolean_toggle"
+                        optional="show"/>
+
+                <field
+                        name="website_published"
+                        widget="boolean_toggle"
+                        optional="hide"/>
+
+                <field
+                        name="combinable"
+                        widget="boolean_toggle"
+                        optional="hide"/>
+
+                <field
+                        name="date_start"
+                        optional="show"/>
+
+                <field
+                        name="date_end"
+                        optional="show"/>
+
+                <field
+                        name="state"
+                        widget="badge"
+                        decoration-info="state == 'draft'"
+                        decoration-success="state == 'active'"
+                        decoration-warning="state == 'expired'"/>
+
+                <field
+                        name="company_id"
+                        optional="hide"
+                        groups="base.group_multi_company"/>
+
+            </list>
+
+        </field>
+
+    </record>
+
+    <record id="view_hotel_discount_search" model="ir.ui.view">
+
+        <field name="name">hotel.discount.search</field>
+
+        <field name="model">hotel.discount</field>
+
+        <field name="arch" type="xml">
+
+            <search>
+
+                <!-- Search Fields -->
+
+                <field name="name"/>
+
+                <field name="code"/>
+
+                <field name="hotel_id"/>
+
+                <field name="rate_plan_ids"/>
+
+                <field name="room_category_ids"/>
+
+                <separator/>
+
+                <!-- Status -->
+
+                <filter
+                        name="draft"
+                        string="Draft"
+                        domain="[('state','=','draft')]"/>
+
+                <filter
+                        name="active"
+                        string="Active"
+                        domain="[('state','=','active')]"/>
+
+                <filter
+                        name="expired"
+                        string="Expired"
+                        domain="[('state','=','expired')]"/>
+
+                <separator/>
+
+                <!-- Discount Type -->
+
+                <filter
+                        name="percentage"
+                        string="Percentage"
+                        domain="[('discount_type','=','percentage')]"/>
+
+                <filter
+                        name="fixed"
+                        string="Fixed Amount"
+                        domain="[('discount_type','=','fixed')]"/>
+
+                <separator/>
+
+                <!-- Configuration -->
+
+                <filter
+                        name="default"
+                        string="Default"
+                        domain="[('is_default','=',True)]"/>
+
+                <filter
+                        name="website"
+                        string="Website Published"
+                        domain="[('website_published','=',True)]"/>
+
+                <filter
+                        name="coupon"
+                        string="Coupon Required"
+                        domain="[('coupon_required','=',True)]"/>
+
+                <filter
+                        name="combinable"
+                        string="Combinable"
+                        domain="[('combinable','=',True)]"/>
+
+                <separator/>
+
+                <!-- Archive -->
+
+                <filter
+                        name="active_records"
+                        string="Active Records"
+                        domain="[('active','=',True)]"/>
+
+                <filter
+                        name="archived_records"
+                        string="Archived"
+                        domain="[('active','=',False)]"/>
+
+                <group expand="0" string="Group By">
+
+                    <filter
+                            name="hotel"
+                            string="Hotel"
+                            context="{'group_by':'hotel_id'}"/>
+
+                    <filter
+                            name="discount_type"
+                            string="Discount Type"
+                            context="{'group_by':'discount_type'}"/>
+
+                    <filter
+                            name="status"
+                            string="Status"
+                            context="{'group_by':'state'}"/>
+
+                    <filter
+                            name="rating_plan"
+                            string="Rate Plan"
+                            context="{'group_by':'rate_plan_ids'}"/>
+
+                    <filter
+                            name="room_category"
+                            string="Room Category"
+                            context="{'group_by':'room_category_ids'}"/>
+
+                    <filter
+                            name="company"
+                            string="Company"
+                            context="{'group_by':'company_id'}"
+                            groups="base.group_multi_company"/>
+
+                </group>
+
+            </search>
+
+        </field>
+
+    </record>
+
+    <record id="view_hotel_discount_kanban" model="ir.ui.view">
+
+        <field name="name">hotel.discount.kanban</field>
+
+        <field name="model">hotel.discount</field>
+
+        <field name="arch" type="xml">
+
+            <kanban default_order="sequence,name">
+
+                <field name="name"/>
+                <field name="hotel_id"/>
+                <field name="discount"/>
+                <field name="discount_type"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="state"/>
+                <field name="website_published"/>
+                <field name="is_default"/>
+                <field name="priority"/>
+
+                <templates>
+
+                    <t t-name="card">
+
+                        <div class="oe_kanban_global_click border rounded bg-white shadow-sm p-3">
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <strong class="text-truncate">
+                                    <field name="name"/>
+                                </strong>
+
+                                <field name="state" widget="badge"/>
+
+                            </div>
+
+                            <div class="text-muted mt-1">
+                                <field name="hotel_id"/>
+                            </div>
+
+                            <hr/>
+
+                            <div class="mb-2">
+
+                                <strong>Discount</strong>
+
+                                <div>
+
+                                    <span t-if="record.discount_type.raw_value == 'percentage'">
+                                        <field name="discount"/>
+                                        %
+                                    </span>
+
+                                    <span t-if="record.discount_type.raw_value == 'fixed'">
+                                        <field name="discount"/>
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                            <div class="small text-muted">
+
+                                <div>
+                                    Valid:
+                                    <field name="date_start"/>
+                                    →
+                                    <field name="date_end"/>
+                                </div>
+
+                            </div>
+
+                            <div class="mt-3 d-flex justify-content-between">
+
+                                <field name="is_default"
+                                       widget="boolean_toggle"/>
+
+                                <field name="website_published"
+                                       widget="boolean_toggle"/>
+
+                            </div>
+
+                        </div>
+
+                    </t>
+
+                </templates>
+
+            </kanban>
+
+        </field>
+
+    </record>
+    <record id="action_hotel_discount"
+            model="ir.actions.act_window">
+
+        <field name="name">Discounts</field>
+
+        <field name="res_model">hotel.discount</field>
+
+        <field name="view_mode">list,kanban,form</field>
+
+        <field name="search_view_id"
+               ref="view_hotel_discount_search"/>
+
+        <field name="help" type="html">
+
+            <p class="o_view_nocontent_smiling_face">
+                Create your first hotel discount.
+            </p>
+
+            <p>
+                Configure percentage or fixed discounts, define their validity period,
+                booking rules, and applicability to hotels, room categories, and rate
+                plans. Discounts are automatically considered during reservation pricing.
+            </p>
+
+        </field>
+
+    </record>
+
+
+</odoo>

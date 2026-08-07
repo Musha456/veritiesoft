@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="view_hotel_service_tree" model="ir.ui.view">
+        <field name="name">hotel.service.tree</field>
+        <field name="model">hotel.service</field>
+        <field name="arch" type="xml">
+            <list string="Room" default_order="sequence,name">
+                <field name="sequence" widget="handle"/>
+                <field name="icon" widget="image" options="{'size': [40, 40]}"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="price" widget="monetary"/>
+                <field name="is_complimentary" widget="boolean_toggle" string="Complimentary"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_service_search" model="ir.ui.view">
+        <field name="name">hotel.service.search</field>
+        <field name="model">hotel.service</field>
+        <field name="arch" type="xml">
+
+            <search string="Search Service">
+                <field name="name"/>
+                <field name="hotel_id"/>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active','=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="hotel_id" string="Hotel" context="{'group_by':'hotel_id'}"/>
+                    <filter name="category" string="Category" context="{'group_by':'category'}"/>
+                    <filter name="group_company" string="Company" context="{'group_by':'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_service_form" model="ir.ui.view">
+        <field name="name">hotel.service.form</field>
+        <field name="model">hotel.service</field>
+        <field name="arch" type="xml">
+            <form string="Hotel Service">
+                <header>
+
+                    <div groups="vs_hotel_management.group_hotel_room_manager">
+                        <field name="active" widget="boolean_button"/>
+                    </div>
+
+                </header>
+                <sheet>
+
+                    <div class="oe_title">
+
+                        <label for="name"/>
+                        <h1>
+
+                            <field name="name"
+                                   placeholder="e.g. SPA"/>
+
+                        </h1>
+
+                        <div class="text-muted my-1">
+
+                            <strong class="me-1">Code:</strong>
+
+                            <field name="code"
+                                   class="oe_inline"
+                                   readonly="1"/>
+
+                        </div>
+
+
+                    </div>
+
+                    <group col="3">
+
+                        <group string="General Info" colspan="2">
+
+                            <group>
+                                <field name="hotel_id"/>
+                                <field name="category"/>
+                                <field name="is_complimentary" widget="boolean_toggle"/>
+                                <field name="price" widget="monetary" invisible="is_complimentary"/>
+                            </group>
+
+                            <group>
+                                <field name="active" widget="boolean_toggle"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+
+                        </group>
+
+                        <group string="Icon" colspan="1">
+                            <field name="icon" widget="image" nolabel="1" options="{'size': [180, 180]}"/>
+                        </group>
+
+                    </group>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_service_kanban" model="ir.ui.view">
+        <field name="name">hotel.service.kanban</field>
+        <field name="model">hotel.service</field>
+        <field name="arch" type="xml">
+
+            <kanban class="o_kanban_mobile">
+
+                <field name="icon"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="price"/>
+                <field name="is_complimentary"/>
+                <field name="active"/>
+
+                <templates>
+
+                    <t t-name="card">
+
+                        <div class="oe_kanban_global_click border rounded bg-white p-3">
+
+                            <!-- Icon -->
+
+                            <div class="d-flex justify-content-center align-items-center mb-2">
+
+                                <field name="icon"
+                                       widget="image"
+                                       class="rounded"
+                                       style="width:54px;height:54px;"/>
+
+                            </div>
+
+                            <!-- Name & Category -->
+
+                            <div class="text-center">
+
+                                <span class="fw-bold">
+
+                                    <field name="name"/>
+
+                                </span>
+
+                                <span class="text-muted mx-1">
+
+                                    •
+
+                                </span>
+
+                                <span class="text-muted">
+
+                                    <field name="category"/>
+
+                                </span>
+
+                            </div>
+
+                            <!-- Price / Complimentary -->
+
+                            <div class="text-center mt-2">
+
+                                <t t-if="record.is_complimentary.raw_value">
+
+                                    <span class="badge text-bg-success">
+
+                                        Complimentary
+
+                                    </span>
+
+                                </t>
+
+                                <t t-else="">
+
+                                    <span class="fw-bold text-primary">
+
+                                        <field name="currency_id"/>
+
+                                        <field name="price"/>
+
+                                    </span>
+
+                                </t>
+
+                            </div>
+
+                        </div>
+
+                    </t>
+
+                </templates>
+            </kanban>
+
+
+        </field>
+    </record>
+
+    <record id="action_hotel_service" model="ir.actions.act_window">
+        <field name="name">Room</field>
+        <field name="res_model">hotel.service</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_hotel_service_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Hotel Service
+            </p>
+        </field>
+    </record>
+
+
+</odoo>

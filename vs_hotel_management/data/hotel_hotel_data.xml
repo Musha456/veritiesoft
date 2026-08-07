@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="hotel_demo" model="hotel.hotel">
+
+            <field name="name">Verity Grand Hotel</field>
+
+            <field name="logo" type="base64" file="vs_hotel_management/static/src/img/hotel/hotel_01_logo.png"/>
+
+            <field name="hero_image" type="base64" file="vs_hotel_management/static/src/img/hotel/hotel_01.jpg"/>
+
+            <field name="star_rating">5</field>
+
+            <field name="phone">+1 555-123-4567</field>
+
+            <field name="mobile">+1 555-987-6543</field>
+
+            <field name="email">info@grandpalacehotel.com</field>
+
+            <field name="website">https://www.grandpalacehotel.com</field>
+
+            <field name="street">1200 Ocean Drive</field>
+
+            <field name="street2">Downtown District</field>
+
+            <field name="city">Miami</field>
+
+            <field name="state_id" ref="base.state_us_5"/>
+
+            <field name="zip">33139</field>
+
+            <field name="country_id" ref="base.us"/>
+
+            <field name="latitude">25.790654</field>
+
+            <field name="longitude">-80.130045</field>
+
+            <field name="currency_id" ref="base.USD"/>
+
+            <field name="language_id" ref="base.lang_en"/>
+
+            <field name="timezone">America/New_York</field>
+
+            <field name="checkin_time">14.0</field>
+
+            <field name="checkout_time">12.0</field>
+
+            <field name="minimum_stay">1</field>
+
+            <field name="maximum_stay">30</field>
+
+            <field name="allow_early_checkin">1</field>
+
+            <field name="allow_late_checkout">1</field>
+
+            <field name="require_guest_identification">1</field>
+
+            <field name="allow_overbooking">0</field>
+
+            <field name="auto_assign_room">1</field>
+
+            <field name="allow_room_change">1</field>
+
+        </record>
+
+    </data>
+</odoo>

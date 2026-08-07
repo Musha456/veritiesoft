@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+        <record id="res_config_settings_view_form_hotel" model="ir.ui.view">
+            <field name="name">res.config.settings.hotel.form</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//form" position="inside">
+
+                    <app data-string="Hotel Management" string="Hotel Management" name="vs_hotel_management" groups="vs_hotel_management.group_hotel_manager"
+                         logo="/vs_hotel_management/static/description/icon.png">
+
+                        <block title="General">
+
+                            <setting string="Default Check-in Time">
+
+                                <field name="checkin_time_default" widget="float_time"/>
+
+                            </setting>
+
+                            <setting string="Default Check-out Time">
+
+                                <field name="checkout_time_default" widget="float_time"/>
+
+                            </setting>
+
+                        </block>
+
+                        <block title="Reservations">
+
+                            <setting string="Allow Overbooking">
+
+                                <field name="allow_overbooking" widget="boolean_toggle"/>
+
+                            </setting>
+
+                            <setting string="Require Guest Identification">
+
+                                <field name="require_guest_id" widget="boolean_toggle"/>
+
+                            </setting>
+
+                            <setting string="Allow Early Check-in">
+
+                                <field name="allow_early_checkin" widget="boolean_toggle"/>
+
+                            </setting>
+
+                            <setting string="Allow Late Check-out">
+
+                                <field name="allow_late_checkout" widget="boolean_toggle"/>
+
+                            </setting>
+
+                        </block>
+
+                        <block title="Automation">
+
+                            <setting string="Generate Building Codes Automatically">
+
+                                <field name="auto_generate_building_code"/>
+
+                            </setting>
+
+                            <setting string="Generate Floor Codes Automatically">
+
+                                <field name="auto_generate_floor_code"/>
+
+                            </setting>
+
+                            <setting string="Generate Room Numbers Automatically">
+
+                                <field name="auto_generate_room_number"/>
+
+                            </setting>
+
+                            <setting string="Generate Room Category Codes Automatically">
+
+                                <field name="auto_generate_room_category_code"/>
+
+                            </setting>
+
+                        </block>
+
+                    </app>
+
+                </xpath>
+
+            </field>
+
+        </record>
+
+        <record id="action_hotel_config_settings" model="ir.actions.act_window">
+            <field name="name">Settings</field>
+            <field name="res_model">res.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+            <field name="context">{'module' : 'vs_hotel_management', 'bin_size': False}</field>
+        </record>
+
+    </data>
+</odoo>
