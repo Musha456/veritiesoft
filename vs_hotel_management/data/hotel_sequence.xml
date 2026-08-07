@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="seq_hotel_amenity_type" model="ir.sequence">
+        <field name="name">Hotel Amenity Type</field>
+        <field name="code">hotel.amenity.type</field>
+        <field name="prefix">HAT</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_hotel_amenity" model="ir.sequence">
+        <field name="name">Hotel Amenity</field>
+        <field name="code">hotel.amenity</field>
+        <field name="prefix">HA</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_hotel_bed_type" model="ir.sequence">
+        <field name="name">Hotel Bed Type</field>
+        <field name="code">hotel.bed.type</field>
+        <field name="prefix">HBT</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_hotel_room_category" model="ir.sequence">
+        <field name="name">Hotel Room Category</field>
+        <field name="code">hotel.room.category</field>
+        <field name="prefix">HRC</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_hotel_room" model="ir.sequence">
+        <field name="name">Hotel Room</field>
+        <field name="code">hotel.room</field>
+        <field name="prefix">R</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_hotel_floor" model="ir.sequence">
+        <field name="name">Hotel Floor</field>
+        <field name="code">hotel.building.floor</field>
+        <field name="prefix">HF</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_hotel_building" model="ir.sequence">
+        <field name="name">Hotel Building</field>
+        <field name="code">hotel.building</field>
+        <field name="prefix">HB</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_hotel_hotel" model="ir.sequence">
+        <field name="name">Hotel</field>
+        <field name="code">hotel.hotel</field>
+        <field name="prefix">H</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_hotel_service" model="ir.sequence">
+        <field name="name">Hotel Service</field>
+        <field name="code">hotel.service</field>
+        <field name="prefix">HS</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_hotel_rate_plan" model="ir.sequence">
+        <field name="name">Hotel Rate Plan</field>
+        <field name="code">hotel.rate.plan</field>
+        <field name="prefix">HRP</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_hotel_discount" model="ir.sequence">
+        <field name="name">Hotel Discount</field>
+        <field name="code">hotel.discount</field>
+        <field name="prefix">DISC/%(year)s-</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+
+</odoo>

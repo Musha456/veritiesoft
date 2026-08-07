@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="view_hotel_room_tree" model="ir.ui.view">
+        <field name="name">hotel.room.tree</field>
+        <field name="model">hotel.room</field>
+        <field name="arch" type="xml">
+            <list string="Room" default_order="sequence,display_name">
+                <field name="sequence" widget="handle"/>
+                <field name="cover_image" widget="image" options="{'size': [40, 40]}"/>
+                <field name="display_name"/>
+                <field name="bed_type_id"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_room_search" model="ir.ui.view">
+        <field name="name">hotel.room.search</field>
+        <field name="model">hotel.room</field>
+        <field name="arch" type="xml">
+
+            <search string="Search Room">
+                <field name="room_number"/>
+                <field name="room_category_id"/>
+                <field name="building_id"/>
+                <field name="floor_id"/>
+                <separator/>
+                <filter name="status" string="Available" domain="[('status','=','available')]"/>
+                <filter name="status" string="Occupied" domain="[('status','=','occupied')]"/>
+                <filter name="status" string="Dirty" domain="[('status','=','dirty')]"/>
+                <filter name="status" string="Maintenance" domain="[('status','=','maintenance')]"/>
+                <filter name="archived" string="Archived" domain="[('active','=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="room_category_id" string="Room Category" context="{'group_by':'room_category_id'}"/>
+                    <filter name="floor_id" string="Floor" context="{'group_by':'floor_id'}"/>
+                    <filter name="building_id" string="Building" context="{'group_by':'building_id'}"/>
+                    <filter name="status" string="Status" context="{'group_by':'status'}"/>
+                    <filter name="group_company" string="Company" context="{'group_by':'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_room_form" model="ir.ui.view">
+        <field name="name">hotel.room.form</field>
+        <field name="model">hotel.room</field>
+        <field name="arch" type="xml">
+            <form string="Amenity Type">
+                <header>
+
+                    <div groups="vs_hotel_management.group_hotel_room_manager">
+                        <button name="action_mark_reserved"
+                                type="object"
+                                string="Reserve"
+                                class="btn-primary"
+                                invisible="status != 'available'"/>
+
+                        <button name="action_check_in"
+                                type="object"
+                                string="Check In"
+                                class="btn-primary"
+                                invisible="status != 'reserved'"/>
+
+                        <button name="action_mark_dirty"
+                                type="object"
+                                string="Check Out"
+                                class="btn-primary"
+                                invisible="status != 'occupied'"/>
+
+                        <button name="action_start_cleaning"
+                                type="object"
+                                string="Start Cleaning"
+                                class="btn-warning"
+                                invisible="status != 'dirty'"/>
+
+                        <button name="action_mark_available"
+                                type="object"
+                                string="Mark Available"
+                                class="btn-success"
+                                invisible="status != 'cleaning'"/>
+
+                        <button name="action_start_maintenance"
+                                type="object"
+                                string="Maintenance"
+                                class="btn-secondary"
+                                invisible="status in ['maintenance','out_of_order']"/>
+
+                        <button name="action_mark_out_of_order"
+                                type="object"
+                                string="Out of Order"
+                                class="btn-danger"
+                                invisible="status == 'out_of_order'"/>
+
+                        <button name="action_finish_maintenance"
+                                type="object"
+                                string="Finish"
+                                class="btn-success"
+                                invisible="status not in ['maintenance','out_of_order']"/>
+
+                    </div>
+                    <field name="status" widget="statusbar"/>
+
+                </header>
+                <sheet>
+                    <!--                    <div class="oe_button_box" name="button_box">-->
+
+                    <!--                        <button name="action_view_reservations" type="object" class="oe_stat_button"-->
+                    <!--                                invisible="not reservation_count" icon="fa-calendar">-->
+                    <!--                            <field name="reservation_count" widget="statinfo" string="Reservations"/>-->
+                    <!--                        </button>-->
+
+                    <!--                        <button name="action_view_housekeeping" type="object" class="oe_stat_button"-->
+                    <!--                                invisible="not housekeeping_count" icon="fa-bed">-->
+                    <!--                            <field name="housekeeping_count" widget="statinfo" string="Housekeeping"/>-->
+                    <!--                        </button>-->
+
+                    <!--                        <button name="action_view_maintenance" type="object" class="oe_stat_button"-->
+                    <!--                                invisible="not maintenance_count" icon="fa-wrench">-->
+                    <!--                            <field name="maintenance_count" widget="statinfo" string="Maintenance"/>-->
+                    <!--                        </button>-->
+
+                    <!--                    </div>-->
+
+                    <!--                    Room Status Web Ribbon -->
+                    <widget name="web_ribbon" title="Occupied" bg_color="text-bg-success"
+                            invisible="status != 'occupied'"/>
+                    <widget name="web_ribbon" title="Dirty" bg_color="text-bg-danger"
+                            invisible="status != 'dirty'"/>
+                    <widget name="web_ribbon" title="Cleaning" bg_color="text-bg-secondary"
+                            invisible="status != 'cleaning'"/>
+                    <widget name="web_ribbon" title="Maintenance" bg_color="text-bg-warning"
+                            invisible="status != 'maintenance'"/>
+                    <widget name="web_ribbon" title="Out of Order" bg_color="text-bg-secondary"
+                            invisible="status != 'out_of_order'"/>
+
+
+                    <div class="oe_title mb24">
+                        <h1>
+                            <field name="display_name" placeholder="e.g. Room 101"/>
+                        </h1>
+                    </div>
+
+                    <group col="3">
+
+                        <group string="General Info" colspan="2">
+
+                            <group>
+                                <field name="room_number"/>
+                                <field name="room_category_id"/>
+                                <field name="building_id"/>
+                                <field name="floor_id" invisible="not building_id"
+                                       domain="[('building_id', '=', building_id)]"/>
+                                <field name="active" widget="boolean_toggle"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+
+                            <group>
+                                <field name="bed_type_id"/>
+                                <field name="bed_count"/>
+                                <field name="amenity_ids" widget="many2many_tags"/>
+                            </group>
+
+                        </group>
+
+                        <group string="Room Cover Image" colspan="1">
+                            <field name="cover_image" widget="image" nolabel="1" options="{'size': [256, 256]}"/>
+                        </group>
+
+                    </group>
+
+
+                    <notebook>
+
+                        <page string="Room Images">
+                            <!-- Instruction -->
+                            <div class="border rounded-3 bg-light text-center py-5"
+                                 invisible="image_ids">
+
+                                <i class="fa fa-image fa-4x text-secondary mb-3"
+                                   title="No room images available"/>
+
+                                <h4 class="fw-bold">No Room Images</h4>
+
+                                <p class="text-muted">
+                                    Upload high-quality images of the room, bathroom, balcony, and other
+                                    areas to create an attractive gallery for guests.
+                                </p>
+
+                                <small class="text-muted">
+                                    The first uploaded image becomes the cover image automatically.
+                                    <br/>
+                                    You can change the cover image anytime by enabling the
+                                    <b>Cover Image</b>
+                                    option.
+                                </small>
+
+                            </div>
+
+                            <!-- Gallery -->
+                            <field
+                                    name="image_ids"
+                                    mode="kanban"
+                                    context="{'default_room_id': id}">
+
+                                <kanban
+                                        class="o_kanban_record"
+                                        create="1"
+                                        edit="1"
+                                        delete="1">
+
+                                    <field name="name"/>
+                                    <field name="image"/>
+                                    <field name="is_cover"/>
+                                    <field name="sequence"/>
+                                    <field name="active"/>
+                                    <templates>
+
+                                        <t t-name="card">
+
+                                            <div class="oe_kanban_global_click">
+
+                                                <div class="row g-0">
+
+                                                    <!-- Left : Image -->
+                                                    <div class="col-5 room-image-container">
+
+                                                        <field name="image"
+                                                               widget="image"
+                                                               class="room-image"
+                                                               options="{'preview_image': 'image'}"/>
+
+                                                    </div>
+
+                                                    <!-- Right : Content -->
+                                                    <div class="col-7 px-2 d-flex flex-column">
+
+                                                        <!-- Header -->
+
+                                                        <div class="d-flex justify-content-between align-items-center border-bottom">
+
+                                                            <div class="fw-bold text-truncate"
+                                                                 t-att-title="record.name.value">
+                                                                <field name="name"/>
+                                                            </div>
+
+                                                            <field name="sequence" widget="handle"/>
+
+                                                        </div>
+
+
+                                                        <!-- Body -->
+                                                        <div class="px-2 py-2 flex-grow-1">
+
+
+                                                            <div class="d-flex justify-content-between align-items-center mb-2"
+                                                                 groups="vs_hotel_management.group_hotel_room_manager">
+
+                                                                <span class="text-muted small">
+                                                                    Cover Image
+                                                                </span>
+
+                                                                <field name="is_cover"
+                                                                       string="Cover"
+                                                                       widget="boolean_toggle"
+                                                                       nolabel="1"/>
+
+                                                            </div>
+
+                                                        </div>
+
+                                                        <!-- Footer -->
+                                                        <div class="px-2 py-1"
+                                                             groups="vs_hotel_management.group_hotel_room_manager">
+
+                                                            <div class="d-flex justify-content-end">
+
+                                                                <a type="delete"
+                                                                   class="text-danger"
+                                                                   title="Delete">
+                                                                    <i class="fa fa-trash"/>
+                                                                </a>
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        </t>
+
+                                    </templates>
+                                </kanban>
+
+                                <form string="Room Image">
+
+                                    <sheet>
+
+                                        <group>
+
+                                            <group string="General Information">
+
+                                                <field name="name" placeholder="e.g. Balcony View"/>
+
+                                                <field name="is_cover" widget="boolean_toggle"/>
+
+                                            </group>
+
+                                            <group string="Image">
+                                                <field name="image" widget="image" nolabel="1"
+                                                       options="{'size': [256, 256]}"/>
+                                            </group>
+
+                                        </group>
+
+                                        <group string="Description">
+
+                                            <field
+                                                    name="description"
+                                                    nolabel="1"
+                                                    placeholder="Add internal notes..."/>
+
+                                        </group>
+
+                                    </sheet>
+
+                                </form>
+
+                            </field>
+
+                        </page>
+
+                        <page string="Description">
+                            <field name="description"
+                                   widget="html"
+                                   placeholder="Describe the room, its features, view, amenities, bed configuration, and any important information for guests..."/>
+                        </page>
+
+                        <page string="Additional Info">
+                            <group string="Room Info">
+                                <group>
+                                    <field name="room_size"/>
+                                </group>
+                                <group>
+                                    <field name="room_size_uom"/>
+                                </group>
+                            </group>
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_room_kanban" model="ir.ui.view">
+        <field name="name">hotel.room.kanban</field>
+        <field name="model">hotel.room</field>
+        <field name="arch" type="xml">
+
+            <kanban
+                    class="o_kanban_mobile"
+                    default_order="room_number">
+
+                <field name="display_name"/>
+                <field name="room_number"/>
+                <field name="status"/>
+                <field name="cover_image"/>
+                <field name="room_category_id"/>
+                <field name="building_id"/>
+                <field name="floor_id"/>
+                <field name="bed_type_id"/>
+                <field name="bed_count"/>
+                <field name="active"/>
+                <field name="amenity_type_ids"/>
+
+                <templates>
+
+                    <t t-name="card">
+
+                        <div class="oe_kanban_global_click hotel_room_kanban_card">
+
+                            <!-- ===========================
+                                 Cover Image
+                            ============================ -->
+
+                            <div class="hotel_room_cover">
+
+                                <div class="hotel_room_cover">
+
+                                    <t t-if="record.cover_image.raw_value">
+
+                                        <field
+                                                name="cover_image"
+                                                widget="image"
+                                                class="hotel_room_cover_image"
+                                                options="{'preview_image':'cover_image'}"/>
+
+                                    </t>
+
+                                    <t t-else="">
+
+                                        <div class="hotel_room_cover_placeholder">
+
+                                            <i class="fa fa-bed fa-4x text-muted" title="No Cover Image"/>
+
+                                            <div class="mt-2">
+
+                                                No Cover Image
+
+                                            </div>
+
+                                        </div>
+
+                                    </t>
+
+                                </div>
+
+                                <!-- Status Badge -->
+                                <div class="hotel_room_status">
+
+                                    <span t-attf-class="badge hotel_room_status_badge hotel_status_#{record.status.raw_value}">
+
+                                        <field name="status"/>
+
+                                    </span>
+
+                                </div>
+                            </div>
+
+                            <!-- ===========================
+                                 Body
+                            ============================ -->
+
+                            <div class="hotel_room_body">
+
+                                <div class="hotel_room_title_status">
+
+                                    <!-- Room -->
+
+                                    <div class="hotel_room_title">
+
+                                        <h4>
+
+                                            <field name="display_name"/>
+
+                                        </h4>
+
+                                    </div>
+
+                                    <!-- Category -->
+
+                                    <div class="hotel_room_category">
+
+                                        <span class="badge bg-light text-dark">
+
+                                            <field name="room_category_id"/>
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+                                <!-- Building -->
+
+                                <div class="hotel_room_location mt-2">
+
+                                    <span>
+
+                                        <i class="fa fa-building" title="Hotel Building"/>
+
+                                        <field name="floor_id"/>
+
+                                    </span>
+
+                                </div>
+
+                                <!-- Bed -->
+
+                                <div class="hotel_room_bed mt-2">
+
+                                    <i class="fa fa-bed" title="Hotel Room Bed"/>
+
+                                    <field name="bed_type_id"/>
+
+                                    <span class="text-muted">
+
+                                        (
+
+                                        <field name="bed_count"/>
+
+                                        )
+
+                                    </span>
+
+                                </div>
+
+                                <!-- Divider -->
+
+                                <hr class="my-2"/>
+
+                                <!-- Amenities -->
+                                <div class="hotel_room_amenities">
+                                    <field name="amenity_groups_html" widget="html"/>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </t>
+
+                </templates>
+
+            </kanban>
+
+        </field>
+    </record>
+
+    <record id="action_hotel_room" model="ir.actions.act_window">
+        <field name="name">Room</field>
+        <field name="res_model">hotel.room</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_hotel_room_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first room
+            </p>
+        </field>
+    </record>
+
+
+</odoo>

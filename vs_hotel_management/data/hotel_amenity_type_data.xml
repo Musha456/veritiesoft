@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data noupdate="1">
+        <record id="hotel_amenity_type_bathroom" model="hotel.amenity.type">
+            <field name="name">Bathroom</field>
+            <field name="icon" type="base64" file="vs_hotel_management/static/src/img/amenity_type/bathroom.png"/>
+        </record>
+
+        <record id="hotel_amenity_type_bedroom" model="hotel.amenity.type">
+            <field name="name">Bedroom</field>
+            <field name="icon" type="base64" file="vs_hotel_management/static/src/img/amenity_type/bedroom.png"/>
+        </record>
+
+        <record id="hotel_amenity_type_internet" model="hotel.amenity.type">
+            <field name="name">Internet</field>
+            <field name="icon" type="base64" file="vs_hotel_management/static/src/img/amenity_type/internet.png"/>
+        </record>
+
+        <record id="hotel_amenity_type_entertainment" model="hotel.amenity.type">
+            <field name="name">Entertainment</field>
+            <field name="icon" type="base64" file="vs_hotel_management/static/src/img/amenity_type/entertainment.png"/>
+        </record>
+
+        <record id="hotel_amenity_type_food_beverage" model="hotel.amenity.type">
+            <field name="name">Food &amp; Beverage</field>
+            <field name="icon" type="base64" file="vs_hotel_management/static/src/img/amenity_type/food_beverage.png"/>
+        </record>
+
+        <record id="hotel_amenity_type_comfort" model="hotel.amenity.type">
+            <field name="name">Comfort</field>
+            <field name="icon" type="base64" file="vs_hotel_management/static/src/img/amenity_type/comfort.png"/>
+        </record>
+
+        <record id="hotel_amenity_type_safety" model="hotel.amenity.type">
+            <field name="name">Safety</field>
+            <field name="icon" type="base64" file="vs_hotel_management/static/src/img/amenity_type/safety.png"/>
+        </record>
+
+        <record id="hotel_amenity_type_accessibility" model="hotel.amenity.type">
+            <field name="name">Accessibility</field>
+            <field name="icon" type="base64" file="vs_hotel_management/static/src/img/amenity_type/accessibility.png"/>
+        </record>
+
+        <record id="hotel_amenity_type_outdoor" model="hotel.amenity.type">
+            <field name="name">Outdoor</field>
+            <field name="icon" type="base64" file="vs_hotel_management/static/src/img/amenity_type/outdoor.png"/>
+        </record>
+
+        <record id="hotel_amenity_type_business" model="hotel.amenity.type">
+            <field name="name">Business</field>
+            <field name="icon" type="base64" file="vs_hotel_management/static/src/img/amenity_type/business.png"/>
+        </record>
+    </data>
+</odoo>

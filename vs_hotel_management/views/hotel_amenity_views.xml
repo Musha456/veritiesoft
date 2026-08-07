@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+
+    <record id="view_hotel_amenity_tree" model="ir.ui.view">
+        <field name="name">hotel.amenity.tree</field>
+        <field name="model">hotel.amenity</field>
+        <field name="arch" type="xml">
+            <list default_order="sequence,name">
+
+                <field name="sequence" widget="handle"/>
+
+                <field name="name"/>
+
+                <field name="amenity_type_id"/>
+
+                <field name="code"/>
+
+                <field name="active"
+                       widget="boolean_toggle"/>
+
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_amenity_search" model="ir.ui.view">
+        <field name="name">hotel.amenity.search</field>
+        <field name="model">hotel.amenity</field>
+        <field name="arch" type="xml">
+            <search string="Search Amenities">
+
+                <field name="name"/>
+                <field name="code"/>
+                <field name="amenity_type_id"/>
+
+                <separator/>
+
+                <filter
+                        name="filter_active"
+                        string="Active"
+                        domain="[('active', '=', True)]"/>
+
+                <filter
+                        name="filter_archived"
+                        string="Archived"
+                        domain="[('active', '=', False)]"/>
+
+                <group expand="0" string="Group By">
+
+                    <filter
+                            name="group_type"
+                            string="Amenity Type"
+                            context="{'group_by': 'amenity_type_id'}"/>
+
+                    <filter
+                            name="group_company"
+                            string="Company"
+                            context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+
+                </group>
+
+            </search>
+        </field>
+    </record>
+
+
+    <record id="view_hotel_amenity_form" model="ir.ui.view">
+        <field name="name">hotel.amenity.form</field>
+        <field name="model">hotel.amenity</field>
+        <field name="arch" type="xml">
+
+            <form string="Amenity">
+
+                <sheet>
+
+                    <div class="oe_title mb24">
+                        <h1>
+                            <field
+                                    name="name"
+                                    placeholder="e.g. WiFi"/>
+                        </h1>
+                    </div>
+
+                        <group>
+
+                            <group>
+                                <field
+                                        name="code"
+                                        readonly="1"/>
+
+                                <field
+                                        name="amenity_type_id"
+                                        options="{'no_create_edit': False}"
+                                        placeholder="Select Amenity Type"/>
+                            </group>
+
+                            <group>
+                                <field name="active" widget="boolean_toggle"/>
+                                 <field
+                                        name="company_id"
+                                        groups="base.group_multi_company"/>
+
+                            </group>
+
+                        </group>
+
+                    <group string="Description">
+
+                        <field
+                                name="description"
+                                nolabel="1"
+                                placeholder="Add internal notes..."/>
+
+                    </group>
+
+                    <!--                    <group string="Used In">-->
+
+                    <!--                        <field name="room_category_ids" readonly="1">-->
+                    <!--                            <list>-->
+                    <!--                                <field name="name"/>-->
+                    <!--                                <field name="code"/>-->
+                    <!--                            </list>-->
+                    <!--                        </field>-->
+
+                    <!--                    </group>-->
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+    <record id="action_hotel_amenity" model="ir.actions.act_window">
+
+        <field name="name">Amenities</field>
+
+        <field name="res_model">hotel.amenity</field>
+
+        <field name="view_mode">list,form</field>
+
+        <field
+                name="search_view_id"
+                ref="view_hotel_amenity_search"/>
+
+        <field name="help" type="html">
+
+            <p class="o_view_nocontent_smiling_face">
+                Create your first hotel amenity
+            </p>
+
+            <p>
+                Amenities describe facilities available for room categories,
+                such as WiFi, Air Conditioner, TV, Hair Dryer, Mini Bar,
+                Balcony, Coffee Machine, and more.
+            </p>
+
+        </field>
+
+    </record>
+
+</odoo>

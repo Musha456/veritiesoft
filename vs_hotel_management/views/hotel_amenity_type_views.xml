@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="view_hotel_amenity_type_tree" model="ir.ui.view">
+        <field name="name">hotel.amenity.type.tree</field>
+        <field name="model">hotel.amenity.type</field>
+        <field name="arch" type="xml">
+            <list string="Amenity Types" default_order="sequence,name">
+                <field name="sequence" widget="handle"/>
+                <field name="icon" widget="image" options="{'size': [32, 32]}"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_amenity_type_search" model="ir.ui.view">
+        <field name="name">hotel.amenity.type.search</field>
+        <field name="model">hotel.amenity.type</field>
+        <field name="arch" type="xml">
+
+            <search string="Search Amenity Types">
+                <field name="name"/>
+                <field name="code"/>
+                <separator/>
+                <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                <filter name="archived" string="Archived" domain="[('active','=',False)]"/>
+                <group string="Group By">
+                    <filter name="group_company" string="Company" context="{'group_by':'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_amenity_type_form" model="ir.ui.view">
+        <field name="name">hotel.amenity.type.form</field>
+        <field name="model">hotel.amenity.type</field>
+        <field name="arch" type="xml">
+            <form string="Amenity Type">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+
+                        <button name="action_view_amenities" type="object" class="oe_stat_button"
+                                invisible="not amenity_count" icon="fa-star">
+                            <field name="amenity_count" widget="statinfo" string="Amenities"/>
+                        </button>
+
+                    </div>
+
+                    <div class="oe_title mb24">
+                        <h1>
+                            <field name="name" placeholder="e.g. Bathroom"/>
+                        </h1>
+                    </div>
+
+                    <group>
+
+                        <group>
+
+                            <group>
+                                <field name="code" readonly="1"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+
+                            <group>
+                                <field name="active" widget="boolean_toggle"/>
+                            </group>
+
+                        </group>
+
+                        <group>
+                            <field name="icon" widget="image" nolabel="1" options="{'size': [128, 128]}"/>
+                        </group>
+
+                    </group>
+
+                    <group string="Description">
+                        <field name="description" placeholder="Add internal notes..." nolabel="1"/>
+                    </group>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+    <record id="action_hotel_amenity_type" model="ir.actions.act_window">
+        <field name="name">Amenity Types</field>
+        <field name="res_model">hotel.amenity.type</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hotel_amenity_type_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first amenity type
+            </p>
+            <p>
+                Organize hotel amenities into logical groups such as
+                Bathroom, Entertainment, Internet, Kitchen, or Safety.
+            </p>
+        </field>
+    </record>
+
+
+</odoo>

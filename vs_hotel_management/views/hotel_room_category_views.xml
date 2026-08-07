@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="view_hotel_room_category_tree" model="ir.ui.view">
+        <field name="name">hotel.room.category.tree</field>
+        <field name="model">hotel.room.category</field>
+        <field name="arch" type="xml">
+            <list string="Room Categories" default_order="sequence,name">
+                <field name="sequence" widget="handle"/>
+                <field name="image" widget="image" options="{'size': [32, 32]}"/>
+                <field name="name"/>
+                <field name="bed_type_id"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_room_category_search" model="ir.ui.view">
+        <field name="name">hotel.room.category.search</field>
+        <field name="model">hotel.room.category</field>
+        <field name="arch" type="xml">
+
+            <search string="Search Room Categories">
+                <field name="name"/>
+                <field name="code"/>
+                <separator/>
+                <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                <filter name="archived" string="Archived" domain="[('active','=',False)]"/>
+                <group string="Group By">
+                    <filter name="group_company" string="Company" context="{'group_by':'company_id'}"
+                            groups="base.group_multi_company"/>
+                    <filter name="group_bed_type" string="Bed Type" context="{'group_by':'bed_type_id'}"/>
+                </group>
+            </search>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_room_category_form" model="ir.ui.view">
+        <field name="name">hotel.room.category.form</field>
+        <field name="model">hotel.room.category</field>
+        <field name="arch" type="xml">
+            <form string="Amenity Type">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+
+                        <button name="action_view_rooms" type="object" class="oe_stat_button"
+                                invisible="not room_count" icon="fa-list">
+                            <field name="room_count" widget="statinfo" string="Rooms"/>
+                        </button>
+
+<!--                        <button name="action_view_reservations" type="object" class="oe_stat_button"-->
+<!--                                invisible="not reservation_count" icon="fa-list">-->
+<!--                            <field name="reservation_count" widget="statinfo" string="Reservations"/>-->
+<!--                        </button>-->
+
+                    </div>
+
+                    <div class="oe_title mb24">
+                        <h1>
+                            <field name="name" placeholder="e.g. Standard Room"/>
+                        </h1>
+                    </div>
+
+                    <group>
+
+                        <group string="General Info">
+
+                            <group>
+                                <field name="code" readonly="1"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+
+                            <group>
+                                <field name="active" widget="boolean_toggle"/>
+                            </group>
+
+                        </group>
+
+                        <group>
+                            <field name="image" widget="image" nolabel="1" options="{'size': [256, 256]}"/>
+                        </group>
+
+                    </group>
+
+                    <group string="Room Configuration">
+                        <group>
+                            <field name="bed_type_id"/>
+                            <field name="bed_count"/>
+                        </group>
+
+                        <group>
+                            <field name="room_size"/>
+                            <field name="room_size_uom"/>
+                        </group>
+                    </group>
+
+                    <group string="Occupancy">
+                        <group>
+                            <field name="max_adults"/>
+                            <field name="max_children"/>
+                        </group>
+                        <group>
+                            <field name="max_occupancy"/>
+                        </group>
+                    </group>
+
+                    <group string="Amenities">
+                        <field name="amenity_ids" widget="many2many_tags"/>
+                    </group>
+
+
+                    <group string="Description">
+                        <field name="description" placeholder="Add internal notes..." nolabel="1"/>
+                    </group>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+    <record id="action_hotel_room_categories" model="ir.actions.act_window">
+        <field name="name">Room Categories</field>
+        <field name="res_model">hotel.room.category</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hotel_room_category_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first room category
+            </p>
+        </field>
+    </record>
+
+
+</odoo>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <!-- Bathroom -->
+    <record id="hotel_amenity_hair_dryer" model="hotel.amenity">
+        <field name="name">Hair Dryer</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_bathroom"/>
+    </record>
+
+    <record id="hotel_amenity_shower" model="hotel.amenity">
+        <field name="name">Shower</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_bathroom"/>
+    </record>
+
+    <record id="hotel_amenity_bathtub" model="hotel.amenity">
+        <field name="name">Bathtub</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_bathroom"/>
+    </record>
+
+    <record id="hotel_amenity_towels" model="hotel.amenity">
+        <field name="name">Towels</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_bathroom"/>
+    </record>
+
+    <!-- Bedroom -->
+    <record id="hotel_amenity_wardrobe" model="hotel.amenity">
+        <field name="name">Wardrobe</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_bedroom"/>
+    </record>
+
+    <record id="hotel_amenity_closet" model="hotel.amenity">
+        <field name="name">Closet</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_bedroom"/>
+    </record>
+
+    <!-- Internet -->
+    <record id="hotel_amenity_wifi" model="hotel.amenity">
+        <field name="name">Free WiFi</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_internet"/>
+    </record>
+
+    <!-- Entertainment -->
+    <record id="hotel_amenity_tv" model="hotel.amenity">
+        <field name="name">Flat-screen TV</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_entertainment"/>
+    </record>
+
+    <record id="hotel_amenity_cable_tv" model="hotel.amenity">
+        <field name="name">Cable TV</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_entertainment"/>
+    </record>
+
+    <!-- Food -->
+    <record id="hotel_amenity_mini_bar" model="hotel.amenity">
+        <field name="name">Mini Bar</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_food_beverage"/>
+    </record>
+
+    <record id="hotel_amenity_coffee_maker" model="hotel.amenity">
+        <field name="name">Coffee Maker</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_food_beverage"/>
+    </record>
+
+    <record id="hotel_amenity_kettle" model="hotel.amenity">
+        <field name="name">Electric Kettle</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_food_beverage"/>
+    </record>
+
+    <!-- Comfort -->
+    <record id="hotel_amenity_air_conditioning" model="hotel.amenity">
+        <field name="name">Air Conditioning</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_comfort"/>
+    </record>
+
+    <record id="hotel_amenity_heating" model="hotel.amenity">
+        <field name="name">Heating</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_comfort"/>
+    </record>
+
+    <!-- Safety -->
+    <record id="hotel_amenity_safe" model="hotel.amenity">
+        <field name="name">Safety Deposit Box</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_safety"/>
+    </record>
+
+    <record id="hotel_amenity_smoke_detector" model="hotel.amenity">
+        <field name="name">Smoke Detector</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_safety"/>
+    </record>
+
+    <!-- Accessibility -->
+    <record id="hotel_amenity_wheelchair" model="hotel.amenity">
+        <field name="name">Wheelchair Accessible</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_accessibility"/>
+    </record>
+
+    <!-- Outdoor -->
+    <record id="hotel_amenity_balcony" model="hotel.amenity">
+        <field name="name">Balcony</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_outdoor"/>
+    </record>
+
+    <!-- Business -->
+    <record id="hotel_amenity_work_desk" model="hotel.amenity">
+        <field name="name">Work Desk</field>
+        <field name="amenity_type_id" ref="vs_hotel_management.hotel_amenity_type_business"/>
+    </record>
+
+</odoo>

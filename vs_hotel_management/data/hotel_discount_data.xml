@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo noupdate="1">
+
+    <record id="hotel_discount_summer" model="hotel.discount">
+
+        <field name="name">Summer Sale</field>
+
+        <field name="hotel_id" ref="hotel_demo"/>
+
+        <field name="discount_type">percentage</field>
+
+        <field name="discount">15</field>
+
+        <field name="state">active</field>
+
+        <field name="date_start">2026-06-01</field>
+
+        <field name="date_end">2026-08-31</field>
+
+    </record>
+
+    <record id="hotel_discount_weekend" model="hotel.discount">
+
+        <field name="name">Weekend Offer</field>
+
+        <field name="hotel_id" ref="hotel_demo"/>
+
+        <field name="discount_type">fixed</field>
+
+        <field name="discount">25</field>
+
+        <field name="state">active</field>
+
+    </record>
+
+</odoo>

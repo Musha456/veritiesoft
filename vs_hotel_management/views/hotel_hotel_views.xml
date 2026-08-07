@@ -1,0 +1,1190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="view_hotel_hotel_tree" model="ir.ui.view">
+        <field name="name">hotel.hotel.tree</field>
+        <field name="model">hotel.hotel</field>
+        <field name="arch" type="xml">
+            <list string="Hotel" default_order="sequence,name">
+                <field name="logo" widget="image" options="{'size': [40, 40]}"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="city"/>
+                <field name="country_id"/>
+                <field name="star_rating"/>
+                <field name="building_count"/>
+                <field name="room_count"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_hotel_search" model="ir.ui.view">
+
+        <field name="name">hotel.hotel.search</field>
+
+        <field name="model">hotel.hotel</field>
+
+        <field name="arch" type="xml">
+
+            <search string="Search Hotels">
+
+                <!-- Search Fields -->
+
+                <field name="active"/>
+
+                <field name="name"/>
+
+                <field name="code"/>
+
+                <field name="phone"/>
+
+                <field name="email"/>
+
+                <field name="city"/>
+
+                <field name="state_id"/>
+
+                <field name="star_rating"/>
+
+                <field name="country_id"/>
+
+                <field name="company_id"/>
+
+                <separator/>
+
+                <!-- Filters -->
+
+                <filter
+                        name="active"
+                        string="Active"
+                        domain="[('active', '=', True)]"/>
+
+                <filter
+                        name="archived"
+                        string="Archived"
+                        domain="[('active', '=', False)]"/>
+
+                <separator/>
+
+                <!-- Star Rating -->
+
+                <filter
+                        name="five_star"
+                        string="★★★★★"
+                        domain="[('star_rating', '=', '5')]"/>
+
+                <filter
+                        name="four_star"
+                        string="★★★★"
+                        domain="[('star_rating', '=', '4')]"/>
+
+                <filter
+                        name="three_star"
+                        string="★★★"
+                        domain="[('star_rating', '=', '3')]"/>
+
+                <filter
+                        name="two_star"
+                        string="★★"
+                        domain="[('star_rating', '=', '2')]"/>
+
+                <filter
+                        name="one_star"
+                        string="★"
+                        domain="[('star_rating', '=', '1')]"/>
+
+                <group expand="0" string="Group By">
+
+                    <filter name="country_id" string="Country"
+                            context="{'group_by':'country_id'}"/>
+
+                    <filter name="state_id" string="State"
+                            context="{'group_by':'state_id'}"/>
+
+                    <filter name="city" string="City"
+                            context="{'group_by':'city'}"/>
+
+                    <filter name="company_id" string="Company"
+                            context="{'group_by':'company_id'}"
+                            groups="base.group_multi_company"/>
+
+                    <filter name="star_rating" string="Star Rating"
+                            context="{'group_by':'star_rating'}"/>
+
+                </group>
+
+            </search>
+
+        </field>
+
+    </record>
+
+    <record id="view_hotel_hotel_form" model="ir.ui.view">
+        <field name="name">hotel.hotel.form</field>
+        <field name="model">hotel.hotel</field>
+        <field name="arch" type="xml">
+            <form string="Amenity Type">
+                <sheet>
+
+                    <div class="oe_button_box" name="button_box">
+
+                        <button name="action_view_buildings"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-building"
+                                invisible="not building_count">
+
+                            <field name="building_count"
+                                   widget="statinfo"
+                                   string="Buildings"/>
+
+                        </button>
+
+                        <button name="action_view_floors"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-list-alt"
+                                invisible="not floor_count">
+
+                            <field name="floor_count"
+                                   widget="statinfo"
+                                   string="Floors"/>
+
+                        </button>
+
+                        <button name="action_view_rooms"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-bed"
+                                invisible="not room_count">
+
+                            <field name="room_count"
+                                   widget="statinfo"
+                                   string="Rooms"/>
+
+                        </button>
+
+                        <button name="action_view_services"
+                                type="object"
+                                claass="oe_stat_button"
+                                icon="fa-cogs"
+                                invisible="not service_count">
+
+                            <field name="service_count"
+                                   widget="statinfo"
+                                   string="Services"/>
+                        </button>
+
+                        <button name="action_view_gallery"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-image"
+                                invisible="not gallery_count">
+
+                            <field name="gallery_count"
+                                   widget="statinfo"
+                                   string="Gallery"/>
+
+                        </button>
+
+                        <!--                        <button name="action_view_reservations"-->
+                        <!--                                type="object"-->
+                        <!--                                class="oe_stat_button"-->
+                        <!--                                icon="fa-calendar-check-o"-->
+                        <!--                                invisible="not reservation_count">-->
+
+                        <!--                            <field name="reservation_count"-->
+                        <!--                                   widget="statinfo"-->
+                        <!--                                   string="Reservations"/>-->
+
+                        <!--                        </button>-->
+
+                        <!--                        <button name="action_view_guests"-->
+                        <!--                                type="object"-->
+                        <!--                                class="oe_stat_button"-->
+                        <!--                                icon="fa-calendar-check-o"-->
+                        <!--                                invisible="not guest_count">-->
+
+                        <!--                            <field name="guest_count"-->
+                        <!--                                   widget="statinfo"-->
+                        <!--                                   string="Guests"/>-->
+
+                        <!--                        </button>-->
+
+                        <!--                        Invoices-->
+                        <!--                        Folios-->
+                        <!--                        Housekeeping-->
+                        <!--                        Maintenance-->
+                        <!--                        Laundry-->
+                        <!--                        Restaurant Orders-->
+
+                    </div>
+
+                    <div class="oe_title">
+
+                        <label for="name"/>
+
+                        <h1>
+                            <field name="name"
+                                   placeholder="e.g. Verity Grand Hotel"/>
+                        </h1>
+
+                        <div class="text-muted">
+
+                            <span class="me-3">
+                                <strong class="me-1">Code:</strong>
+                                <field name="code"
+                                       class="oe_inline"
+                                       readonly="1"/>
+                            </span>
+
+                            <span>
+                                <strong class="me-1">Rating:</strong>
+                                <field name="star_rating"
+                                       class="oe_inline"/>
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <group col="3">
+
+                        <!-- General Information -->
+                        <group string="General Information" colspan="2">
+
+                            <group>
+                                <div class="d-flex justify-content-center align-items-start text-center">
+
+                                    <label for="logo" string="Logo" class="fw-bold mb-2"/>
+
+                                    <field name="logo"
+                                           widget="image"
+                                           nolabel="1"
+                                           options="{'size':[60,60]}"/>
+
+                                </div>
+
+                                <field name="company_id"
+                                       groups="base.group_multi_company"/>
+
+                            </group>
+
+                            <group>
+
+                                <field name="manager_id" widget="many2one_avatar"/>
+
+                                <field name="active" widget="boolean_toggle"/>
+                            </group>
+
+                        </group>
+
+                        <!-- Hero Image -->
+                        <group string="Hero Image" colspan="1">
+
+                            <field name="hero_image"
+                                   widget="image"
+                                   nolabel="1"
+                                   options="{'size':[256, 256]}"/>
+
+                        </group>
+
+                    </group>
+
+                    <notebook>
+
+                        <page name="general" string="Description">
+                            <field name="description"
+                                   widget="html"
+                                   nolabel="1"
+                                   placeholder="Describe the hotel, its facilities, accommodation, services, and unique features..."/>
+                        </page>
+                        <page name="contact" string="Contact">
+
+                            <!-- Contact Information -->
+                            <group string="Contact Information">
+
+                                <group>
+                                    <field name="phone"
+                                           placeholder="+1 555 123 4567"/>
+
+                                    <field name="mobile"
+                                           placeholder="+1 555 987 6543"/>
+
+                                </group>
+
+                                <group>
+                                    <field name="email"
+                                           placeholder="info@example.com"/>
+
+                                    <field name="website"
+                                           widget="url"
+                                           placeholder="https://www.example.com"/>
+                                </group>
+
+                            </group>
+
+                            <!-- Address -->
+                            <group string="Address">
+
+                                <group>
+                                    <field name="street"
+                                           placeholder="Street Address"/>
+
+                                    <field name="street2"
+                                           placeholder="Apartment, Suite, Building, etc."/>
+
+                                    <field name="city"
+                                           placeholder="City"/>
+                                </group>
+
+                                <group>
+                                    <field name="state_id"
+                                           placeholder="State"/>
+
+                                    <field name="zip"
+                                           placeholder="Postal Code"/>
+
+                                    <field name="country_id"
+                                           options="{'no_open': True, 'no_create': True}"/>
+                                </group>
+
+                            </group>
+
+
+                            <separator string="Map Location"/>
+
+                            <group col="2">
+
+                                <group>
+
+                                    <field name="latitude"
+                                           placeholder="35.881800"/>
+
+                                </group>
+
+                                <group>
+
+                                    <field name="longitude"
+                                           placeholder="76.515300"/>
+
+                                </group>
+
+                            </group>
+
+                        </page>
+                        <page name="localization" string="Localization">
+
+                            <!-- Localization Information -->
+                            <group string="Configure the regional settings used by this hotel.">
+
+                                <div class="text-muted">
+
+                                    These settings determine the default currency, language,
+                                    and time zone used for reservations, pricing, reports,
+                                    and guest-facing communications.
+
+                                </div>
+
+                            </group>
+
+                            <group string="Regional Settings">
+
+                                <!-- Regional Settings -->
+                                <group>
+
+                                    <field name="currency_id"
+                                           options="{'no_create': True, 'no_open': True}"/>
+
+                                    <field name="language_id"
+                                           options="{'no_create': True, 'no_open': True}"/>
+
+                                </group>
+
+                                <group>
+                                    <field name="timezone"/>
+                                </group>
+
+                            </group>
+
+                        </page>
+                        <page name="operations" string="Operations">
+
+                            <group string="Reservation">
+
+                                <group>
+                                    <field name="checkin_time"
+                                           widget="float_time"/>
+
+                                    <field name="checkout_time"
+                                           widget="float_time"/>
+
+                                    <field name="minimum_stay"/>
+
+                                    <field name="maximum_stay"/>
+                                </group>
+
+                                <group>
+                                    <field name="reservation_expiry_hours" string="Expiry Hours"/>
+
+                                    <field name="cancellation_hours"/>
+
+                                </group>
+                            </group>
+
+                            <group string="Booking Rules">
+
+                                <group>
+                                    <field name="allow_early_checkin"
+                                           widget="boolean_toggle"/>
+
+                                    <field name="allow_late_checkout"
+                                           widget="boolean_toggle"/>
+
+                                    <field name="allow_overbooking"
+                                           widget="boolean_toggle"/>
+                                </group>
+
+                                <group>
+                                    <field name="auto_assign_room"
+                                           widget="boolean_toggle" string="Auto Room Assign"/>
+
+                                    <field name="allow_room_change"
+                                           widget="boolean_toggle"/>
+
+                                    <field name="require_guest_identification"
+                                           widget="boolean_toggle"/>
+                                </group>
+
+
+                            </group>
+
+                            <group string="Housekeeping">
+
+                                <group>
+                                    <field name="housekeeping_start_time"
+                                           widget="float_time"/>
+                                </group>
+                                <group>
+
+                                    <field name="housekeeping_end_time"
+                                           widget="float_time"/>
+                                </group>
+
+                            </group>
+
+                            <group string="Accounting">
+
+                                <group>
+                                    <field name="currency_id"/>
+
+                                </group>
+                                <group>
+                                    <field name="tax_ids"
+                                           widget="many2many_tags"/>
+                                </group>
+
+                            </group>
+
+                        </page>
+                        <page name="buildings" string="Buildings">
+
+                            <field name="building_ids"
+                                   nolabel="1"
+                                   mode="kanban,list">
+
+                                <!-- List View -->
+                                <list>
+                                    <field name="image" widget="image" options="{'size':[40,40]}"/>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="city"/>
+                                    <field name="country_id"/>
+                                </list>
+                            </field>
+
+                        </page>
+                        <page name="services" string="Services">
+
+                            <field name="service_ids"
+                                   nolabel="1"
+                                   mode="kanban,form"
+                                   context="{'default_hotel_id': id}">
+                                <list>
+                                    <field name="icon" widget="image" options="{'size':[40,40]}"/>
+                                    <field name="name"/>
+                                    <field name="category"/>
+                                    <field name="price" widget="monetary"/>
+                                    <field name="is_complimentary" string="Complimentary" widget="boolean_toggle" readonly="1"/>
+                                    <field name="code"/>
+                                </list>
+                            </field>
+
+                        </page>
+                        <page name="galleries" string="Gallery">
+
+                            <!-- Empty State -->
+                            <div class="border rounded-3 bg-light text-center py-5"
+                                 invisible="image_ids">
+
+                                <i class="fa fa-image fa-4x text-secondary mb-3"
+                                   title="No hotel images available"/>
+
+                                <h4 class="fw-bold">
+                                    No Hotel Images
+                                </h4>
+
+                                <p class="text-muted">
+                                    Upload high-quality images of the hotel's exterior, lobby,
+                                    reception, restaurant, rooms, swimming pool, spa, gym,
+                                    conference hall, and other facilities to showcase your hotel.
+                                </p>
+
+                                <small class="text-muted">
+                                    The first uploaded image automatically becomes the
+                                    <b>Cover Image</b>.
+                                    <br/>
+                                    You can change the cover image anytime by enabling the
+                                    <b>Cover Image</b>
+                                    option.
+                                </small>
+
+                            </div>
+
+                            <!-- Gallery -->
+                            <field
+                                    name="image_ids"
+                                    mode="kanban"
+                                    context="{'default_hotel_id': id}">
+
+                                <kanban
+                                        class="o_kanban_record"
+                                        create="1"
+                                        edit="1"
+                                        delete="1">
+
+                                    <field name="name"/>
+                                    <field name="image"/>
+                                    <field name="is_cover"/>
+                                    <field name="sequence"/>
+                                    <field name="active"/>
+
+                                    <templates>
+
+                                        <t t-name="card">
+
+                                            <div class="oe_kanban_global_click">
+
+                                                <div class="row g-0">
+
+                                                    <!-- Image -->
+                                                    <div class="col-5 room-image-container">
+
+                                                        <field name="image"
+                                                               widget="image"
+                                                               class="room-image"
+                                                               options="{'preview_image':'image'}"/>
+
+                                                    </div>
+
+                                                    <!-- Content -->
+                                                    <div class="col-7 px-2 d-flex flex-column">
+
+                                                        <!-- Header -->
+                                                        <div class="d-flex justify-content-between align-items-center border-bottom">
+
+                                                            <div class="fw-bold text-truncate"
+                                                                 t-att-title="record.name.value">
+
+                                                                <field name="name"/>
+
+                                                            </div>
+
+                                                            <field
+                                                                    name="sequence"
+                                                                    widget="handle"/>
+
+                                                        </div>
+
+                                                        <!-- Body -->
+                                                        <div class="px-2 py-2 flex-grow-1">
+
+                                                            <div class="d-flex justify-content-between align-items-center mb-2"
+                                                                 groups="vs_hotel_management.group_hotel_manager">
+
+                                                                <span class="text-muted small">
+                                                                    Cover Image
+                                                                </span>
+
+                                                                <field
+                                                                        name="is_cover"
+                                                                        widget="boolean_toggle"
+                                                                        nolabel="1"/>
+
+                                                            </div>
+
+                                                        </div>
+
+                                                        <!-- Footer -->
+                                                        <div class="px-2 py-1"
+                                                             groups="vs_hotel_management.group_hotel_manager">
+
+                                                            <div class="d-flex justify-content-end">
+
+                                                                <a type="delete"
+                                                                   class="text-danger"
+                                                                   title="Delete">
+
+                                                                    <i class="fa fa-trash"/>
+
+                                                                </a>
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        </t>
+
+                                    </templates>
+
+                                </kanban>
+
+                                <!-- Form -->
+
+                                <form string="Hotel Image">
+
+                                    <sheet>
+
+                                        <group col="2">
+
+                                            <group string="General Information" colspan="2">
+
+                                                <field
+                                                        name="name"
+                                                        placeholder="e.g. Hotel Lobby"/>
+
+                                                <field
+                                                        name="is_cover"
+                                                        widget="boolean_toggle"/>
+
+                                                <field
+                                                        name="active"
+                                                        widget="boolean_toggle"/>
+
+                                            </group>
+
+                                            <group string="Image" colspan="1">
+
+                                                <field
+                                                        name="image"
+                                                        widget="image"
+                                                        nolabel="1"
+                                                        options="{'size':[256,256]}"/>
+
+                                            </group>
+
+                                        </group>
+
+                                        <group string="Description">
+
+                                            <field
+                                                    name="description"
+                                                    nolabel="1"
+                                                    placeholder="Add an optional description for this image..."/>
+
+                                        </group>
+
+                                    </sheet>
+
+                                </form>
+
+                            </field>
+
+                        </page>
+                        <page string="Website and SEO">
+
+                            <group string="Website">
+
+                                <group>
+                                    <field name="website_published"
+                                           widget="boolean_toggle"/>
+
+                                    <field name="booking_url"
+                                           placeholder="https://booking.example.com"/>
+                                </group>
+
+                                <group>
+                                    <field name="google_map_url"
+                                           placeholder="https://maps.google.com/..."/>
+
+                                    <field name="virtual_tour_url"
+                                           placeholder="https://example.com/360-tour"/>
+                                </group>
+
+                            </group>
+
+                            <group string="Hero Section">
+
+                                <group>
+                                    <field name="hero_title"
+                                           placeholder="Experience Luxury and Comfort"/>
+                                </group>
+                                <group>
+
+                                    <field name="hero_subtitle"
+                                           placeholder="Book your unforgettable stay today."/>
+                                </group>
+
+                            </group>
+
+                            <group string="Search Engine Optimization (SEO)">
+
+                                <field name="meta_title"
+                                       placeholder="Luxury Hotel in Skardu | Verity Grand Hotel"/>
+
+                                <field name="meta_description"
+                                       placeholder="Write a concise description that appears in search engine results."/>
+
+                                <field name="meta_keywords"
+                                       placeholder="hotel, luxury hotel, booking, skardu, pakistan"/>
+
+                            </group>
+
+                        </page>
+                        <page name="social_media" string="Social Media">
+
+                            <group col="2">
+
+                                <group>
+
+                                    <field name="facebook_url"/>
+
+                                    <field name="instagram_url"/>
+
+                                    <field name="linkedin_url"/>
+
+                                    <field name="youtube_url"/>
+
+                                </group>
+
+                                <group>
+
+                                    <field name="x_url"/>
+
+                                    <field name="tiktok_url"/>
+
+                                    <field name="tripadvisor_url"/>
+
+                                    <field name="booking_com_url"/>
+
+                                </group>
+
+                            </group>
+
+                        </page>
+                        <page name="policies" string="Policies">
+
+                            <group>
+
+                                <field name="checkin_policy"/>
+
+                                <field name="checkout_policy"/>
+
+                                <field name="cancellation_policy"/>
+
+                                <field name="child_policy"/>
+
+                                <field name="pet_policy"/>
+
+                                <field name="smoking_policy"/>
+
+                                <field name="privacy_policy"/>
+
+                            </group>
+
+                        </page>
+                        <page name="statistics" string="Statistics">
+
+                            <group string="Property" col="3">
+                                <group colspan="1">
+                                    <field name="building_count" readonly="1"/>
+                                </group>
+
+                                <group colspan="1">
+                                    <field name="floor_count" readonly="1"/>
+                                </group>
+                                <group colspan="1">
+                                    <field name="room_count" readonly="1"/>
+                                </group>
+
+                            </group>
+
+                            <group string="Reservations" col="3">
+
+                                <group colspan="1">
+                                    <field name="reservation_count" readonly="1"/>
+                                </group>
+                                <group colspan="2">
+                                    <field name="guest_count" readonly="1"/>
+                                </group>
+
+                            </group>
+
+                            <group string="Rooms" col="3">
+
+                                <group colspan="1">
+                                    <field name="available_room_count" readonly="1"/>
+                                </group>
+                                <group colspan="1">
+                                    <field name="occupied_room_count" readonly="1"/>
+                                </group>
+                                <group colspan="1">
+                                    <field name="maintenance_room_count" readonly="1"/>
+                                </group>
+                            </group>
+
+                            <group string="Services" col="3">
+
+                                <group colspan="1">
+                                    <field name="service_count" readonly="1"/>
+                                </group>
+                                <group colspan="2">
+                                    <field name="gallery_count" readonly="1"/>
+                                </group>
+                            </group>
+
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_hotel_kanban" model="ir.ui.view">
+        <field name="name">hotel.hotel.kanban</field>
+        <field name="model">hotel.hotel</field>
+        <field name="arch" type="xml">
+
+            <kanban class="o_kanban_mobile">
+
+                <!-- Fields -->
+                <field name="hero_image"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="city"/>
+                <field name="country_id"/>
+                <field name="manager_id"/>
+                <field name="star_rating"/>
+                <field name="building_count"/>
+                <field name="floor_count"/>
+                <field name="room_count"/>
+                <field name="website_published"/>
+                <field name="active"/>
+
+                <templates>
+
+                    <t t-name="card">
+
+                        <div class="oe_kanban_global_click hotel_room_kanban_card">
+
+                            <!-- =======================================================
+                                 Cover Image
+                            ======================================================== -->
+
+                            <div class="hotel_room_cover">
+
+                                <t t-if="record.hero_image.raw_value">
+
+                                    <field name="hero_image"
+                                           widget="image"
+                                           class="hotel_room_cover_image"
+                                           options="{'preview_image':'hero_image'}"/>
+
+                                </t>
+
+                                <t t-else="">
+
+                                    <div class="hotel_room_cover_placeholder">
+
+                                        <i class="fa fa-building fa-4x text-muted" title="Hotel Hero Image"/>
+
+                                        <div class="mt-2">
+                                            No Hero Image
+                                        </div>
+
+                                    </div>
+
+                                </t>
+
+                                <!-- Hotel Logo -->
+
+                                <div class="hotel_room_status">
+
+                                    <t t-if="record.logo.raw_value">
+
+                                        <field name="logo"
+                                               widget="image"
+                                               class="hotel_room_logo"
+                                               options="{'preview_image':'logo','size':[60,60]}"/>
+
+                                    </t>
+
+                                    <t t-else="">
+
+                                        <div class="hotel_room_logo_placeholder">
+
+                                            <i class="fa fa-building" title="Hotel Logo Placeholder"/>
+
+                                        </div>
+
+                                    </t>
+
+                                </div>
+
+                            </div>
+
+                            <!-- =======================================================
+                                 Body
+                            ======================================================== -->
+
+                            <div class="hotel_room_body">
+
+                                <!-- Header -->
+
+                                <div class="hotel_room_title_status">
+
+                                    <div class="hotel_room_title">
+
+                                        <h4>
+
+                                            <field name="name"/>
+
+                                        </h4>
+
+                                        <!--                                        <div class="text-muted small mt-1">-->
+
+                                        <!--                                            <field name="code"/>-->
+
+                                        <!--                                        </div>-->
+
+                                    </div>
+
+                                    <div class="hotel_room_category">
+
+                                        <span class="text-warning fs-6">
+
+                                            <t t-foreach="[1,2,3,4,5]" t-as="star" t-key="star">
+
+                                                <i t-att-class="'fa ' + (star &lt;= record.star_rating.raw_value ? 'fa-star' : 'fa-star-o')"/>
+
+                                            </t>
+
+                                        </span>
+
+                                    </div>
+                                </div>
+
+                                <!-- Location -->
+
+                                <div class="hotel_room_location mt-3">
+
+                                    <i class="fa fa-map-marker text-primary" title="Hotel Location"/>
+
+                                    <span>
+
+                                        <field name="city"/>
+
+                                        <t t-if="record.country_id.raw_value">
+
+                                            ,
+
+                                            <field name="country_id"/>
+
+                                        </t>
+
+                                    </span>
+
+                                </div>
+
+                                <!-- Manager -->
+
+                                <div class="hotel_room_bed mt-2">
+
+                                    <i class="fa fa-user text-primary" title="Hotel Manager"/>
+
+                                    <strong class="me-1">
+
+                                        Hotel Manager:
+
+                                    </strong>
+
+                                    <field name="manager_id"/>
+
+                                </div>
+
+                                <!-- Divider -->
+
+                                <hr class="my-1"/>
+
+                                <!-- =======================================================
+        Statistics
+        ======================================================= -->
+
+                                <div class="hotel_room_amenities mt-3">
+
+                                    <div class="row row-cols-lg-2 row-cols-1 g-3">
+
+                                        <!-- Buildings -->
+                                        <div class="col">
+
+                                            <div class="d-flex justify-content-between align-items-start p-2 rounded bg-primary-subtle">
+
+                                                <div class="d-flex align-items-start">
+
+                                                    <i class="fa fa-building text-primary me-2 mt-1"
+                                                       title="Hotel Buildings"/>
+
+                                                    <span class="text-muted">
+
+                                                        Buildings
+
+                                                    </span>
+
+                                                </div>
+
+                                                <span class="fw-bold fs-4 text-primary">
+
+                                                    <field name="building_count"/>
+
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                        <!-- Floors -->
+                                        <div class="col">
+
+                                            <div class="d-flex justify-content-between align-items-start p-2 rounded bg-success-subtle">
+
+                                                <div class="d-flex align-items-start">
+
+                                                    <i class="fa fa-th-large text-success me-2 mt-1"
+                                                       title="Hotel Floors"/>
+
+                                                    <span class="text-muted">
+
+                                                        Floors
+
+                                                    </span>
+
+                                                </div>
+
+                                                <span class="fw-bold fs-4 text-success">
+
+                                                    <field name="floor_count"/>
+
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                        <!-- Rooms -->
+                                        <div class="col">
+
+                                            <div class="d-flex justify-content-between align-items-start p-2 rounded bg-info-subtle">
+
+                                                <div class="d-flex align-items-start">
+
+                                                    <i class="fa fa-bed text-info me-2 mt-1"
+                                                       title="Hotel Rooms"/>
+
+                                                    <span class="text-muted">
+
+                                                        Rooms
+
+                                                    </span>
+
+                                                </div>
+
+                                                <span class="fw-bold fs-4 text-info">
+
+                                                    <field name="room_count"/>
+
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                        <!-- Reservations -->
+                                        <div class="col">
+
+                                            <div class="d-flex justify-content-between align-items-start p-2 rounded bg-danger-subtle">
+
+                                                <div class="d-flex align-items-start">
+
+                                                    <i class="fa fa-calendar-check-o text-danger me-2 mt-1"
+                                                       title="Hotel Reservations"/>
+
+                                                    <span class="text-muted">
+
+                                                        Reservations
+
+                                                    </span>
+
+                                                </div>
+
+                                                <span class="fw-bold fs-4 text-danger">
+
+                                                    <field name="reservation_count"/>
+
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </t>
+
+                </templates>
+
+            </kanban>
+
+        </field>
+    </record>
+    <record id="action_hotel_hotel" model="ir.actions.act_window">
+        <field name="name">Hotel</field>
+        <field name="res_model">hotel.hotel</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_hotel_hotel_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Hotel
+            </p>
+        </field>
+    </record>
+
+
+</odoo>

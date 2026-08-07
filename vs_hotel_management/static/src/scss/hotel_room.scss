@@ -1,0 +1,855 @@
+.room-image-container {
+    height: 120px;
+    overflow: hidden;
+    border-radius: 6px;
+}
+
+.room-image-container .o_field_image {
+    height: 100%;
+}
+
+.room-image-container .o_field_image img {
+    height: 100% !important;
+    width: 100% !important;
+    object-fit: cover !important;
+    object-position: center;
+    display: block;
+}
+
+/* ==========================================================
+   HOTEL ROOM KANBAN CARD
+   Veritiesoft Hotel Management
+   ========================================================== */
+
+.hotel_room_kanban_card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all .25s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.hotel_room_kanban_card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .15);
+}
+
+
+/* ==========================================================
+   COVER IMAGE
+   ========================================================== */
+
+.hotel_room_cover {
+    position: relative;
+    height: 210px;
+    overflow: hidden;
+    background: #f8f9fa;
+}
+
+.hotel_room_cover .o_field_image {
+    width: 100%;
+    height: 100%;
+}
+
+.hotel_room_cover img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center;
+    display: block;
+    transition: transform .35s ease;
+}
+
+.hotel_room_kanban_card:hover
+.hotel_room_cover img{
+    transform: scale(1.06);
+}
+
+
+/* ==========================================================
+   PLACEHOLDER
+   ========================================================== */
+
+.hotel_room_cover_placeholder {
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    color:#adb5bd;
+    background:#f8f9fa;
+}
+
+.hotel_room_cover_placeholder i{
+    opacity:.7;
+}
+
+.hotel_room_cover_placeholder div{
+    margin-top:12px;
+    font-size:13px;
+    font-weight:500;
+}
+
+
+/* ==========================================================
+   STATUS BADGE
+   ========================================================== */
+
+.hotel_room_status{
+    position:absolute;
+    top:12px;
+    right:12px;
+    z-index:20;
+}
+
+.hotel_room_status_badge{
+
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    min-width:95px;
+
+    padding:6px 14px;
+
+    border-radius:30px;
+
+    color:#fff;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    letter-spacing:.5px;
+
+    text-transform:uppercase;
+
+    box-shadow:0 3px 12px rgba(0,0,0,.25);
+
+    backdrop-filter:blur(4px);
+
+}
+
+
+/* ==========================================================
+   STATUS COLORS
+   ========================================================== */
+
+.hotel_status_available{
+    background:#28a745;
+}
+
+.hotel_status_reserved{
+    background:#0d6efd;
+}
+
+.hotel_status_occupied{
+    background:#dc3545;
+}
+
+.hotel_status_dirty{
+    background:#fd7e14;
+}
+
+.hotel_status_cleaning{
+    background:#17a2b8;
+}
+
+.hotel_status_maintenance{
+    background:#6c757d;
+}
+
+.hotel_status_out_of_order{
+    background:#212529;
+}
+
+
+/* ==========================================================
+   BODY
+   ========================================================== */
+
+.hotel_room_body{
+
+    padding:18px;
+
+    flex:1;
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+/* ==========================================================
+   TITLE STATUS
+   ========================================================== */
+.hotel_room_title_status{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+/* ==========================================================
+   TITLE
+   ========================================================== */
+
+.hotel_room_title{
+
+    margin-bottom:8px;
+
+}
+
+.hotel_room_title h4{
+
+    margin:0;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    color:#212529;
+
+    white-space:nowrap;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+}
+
+
+/* ==========================================================
+   ROOM CATEGORY
+   ========================================================== */
+
+.hotel_room_category{
+
+    margin-bottom:12px;
+
+}
+
+.hotel_room_category .badge{
+
+    background:#eef3ff;
+
+    color:#0d6efd;
+
+    border-radius:25px;
+
+    padding:6px 12px;
+
+    font-weight:600;
+
+}
+
+
+/* ==========================================================
+   BUILDING & FLOOR
+   ========================================================== */
+
+.hotel_room_location{
+
+    display:flex;
+
+    align-items:center;
+
+    flex-wrap:wrap;
+
+    gap:8px;
+
+    color:#6c757d;
+
+    font-size:13px;
+
+}
+
+.hotel_room_location i{
+
+    width:18px;
+
+    color:#0d6efd;
+
+}
+
+
+/* ==========================================================
+   BED INFORMATION
+   ========================================================== */
+
+.hotel_room_bed{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    margin-top:12px;
+
+    font-size:14px;
+
+    color:#495057;
+
+}
+
+.hotel_room_bed i{
+
+    width:18px;
+
+    color:#795548;
+
+    font-size:16px;
+
+}
+
+.hotel_room_bed .text-muted{
+
+    margin-left:auto;
+
+    font-size:13px;
+
+}
+
+
+/* ==========================================================
+   DIVIDER
+   ========================================================== */
+
+.hotel_room_body hr{
+
+    margin:18px 0;
+
+    border:0;
+
+    border-top:1px solid #ececec;
+
+}
+
+
+/* ==========================================================
+   ACTIVE RIBBON
+   ========================================================== */
+
+.hotel_room_active{
+
+    position:absolute;
+
+    left:12px;
+
+    top:12px;
+
+    z-index:20;
+
+}
+
+.hotel_room_active .badge{
+
+    padding:6px 10px;
+
+    border-radius:30px;
+
+    font-size:11px;
+
+    font-weight:700;
+
+}
+
+
+/* ==========================================================
+   TRANSITIONS
+   ========================================================== */
+
+.hotel_room_title,
+.hotel_room_category,
+.hotel_room_location,
+.hotel_room_bed,
+.hotel_room_status_badge{
+
+    transition:all .25s ease;
+
+}
+
+/* ==========================================================
+   AMENITIES
+   ========================================================== */
+
+.hotel_room_amenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.hotel_room_amenity_groups {
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+
+}
+
+.hotel_room_amenity_group {
+
+    flex: 1 1 calc(50% - 5px);
+
+    min-width: 170px;
+
+    background: #f8f9fa;
+
+    border: 1px solid #e9ecef;
+
+    border-radius: 10px;
+
+    padding: 10px;
+
+    transition: .25s;
+
+}
+
+.hotel_room_amenity_group:hover {
+
+    background: #ffffff;
+
+    border-color: #0d6efd;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+
+}
+
+.hotel_room_amenity_group_header {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 8px;
+
+    border-bottom: 1px solid #ececec;
+
+    padding-bottom: 8px;
+
+}
+
+.hotel_room_amenity_type_icon {
+
+    width: 18px;
+
+    height: 18px;
+
+    object-fit: contain;
+
+    flex-shrink: 0;
+
+}
+
+.hotel_room_amenity_type_name {
+
+    font-weight: 600;
+
+    color: #212529;
+
+    font-size: 12px;
+
+}
+
+.hotel_room_amenity_list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+}
+
+.hotel_room_amenity_item {
+
+    position: relative;
+
+    padding-left: 14px;
+
+    font-size: 10px;
+
+    color: #6c757d;
+
+    line-height: 1.4;
+
+}
+
+.hotel_room_amenity_item::before {
+
+    content: "•";
+
+    position: absolute;
+
+    left: 0;
+
+    color: #0d6efd;
+
+    font-weight: bold;
+
+}
+
+
+.hotel_room_amenity_icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 6px;
+    transition: all .25s ease;
+    cursor: default;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .05);
+}
+
+.hotel_room_amenity_icon:hover {
+    transform: translateY(-3px);
+    background: #f8f9fa;
+    border-color: #0d6efd;
+    box-shadow: 0 5px 15px rgba(13, 110, 253, .18);
+}
+
+
+/* ==========================================================
+   FOOTER
+   ========================================================== */
+
+.hotel_room_footer {
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid #ececec;
+}
+
+.hotel_room_footer .badge {
+    border-radius: 30px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.hotel_room_footer .text-muted {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+
+
+/* ==========================================================
+   COUNTERS
+   ========================================================== */
+
+.hotel_room_counter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #6c757d;
+    font-size: 13px;
+}
+
+.hotel_room_counter i {
+    color: #0d6efd;
+    width: 16px;
+}
+
+.hotel_room_counter strong {
+    color: #212529;
+    font-weight: 600;
+}
+
+
+/* ==========================================================
+   STATISTICS ROW
+   ========================================================== */
+
+.hotel_room_stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.hotel_room_stat_box {
+    flex: 1;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 10px;
+    transition: all .25s ease;
+}
+
+.hotel_room_stat_box:hover {
+    background: #eef5ff;
+}
+
+.hotel_room_stat_box i {
+    color: #0d6efd;
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.hotel_room_stat_value {
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    color: #212529;
+}
+
+.hotel_room_stat_label {
+    display: block;
+    font-size: 11px;
+    color: #6c757d;
+}
+
+
+/* ==========================================================
+   EMPTY IMAGE
+   ========================================================== */
+
+.hotel_room_cover_placeholder {
+    transition: .3s;
+}
+
+.hotel_room_kanban_card:hover
+.hotel_room_cover_placeholder {
+    background: #f1f3f5;
+}
+
+
+/* ==========================================================
+   IMAGE SHADOW
+   ========================================================== */
+
+.hotel_room_cover::after {
+
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+
+    right: 0;
+
+    bottom: 0;
+
+    height: 60px;
+
+    background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, .35),
+            rgba(0, 0, 0, 0)
+    );
+
+    pointer-events: none;
+
+}
+
+
+/* ==========================================================
+   IMAGE OVERLAY CONTENT
+   ========================================================== */
+
+.hotel_room_cover_content {
+
+    position: absolute;
+
+    bottom: 16px;
+
+    left: 16px;
+
+    z-index: 15;
+
+    color: #fff;
+
+}
+
+.hotel_room_cover_content h4 {
+
+    margin: 0;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    color: #fff;
+
+}
+
+.hotel_room_cover_content small {
+
+    opacity: .9;
+
+}
+
+
+/* ==========================================================
+   HOVER EFFECTS
+   ========================================================== */
+
+.hotel_room_kanban_card:hover
+.hotel_room_title h4 {
+
+    color: #0d6efd;
+
+}
+
+.hotel_room_kanban_card:hover
+.hotel_room_category .badge {
+
+    background: #0d6efd;
+
+    color: #fff;
+
+}
+
+.hotel_room_kanban_card:hover
+.hotel_room_bed i {
+
+    transform: scale(1.1);
+
+}
+
+.hotel_room_bed i,
+.hotel_room_category .badge,
+.hotel_room_title h4 {
+
+    transition: all .25s ease;
+
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 768px) {
+
+    .hotel_room_cover {
+        height: 170px;
+    }
+
+    .hotel_room_title h4 {
+        font-size: 17px;
+    }
+
+    .hotel_room_stats {
+        flex-direction: column;
+    }
+
+    .hotel_room_stat_box {
+        width: 100%;
+    }
+
+}
+
+
+/* ==========================================================
+   ODOO KANBAN
+   ========================================================== */
+
+.o_kanban_renderer {
+
+    .hotel_room_kanban_card {
+
+        margin: 6px;
+
+    }
+
+}
+
+.o_kanban_record {
+
+    border: none !important;
+
+    background: transparent !important;
+
+}
+
+
+/* ==========================================================
+   SMOOTH ANIMATIONS
+   ========================================================== */
+
+.hotel_room_kanban_card,
+.hotel_room_cover img,
+.hotel_room_amenity_icon,
+.hotel_room_stat_box,
+.hotel_room_status_badge {
+
+    transition: all .25s ease;
+
+}
+
+
+/* ==========================================================
+   DARK MODE READY
+   ========================================================== */
+
+.o_web_client.o_dark {
+
+    .hotel_room_kanban_card {
+        background: #2b2b2b;
+        border-color: #3b3b3b;
+    }
+
+    .hotel_room_title h4 {
+        color: #fff;
+    }
+
+    .hotel_room_location,
+    .hotel_room_bed,
+    .hotel_room_stat_label,
+    .hotel_room_footer .text-muted {
+        color: #cfcfcf;
+    }
+
+    .hotel_room_stat_box {
+        background: #343434;
+    }
+
+    .hotel_room_amenity_icon {
+        background: #343434;
+        border-color: #4a4a4a;
+    }
+
+}
+
+
+/* ==========================================================
+   PREMIUM FINISH
+   ========================================================== */
+
+.hotel_room_kanban_card {
+    animation: hotelRoomFade .25s ease;
+}
+
+@keyframes hotelRoomFade {
+
+    from {
+
+        opacity: 0;
+
+        transform: translateY(8px);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform: translateY(0);
+
+    }
+
+}
