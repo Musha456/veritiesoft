@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_hotel_guest_folio_list" model="ir.ui.view">
+        <field name="name">hotel.guest.folio.list</field>
+        <field name="model">hotel.guest.folio</field>
+        <field name="arch" type="xml">
+
+            <list string="Guest Folios">
+
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="reservation_id"/>
+                <field name="room_booking_id"/>
+                <field name="check_in"/>
+                <field name="check_out"/>
+                <field name="total_amount"
+                       sum="Total"/>
+                <field name="paid_amount"
+                       sum="Paid"/>
+                <field name="balance_amount"
+                       sum="Balance"/>
+                <field name="state"/>
+
+            </list>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_guest_folio_form" model="ir.ui.view">
+        <field name="name">hotel.guest.folio.form</field>
+        <field name="model">hotel.guest.folio</field>
+        <field name="arch" type="xml">
+
+            <form string="Guest Folio">
+
+                <header>
+
+                    <button name="action_open"
+                            string="Open"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+
+                    <button name="action_close"
+                            string="Close"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state not in ('open', 'partially_paid', 'paid')"/>
+
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state in ('closed', 'cancelled')"/>
+
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="draft,open,partially_paid,paid,closed"/>
+
+                </header>
+
+                <sheet>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+
+                    <group>
+
+                        <group string="Guest">
+
+                            <field name="partner_id"/>
+
+                            <field name="reservation_id"/>
+
+                            <field name="room_booking_id"/>
+
+                        </group>
+
+                        <group string="Stay">
+
+                            <field name="hotel_id"/>
+
+                            <field name="check_in"/>
+
+                            <field name="check_out"/>
+
+                            <field name="company_id"/>
+
+                            <field name="currency_id"/>
+
+                        </group>
+
+                    </group>
+
+                    <notebook>
+
+                        <page string="Charges">
+
+                            <field name="line_ids">
+
+                                <list editable="bottom">
+
+                                    <field name="date"/>
+                                    <field name="description"/>
+                                    <field name="charge_type"/>
+                                    <field name="product_id"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price"/>
+                                    <field name="discount"/>
+                                    <field name="amount_untaxed"
+                                           sum="Untaxed"/>
+                                    <field name="tax_amount"
+                                           sum="Tax"/>
+                                    <field name="total_amount"
+                                           sum="Total"/>
+
+                                </list>
+
+                            </field>
+
+                        </page>
+
+                        <page string="Notes">
+
+                            <field name="notes"
+                                   placeholder="Add notes..."/>
+
+                        </page>
+
+                    </notebook>
+
+                    <group class="oe_subtotal_footer oe_right">
+
+                        <field name="amount_untaxed"/>
+
+                        <field name="discount_amount"/>
+
+                        <field name="tax_amount"/>
+
+                        <field name="total_amount"/>
+
+                        <field name="paid_amount"/>
+
+                        <field name="balance_amount"
+                               class="oe_subtotal"/>
+
+                    </group>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_guest_folio_search" model="ir.ui.view">
+        <field name="name">hotel.guest.folio.search</field>
+        <field name="model">hotel.guest.folio</field>
+        <field name="arch" type="xml">
+
+            <search string="Guest Folios">
+
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="reservation_id"/>
+                <field name="room_booking_id"/>
+
+                <separator/>
+
+                <filter name="open"
+                        string="Open"
+                        domain="[('state', '=', 'open')]"/>
+
+                <filter name="unpaid"
+                        string="Outstanding"
+                        domain="[('balance_amount', '>', 0)]"/>
+
+                <filter name="paid"
+                        string="Paid"
+                        domain="[('state', '=', 'paid')]"/>
+
+                <filter name="closed"
+                        string="Closed"
+                        domain="[('state', '=', 'closed')]"/>
+
+                <group expand="0" string="Group By">
+
+                    <filter name="group_guest"
+                            string="Guest"
+                            context="{'group_by': 'partner_id'}"/>
+
+                    <filter name="group_status"
+                            string="Status"
+                            context="{'group_by': 'state'}"/>
+
+                </group>
+
+            </search>
+
+        </field>
+    </record>
+
+    <record id="action_hotel_guest_folio" model="ir.actions.act_window">
+
+        <field name="name">Guest Folios</field>
+
+        <field name="res_model">hotel.guest.folio</field>
+
+        <field name="view_mode">list,form</field>
+
+        <field name="view_id"
+               ref="view_hotel_guest_folio_list"/>
+
+        <field name="search_view_id"
+               ref="view_hotel_guest_folio_search"/>
+
+    </record>
+</odoo>

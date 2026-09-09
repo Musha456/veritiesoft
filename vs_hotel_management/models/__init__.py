@@ -10,5 +10,12 @@ from . import hotel_hotel
 from . import hotel_rate_plan
 from . import hotel_discount
 from . import hotel_reservation_line
-from . import hotel_room_booking
 from . import hotel_reservation
+from . import hotel_room_booking
+from . import hotel_reservation_service_line
+from . import hotel_housekeeping
+from . import hotel_maintenance
+from . import res_user_inherit
+from . import res_partner_inherit
+from . import hotel_guest_folio
+from . import hotel_guest_folio_line

@@ -45,10 +45,25 @@ vs_hotel_management.access_hotel_discount_manager,hotel.discount.manager,model_h
 vs_hotel_management.access_hotel_reservation_line_user,hotel.reservation.line.user,model_hotel_reservation_line,group_hotel_room_user,1,0,0,0
 vs_hotel_management.access_hotel_reservation_line_manager,hotel.reservation.line.manager,model_hotel_reservation_line,group_hotel_room_manager,1,1,1,1
 
-vs_hotel_management.access_hotel_room_booking_user,hotel.room.booking.user,model_hotel_room_booking,group_hotel_room_user,1,0,0,0
-vs_hotel_management.access_hotel_room_booking_manager,hotel.room.booking.manager,model_hotel_room_booking,group_hotel_room_manager,1,1,1,1
-
 vs_hotel_management.access_hotel_reservation_user,hotel.reservation.user,model_hotel_reservation,group_hotel_room_user,1,0,0,0
 vs_hotel_management.access_hotel_reservation_manager,hotel.reservation.manager,model_hotel_reservation,group_hotel_room_manager,1,1,1,1
 
+vs_hotel_management.access_hotel_room_booking_user,hotel.room.booking.user,model_hotel_room_booking,group_hotel_room_user,1,0,0,0
+vs_hotel_management.access_hotel_room_booking_manager,hotel.room.booking.manager,model_hotel_room_booking,group_hotel_room_manager,1,1,1,1
 
+vs_hotel_management.access_hotel_reservation_service_line_user,hotel.reservation.service.line.user,model_hotel_reservation_service_line,group_hotel_room_user,1,0,0,0
+vs_hotel_management.access_hotel_reservation_service_line_manager,hotel.reservation.service.line.manager,model_hotel_reservation_service_line,group_hotel_room_manager,1,1,1,1
+
+vs_hotel_management.access_hotel_housekeeping_user,hotel.housekeeping.user,model_hotel_housekeeping,group_hotel_room_user,1,0,0,0
+vs_hotel_management.access_hotel_housekeeping_manager,hotel.housekeeping.line.manager,model_hotel_housekeeping,group_hotel_room_manager,1,1,1,1
+
+vs_hotel_management.access_hotel_maintenance_user,hotel.maintenance.user,model_hotel_maintenance,group_hotel_room_user,1,0,0,0
+vs_hotel_management.access_hotel_maintenance_manager,hotel.maintenance.line.manager,model_hotel_maintenance,group_hotel_room_manager,1,1,1,1
+
+vs_hotel_management.access_hotel_task_assignment_wizard,hotel.task.assignment.wizard,model_hotel_task_assignment_wizard,,1,1,1,1
+
+vs_hotel_management.access_hotel_guest_folio_line_user,hotel.guest.folio.line.user,model_hotel_guest_folio_line,group_hotel_room_user,1,0,0,0
+vs_hotel_management.access_hotel_guest_folio_line_manager,hotel.guest.folio.line.manager,model_hotel_guest_folio_line,group_hotel_room_manager,1,1,1,1
+
+vs_hotel_management.access_hotel_guest_folio_user,hotel.guest.folio.user,model_hotel_guest_folio,group_hotel_room_user,1,0,0,0
+vs_hotel_management.access_hotel_guest_folio_manager,hotel.guest.folio.manager,model_hotel_guest_folio,group_hotel_room_manager,1,1,1,1

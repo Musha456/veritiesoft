@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_partner_form_hotel_guest" model="ir.ui.view">
+        <field name="name">res.partner.form.hotel.guest</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//div[@name='button_box']" position="inside">
+
+                <button name="action_view_hotel_reservations"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-calendar-check-o">
+
+                    <field name="reservation_count"
+                           widget="statinfo"
+                           string="Reservations"/>
+
+                </button>
+
+                <button name="action_view_hotel_room_bookings"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-bed">
+
+                    <field name="room_booking_count"
+                           widget="statinfo"
+                           string="Room Bookings"/>
+
+                </button>
+
+                <button name="action_view_hotel_folios"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-money">
+
+                    <field name="folio_count"
+                           widget="statinfo"
+                           string="Folios"/>
+
+                </button>
+
+            </xpath>
+
+            <xpath expr="//sheet/div[@name='button_box']" position="after">
+
+                <div class="oe_title">
+
+                    <label for="is_hotel_guest"/>
+
+                    <div>
+                        <field name="is_hotel_guest" widget="boolean_toggle"/>
+                    </div>
+
+                </div>
+
+            </xpath>
+
+            <xpath expr="//sheet/notebook" position="inside">
+
+                <page string="Hotel Guest"
+                      name="hotel_guest"
+                      invisible="not is_hotel_guest">
+
+                    <group>
+
+                        <group string="Guest Information">
+
+                            <field name="guest_code"
+                                   readonly="1"/>
+
+                            <field name="nationality"/>
+
+                            <field name="date_of_birth"/>
+
+                            <field name="gender"/>
+
+                        </group>
+
+                        <group string="Identification">
+
+                            <field name="id_type"/>
+
+                            <field name="id_number"/>
+
+                        </group>
+
+                    </group>
+
+                    <group string="Notes">
+
+                        <field name="hotel_guest_notes"
+                               nolabel="1"
+                               placeholder="Add guest-specific notes..."/>
+
+                    </group>
+
+                </page>
+
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <record id="view_hotel_guest_list" model="ir.ui.view">
+        <field name="name">res.partner.hotel.guest.list</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+
+            <list string="Hotel Guests">
+
+                <field name="guest_code"/>
+                <field name="name"/>
+                <field name="phone"/>
+                <field name="email"/>
+                <field name="nationality"/>
+                <field name="id_type"/>
+                <field name="id_number"/>
+                <field name="reservation_count"/>
+                <field name="room_booking_count"/>
+                <field name="active"/>
+
+            </list>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_guest_search" model="ir.ui.view">
+        <field name="name">res.partner.hotel.guest.search</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+
+            <search string="Guests">
+
+                <field name="guest_code"/>
+                <field name="name"/>
+                <field name="phone"/>
+                <field name="email"/>
+                <field name="id_number"/>
+
+                <separator/>
+
+                <filter name="active_guests"
+                        string="Active Guests"
+                        domain="[('active', '=', True)]"/>
+
+                <filter name="inactive_guests"
+                        string="Archived Guests"
+                        domain="[('active', '=', False)]"/>
+
+                <group expand="0" string="Group By">
+
+                    <filter name="group_nationality"
+                            string="Nationality"
+                            context="{'group_by': 'nationality'}"/>
+
+                    <filter name="group_gender"
+                            string="Gender"
+                            context="{'group_by': 'gender'}"/>
+
+                </group>
+
+            </search>
+
+        </field>
+    </record>
+
+    <record id="action_hotel_guest" model="ir.actions.act_window">
+        <field name="name">Guests</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_hotel_guest_list"/>
+        <field name="search_view_id" ref="view_hotel_guest_search"/>
+        <field name="domain">[('is_hotel_guest', '=', True)]</field>
+        <field name="context">{'default_is_hotel_guest': True}</field>
+    </record>
+
+</odoo>

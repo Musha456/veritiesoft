@@ -1,6 +1,8 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError, UserError
 
+from server.odoo.tools.view_validation import relaxng
+
 
 class HotelReservationLine(models.Model):
     _name = "hotel.reservation.line"
@@ -19,8 +21,9 @@ class HotelReservationLine(models.Model):
 
     company_id = fields.Many2one(
         "res.company",
-        default=lambda self: self.env.company,
-        required=True,
+        related="reservation_id.company_id",
+        store=True,
+        readonly=True,
         index=True,
     )
 
@@ -32,6 +35,7 @@ class HotelReservationLine(models.Model):
     )
 
     hotel_id = fields.Many2one(
+        "hotel.hotel",
         related="reservation_id.hotel_id",
         store=True,
         readonly=True,
@@ -39,13 +43,11 @@ class HotelReservationLine(models.Model):
 
     building_id = fields.Many2one(
         "hotel.building",
-        required=True,
         domain="[('hotel_id','=',hotel_id)]",
     )
 
     floor_id = fields.Many2one(
         "hotel.building.floor",
-        required=True,
         domain="[('building_id','=',building_id)]",
     )
 
@@ -56,16 +58,22 @@ class HotelReservationLine(models.Model):
 
     room_id = fields.Many2one(
         "hotel.room",
+        string="Room",
         required=True,
-        domain="""
-        [
-            ('building_id','=',building_id),
-            ('floor_id','=',floor_id),
-            ('room_category_id','=',room_category_id),
-            ('status','=','available')
-        ]
-        """,
     )
+
+    # room_id = fields.Many2one(
+    #     "hotel.room",
+    #     required=True,
+    #     domain="""
+    #        [
+    #            ('building_id','=',building_id),
+    #            ('floor_id','=',floor_id),
+    #            ('room_category_id','=',room_category_id),
+    #            ('status','=','available')
+    #        ]
+    #        """,
+    # )
 
     adults = fields.Integer(
         default=1,
@@ -84,17 +92,17 @@ class HotelReservationLine(models.Model):
         store=True,
     )
 
-    # check_in = fields.Datetime(
-    #     related="reservation_id.check_in",
-    #     store=True,
-    #     readonly=False,
-    # )
-    #
-    # check_out = fields.Datetime(
-    #     related="reservation_id.check_out",
-    #     store=True,
-    #     readonly=False,
-    # )
+    check_in = fields.Datetime(
+        related="reservation_id.check_in",
+        store=True,
+        readonly=False,
+    )
+
+    check_out = fields.Datetime(
+        related="reservation_id.check_out",
+        store=True,
+        readonly=False,
+    )
 
     night_count = fields.Integer(
         compute="_compute_nights",
@@ -132,6 +140,17 @@ class HotelReservationLine(models.Model):
         store=True,
     )
 
+    rate_plan_id = fields.Many2one(
+        "hotel.rate.plan",
+        required=True,
+    )
+
+    room_price = fields.Monetary(
+        related="rate_plan_id.base_price",
+        string="Room Price",
+        store=True,
+    )
+
     meal_plan = fields.Selection(
         related="rate_plan_id.meal_plan",
         store=True,
@@ -142,53 +161,91 @@ class HotelReservationLine(models.Model):
         store=True,
     )
 
-    rate_plan_id = fields.Many2one(
-        "hotel.rate.plan",
-        required=True,
-    )
 
     discount_id = fields.Many2one(
         "hotel.discount",
     )
 
-    base_price = fields.Monetary(
+    service_amount = fields.Monetary(
+        string="Service Amount",
+        compute="_compute_amounts",
         currency_field="currency_id",
+        store=True,
     )
 
     discount_amount = fields.Monetary(
+        string="Room Discount",
         compute="_compute_amounts",
-        store=True,
         currency_field="currency_id",
+        store=True,
+    )
+
+    service_line_discounts = fields.Monetary(
+        string="Service Discount",
+        compute="_compute_amounts",
+        currency_field="currency_id",
+        store=True,
+    )
+
+    total_discount_amount = fields.Monetary(
+        string="Total Discount Amount",
+        compute="_compute_amounts",
+        currency_field="currency_id",
+        store=True,
     )
 
     tax_amount = fields.Monetary(
+        string="Room Tax Amount",
         compute="_compute_amounts",
-        store=True,
         currency_field="currency_id",
+        store=True,
+    )
+
+    tax_ids = fields.Many2many(
+        "account.tax",
+        string="Taxes",
+    )
+
+    total_tax_amount = fields.Monetary(
+        string="Tax",
+        compute="_compute_amounts",
+        currency_field="currency_id",
+        store=True,
     )
 
     subtotal = fields.Monetary(
+        string="Subtotal",
         compute="_compute_amounts",
-        store=True,
         currency_field="currency_id",
+        store=True,
+    )
+
+    room_amount = fields.Monetary(
+        string="Room Amount",
+        compute="_compute_amounts",
+        currency_field="currency_id",
+        store=True,
     )
 
     total = fields.Monetary(
+        string="Total",
         compute="_compute_amounts",
-        store=True,
         currency_field="currency_id",
+        store=True,
     )
 
-    service_ids = fields.One2many(
-        "hotel.service",
+    service_line_ids = fields.One2many(
+        "hotel.reservation.service.line",
         "reservation_line_id",
         string="Services",
     )
 
-    service_amount = fields.Monetary(
-        compute="_compute_amounts",
-        store=True,
-        currency_field="currency_id",
+    room_booking_id = fields.Many2one(
+        "hotel.room.booking",
+        string="Room Booking",
+        readonly=True,
+        copy=False,
+        ondelete="set null",
     )
 
     housekeeping_status = fields.Selection(
@@ -217,9 +274,20 @@ class HotelReservationLine(models.Model):
         compute="_compute_statistics",
     )
 
+    service_tax_amount = fields.Monetary(
+        string="Service Tax Amount",
+        compute="_compute_amounts",
+        currency_field="currency_id",
+        store=True,
+    )
+
+    room_domain = fields.Binary(
+        compute="_compute_room_domain",
+    )
+
     special_request = fields.Text()
 
-    internal_note = fields.Text()
+    note = fields.Text()
 
     @api.depends("adults", "children", "infants")
     def _compute_guest_count(self):
@@ -247,21 +315,30 @@ class HotelReservationLine(models.Model):
         "rate_plan_id",
         "discount_id",
         "night_count",
-        "service_ids.total",
+        "tax_ids",
+
+        "service_line_ids",
+        "service_line_ids.quantity",
+        "service_line_ids.price_unit",
+        "service_line_ids.discount_id",
+        "service_line_ids.discount_amount",
+        "service_line_ids.tax_ids",
+        "service_line_ids.tax_amount",
+        "service_line_ids.subtotal",
+        "service_line_ids.total",
     )
     def _compute_amounts(self):
-
         for line in self:
             line._apply_rate_plan()
             line._apply_discount()
-            line._apply_taxes()
             line._apply_services()
+            line._apply_taxes()
             line._compute_total()
 
-    @api.depends("service_ids")
+    @api.depends("service_line_ids")
     def _compute_statistics(self):
         for record in self:
-            record.service_count = len(record.service_ids)
+            record.service_count = len(record.service_line_ids)
 
     @api.onchange("hotel_id")
     def _onchange_hotel(self):
@@ -282,6 +359,93 @@ class HotelReservationLine(models.Model):
 
         self.room_id = False
 
+    @api.depends(
+        "hotel_id",
+        "building_id",
+        "floor_id",
+        "room_category_id",
+        "check_in",
+        "check_out",
+        "reservation_id.line_ids.room_id",
+    )
+    def _compute_room_domain(self):
+        for line in self:
+            domain = [
+                ("active", "=", True),
+                ("status", "=", "available"),
+            ]
+
+            # Hotel
+            if line.hotel_id:
+                domain.append(
+                    ("hotel_id", "=", line.hotel_id.id)
+                )
+
+            # Building
+            if line.building_id:
+                domain.append(
+                    ("building_id", "=", line.building_id.id)
+                )
+
+            # Floor
+            if line.floor_id:
+                domain.append(
+                    ("floor_id", "=", line.floor_id.id)
+                )
+
+            # Room Category
+            if line.room_category_id:
+                domain.append(
+                    (
+                        "room_category_id",
+                        "=",
+                        line.room_category_id.id,
+                    )
+                )
+
+            # Rooms already selected in this reservation
+            if line.reservation_id:
+                selected_room_ids = (
+                    line.reservation_id.line_ids
+                    .filtered(
+                        lambda l: l.id != line.id and l.room_id
+                    )
+                    .mapped("room_id")
+                    .ids
+                )
+
+                if selected_room_ids:
+                    domain.append(
+                        ("id", "not in", selected_room_ids)
+                    )
+
+            # Rooms already booked for the selected period
+            if (
+                    line.check_in
+                    and line.check_out
+                    and line.check_out > line.check_in
+            ):
+                booked_room_ids = self.env[
+                    "hotel.room.booking"
+                ].search(
+                    [
+                        ("check_in", "<", line.check_out),
+                        ("check_out", ">", line.check_in),
+                        (
+                            "state",
+                            "not in",
+                            ("cancelled", "released"),
+                        ),
+                    ]
+                ).mapped("room_id").ids
+
+                if booked_room_ids:
+                    domain.append(
+                        ("id", "not in", booked_room_ids)
+                    )
+
+            line.room_domain = domain
+
     @api.onchange("room_category_id")
     def _onchange_room_category(self):
 
@@ -299,11 +463,14 @@ class HotelReservationLine(models.Model):
                 limit=1,
             )
 
-    @api.onchange("rate_plan_id")
-    def _onchange_rate_plan(self):
-
-        if self.rate_plan_id:
-            self.base_price = self.rate_plan_id.price
+        for line in self:
+            if (
+                    line.room_id
+                    and line.room_category_id
+                    and line.room_id.room_category_id
+                    != line.room_category_id
+            ):
+                line.room_id = False
 
     @api.constrains(
         "adults",
@@ -347,48 +514,52 @@ class HotelReservationLine(models.Model):
         "room_id",
         "check_in",
         "check_out",
-        "state",
     )
     def _check_room_availability(self):
+        for line in self:
 
-        for record in self:
-
-            if not record.room_id:
+            if not line.room_id:
                 continue
 
-            overlap = self.search(
-                [
-                    ("id", "!=", record.id),
-                    ("room_id", "=", record.room_id.id),
-                    ("state", "not in", ["cancelled"]),
-                    ("check_in", "<", record.check_out),
-                    ("check_out", ">", record.check_in),
-                ],
-                limit=1,
-            )
+            if not line.check_in or not line.check_out:
+                continue
 
-            if overlap:
+            if line.check_out <= line.check_in:
+                continue
+
+            booking = line.room_booking_id
+
+            if not line.room_id._is_available_for_period(
+                    line.check_in,
+                    line.check_out,
+                    exclude_booking=booking,
+            ):
                 raise ValidationError(
                     _(
-                        "This room is already reserved during the selected period."
+                        "Room %s is not available from %s to %s."
+                    )
+                    % (
+                        line.room_id.display_name,
+                        line.check_in,
+                        line.check_out,
                     )
                 )
 
-    @api.constrains(
-        "hotel_id",
-        "company_id",
-    )
-    def _check_company(self):
-
-        for record in self:
-
-            if (
-                    record.hotel_id
-                    and record.hotel_id.company_id != record.company_id
-            ):
-                raise ValidationError(
-                    _("Company mismatch.")
-                )
+    # @api.constrains(
+    #     "hotel_id",
+    #     "company_id",
+    # )
+    # def _check_company(self):
+    #
+    #     for record in self:
+    #
+    #         if (
+    #                 record.hotel_id
+    #                 and record.hotel_id.company_id != record.company_id
+    #         ):
+    #             raise ValidationError(
+    #                 _("Company mismatch.")
+    #             )
 
     def _get_base_price(self):
         """Return the base room price."""
@@ -398,84 +569,92 @@ class HotelReservationLine(models.Model):
         if not self.rate_plan_id:
             return 0.0
 
-        return self.rate_plan_id.price
+        return self.rate_plan_id.base_price
 
     def _apply_rate_plan(self):
         """Apply selected rate plan."""
 
         self.ensure_one()
 
-        self.base_price = self._get_base_price()
+        self.room_amount = self._get_base_price() * self.night_count
 
     def _apply_discount(self):
         """Calculate applicable discount."""
-
         self.ensure_one()
 
         self.discount_amount = 0.0
+        self.service_line_discounts = 0.0
+        self.total_discount_amount = 0.0
 
         if not self.discount_id:
             return
 
-        room_total = self.base_price * self.night_count
+        room_total = self.room_amount
+        discount_amount = 0.0
 
         if self.discount_id.discount_type == "fixed":
-            self.discount_amount = min(
+            discount_amount = min(
                 self.discount_id.discount,
                 room_total,
             )
 
         elif self.discount_id.discount_type == "percentage":
-            self.discount_amount = (
-                    room_total
-                    * self.discount_id.discount
-                    / 100
+            discount_amount = (
+                    room_total * self.discount_id.discount / 100
             )
 
-    def _apply_taxes(self):
-        """Calculate taxes."""
-
-        self.ensure_one()
-
-        self.tax_amount = 0.0
-
-        taxable_amount = (
-                self.base_price * self.night_count
-                - self.discount_amount
+        service_line_discounts = sum(
+            self.service_line_ids.mapped("discount_amount")
         )
 
-        # Future:
-        # tax_ids.compute_all(...)
+        self.discount_amount = discount_amount
+        self.service_line_discounts = service_line_discounts
+        self.total_discount_amount = (
+                discount_amount + service_line_discounts
+        )
+
+
+    def _apply_taxes(self):
+        for line in self:
+
+            taxable_amount = (line.room_amount - line.total_discount_amount)
+
+            # Calculate taxes applicable to the room/rate.
+            # Do NOT include service_line taxes here.
+
+            line.tax_amount = 0.0
+
+            # for line in self:
+            #     service_lines = line.service_line_ids
+            #
+            #     service_line_discounts = sum(service_lines.mapped("discount_amount"))
+
+            if line.tax_ids:
+                taxes = line.tax_ids.compute_all(
+                    taxable_amount,
+                    currency=line.currency_id,
+                    quantity=1.0,
+                    product=False,
+                    partner=line.reservation_id.partner_id,
+                )
+
+                line.tax_amount = (
+                        taxes["total_included"]
+                        - taxes["total_excluded"]
+                )
 
     def _apply_services(self):
-        """Calculate reservation services."""
-
-        self.ensure_one()
-
-        self.service_amount = sum(
-            self.service_ids.mapped("total")
-        )
+        for line in self:
+            service_lines = line.service_line_ids
+            line.service_amount = sum(service_lines.mapped("subtotal"))
+            line.service_tax_amount = sum(service_lines.mapped("tax_amount"))
 
     def _compute_total(self):
-        """Calculate reservation totals."""
-
-        self.ensure_one()
-
-        room_total = (
-                self.base_price
-                * self.night_count
-        )
-
-        self.subtotal = (
-                room_total
-                - self.discount_amount
-        )
-
-        self.total = (
-                self.subtotal
-                + self.tax_amount
-                + self.service_amount
-        )
+        for line in self:
+            line.subtotal = (line.room_amount - line.total_discount_amount + line.service_amount)
+            total_tax_amount = line.tax_amount + line.service_tax_amount
+            self.total_tax_amount = total_tax_amount
+            line.total = (line.subtotal + total_tax_amount)
 
     def _validate_booking_period(self):
         """Validate reservation dates."""
@@ -680,17 +859,15 @@ class HotelReservationLine(models.Model):
         "state",
     )
     def _check_room_availability(self):
-
         for record in self:
-
             if not record.room_id:
                 continue
 
             if not record._is_room_available():
                 raise ValidationError(
                     _(
-                        "The selected room is already booked for the selected period."
-                    )
+                        "Room '%s' is not available for the selected period."
+                    ) % record.room_id.display_name
                 )
 
     @api.model
@@ -848,55 +1025,6 @@ class HotelReservationLine(models.Model):
 
         return records
 
-    def write(self, vals):
-
-        tracked_fields = {
-            "room_id",
-            "check_in",
-            "check_out",
-            "rate_plan_id",
-            "discount_id",
-            "adults",
-            "children",
-            "infants",
-        }
-
-        should_validate = bool(
-            tracked_fields.intersection(vals)
-        )
-
-        old_rooms = {
-            line.id: line.room_id
-            for line in self
-        }
-
-        result = super().write(vals)
-
-        if should_validate:
-
-            for line in self:
-
-                if line.reservation_id.state != "draft":
-                    line._validate_reservation_line()
-
-        return result
-
-    def unlink(self):
-
-        for line in self:
-
-            if line.reservation_id.state not in (
-                    "draft",
-                    "cancelled",
-            ):
-                raise UserError(
-                    _(
-                        "Reservation lines can only be deleted "
-                        "while the reservation is in Draft or Cancelled state."
-                    )
-                )
-
-        return super().unlink()
 
     def _change_room(self, new_room):
         """Change the room safely."""
@@ -933,76 +1061,15 @@ class HotelReservationLine(models.Model):
         self.floor_id = self.room_id.floor_id
         self.room_category_id = self.room_id.room_category_id
 
-    @api.onchange("room_category_id")
-    def _onchange_room_category_id(self):
-
-        if not self.room_category_id:
-            self.room_id = False
-            self.rate_plan_id = False
-            return
-
-        if self.room_id:
-            if self.room_id.room_category_id != self.room_category_id:
-                self.room_id = False
-
-        self.rate_plan_id = False
-
-        if not self.hotel_id:
-            return
-
-        rate_plan = self.env["hotel.rate.plan"].search(
-            [
-                ("hotel_id", "=", self.hotel_id.id),
-                ("room_category_ids", "in", self.room_category_id.id),
-                ("state", "=", "active"),
-                ("active", "=", True),
-            ],
-            order="sequence, id",
-            limit=1,
-        )
-
-        if rate_plan:
-            self.rate_plan_id = rate_plan
-
     @api.onchange("rate_plan_id")
     def _onchange_rate_plan_id(self):
-
-        if not self.rate_plan_id:
-            self.base_price = 0.0
-            return
-
-        if self.hotel_id and self.rate_plan_id.hotel_id != self.hotel_id:
-            self.rate_plan_id = False
-            self.base_price = 0.0
-
-            return {
-                "warning": {
-                    "title": _("Invalid Rate Plan"),
-                    "message": _(
-                        "The selected rate plan does not belong to this hotel."
-                    ),
-                }
-            }
-
-        if (
-                self.room_category_id
-                and self.room_category_id
-                not in self.rate_plan_id.room_category_ids
-        ):
-            self.rate_plan_id = False
-            self.base_price = 0.0
-
-            return {
-                "warning": {
-                    "title": _("Invalid Rate Plan"),
-                    "message": _(
-                        "This rate plan is not available for the selected "
-                        "room category."
-                    ),
-                }
-            }
-
-        self.base_price = self._get_base_price()
+        for line in self:
+            if line.rate_plan_id:
+                line._apply_rate_plan()
+                line._apply_discount()
+                line._apply_taxes()
+                line._apply_services()
+                line._compute_total()
 
     @api.onchange("check_in", "check_out")
     def _onchange_booking_dates(self):
@@ -1047,7 +1114,7 @@ class HotelReservationLine(models.Model):
                 + self.infants
         )
 
-        capacity = self.room_category_id.maximum_occupancy
+        capacity = self.room_category_id.max_occupancy
 
         if capacity and total_guests > capacity:
             return {
@@ -1059,3 +1126,531 @@ class HotelReservationLine(models.Model):
                 }
             }
 
+    @api.onchange(
+        "hotel_id",
+        "room_category_id",
+        "check_in",
+        "check_out",
+    )
+    def _onchange_room_availability(self):
+        for line in self:
+
+            line.room_id = False
+
+            domain = [
+                ("active", "=", True),
+            ]
+
+            if line.hotel_id:
+                domain.append(
+                    ("hotel_id", "=", line.hotel_id.id)
+                )
+
+            if line.room_category_id:
+                domain.append(
+                    (
+                        "room_category_id",
+                        "=",
+                        line.room_category_id.id,
+                    )
+                )
+
+            if (
+                    not line.check_in
+                    or not line.check_out
+                    or line.check_out <= line.check_in
+            ):
+                return {
+                    "domain": {
+                        "room_id": domain,
+                    }
+                }
+
+            rooms = self.env["hotel.room"].search(domain)
+
+            available_rooms = rooms.filtered(
+                lambda room: room._is_available_for_period(
+                    line.check_in,
+                    line.check_out,
+                    exclude_booking=line.room_booking_id,
+                )
+            )
+
+            return {
+                "domain": {
+                    "room_id": [
+                        ("id", "in", available_rooms.ids),
+                    ],
+                }
+            }
+
+    # ---------------------------------------------------------
+    # ROOM BOOKING
+    # ---------------------------------------------------------
+
+    def _create_room_booking(self):
+        RoomBooking = self.env["hotel.room.booking"]
+
+        bookings = self.env["hotel.room.booking"]
+
+        for line in self:
+
+            if line.room_booking_id:
+                bookings |= line.room_booking_id
+                continue
+
+            if not line.room_id:
+                raise ValidationError(
+                    _(
+                        "Please select a room before creating "
+                        "the room booking."
+                    )
+                )
+
+            if not line.check_in or not line.check_out:
+                raise ValidationError(
+                    _(
+                        "Check-in and check-out dates are required "
+                        "before creating the room booking."
+                    )
+                )
+
+            if line.check_out <= line.check_in:
+                raise ValidationError(
+                    _("Check-out must be later than check-in.")
+                )
+
+            line._validate_capacity()
+            line._validate_rate_plan()
+
+            booking = RoomBooking.create({
+                "reservation_id": line.reservation_id.id,
+                "reservation_line_id": line.id,
+                "guest_id": line.reservation_id.partner_id.id,
+                "hotel_id": line.hotel_id.id,
+                "room_id": line.room_id.id,
+                "room_category_id": line.room_category_id.id,
+                "check_in": line.check_in,
+                "check_out": line.check_out,
+                "company_id": line.company_id.id,
+            })
+
+            line.room_booking_id = booking.id
+
+            bookings |= booking
+
+        return bookings
+
+
+    def _release_room_booking(self):
+        """
+        Release a reserved room booking.
+
+        The booking record is preserved for history.
+        """
+
+        self.ensure_one()
+
+        booking = self.room_booking_id
+
+        if not booking:
+            return
+
+        if booking.state == "reserved":
+            booking.action_release()
+
+    # ---------------------------------------------------------
+    # CANCEL ROOM BOOKING
+    # ---------------------------------------------------------
+
+    def _cancel_room_booking(self):
+        """
+        Cancel a reserved room booking.
+
+        The booking record is preserved.
+        """
+
+        self.ensure_one()
+
+        booking = self.room_booking_id
+
+        if not booking:
+            return
+
+        # if booking.state == "reserved":
+        booking.action_cancel()
+
+    # ---------------------------------------------------------
+    # CHECK IN
+    # ---------------------------------------------------------
+
+    def _check_in_room_booking(self):
+        """
+        Check the guest into the physical room.
+        """
+
+        self.ensure_one()
+
+        booking = self.room_booking_id
+
+        if not booking:
+            booking = self._create_room_booking()
+
+        if booking.state != "reserved":
+            raise UserError(
+                _(
+                    "Room '%s' is not in a reserved state."
+                )
+                % self.room_id.display_name
+            )
+
+        booking.action_check_in()
+
+    # ---------------------------------------------------------
+    # CHECK OUT
+    # ---------------------------------------------------------
+
+    def _check_out_room_booking(self):
+        """
+        Check the guest out of the physical room.
+        """
+
+        self.ensure_one()
+
+        booking = self.room_booking_id
+
+        if not booking:
+            raise UserError(
+                _(
+                    "No room booking exists for room '%s'."
+                )
+                % self.room_id.display_name
+            )
+
+        if booking.state != "checked_in":
+            raise UserError(
+                _(
+                    "Room '%s' is not currently checked in."
+                )
+                % self.room_id.display_name
+            )
+
+        booking.action_check_out()
+
+    # ---------------------------------------------------------
+    # ROOM BOOKING VALIDATION
+    # ---------------------------------------------------------
+
+    def _validate_room_booking(self):
+        """
+        Validate that this line has everything required
+        to create a physical room booking.
+        """
+
+        self.ensure_one()
+
+        if not self.room_id:
+            raise ValidationError(
+                _(
+                    "A room is required for reservation line '%s'."
+                )
+                % self.display_name
+            )
+
+        if not self.check_in:
+            raise ValidationError(
+                _(
+                    "Check-in is required for reservation line '%s'."
+                )
+                % self.display_name
+            )
+
+        if not self.check_out:
+            raise ValidationError(
+                _(
+                    "Check-out is required for reservation line '%s'."
+                )
+                % self.display_name
+            )
+
+        if self.check_out <= self.check_in:
+            raise ValidationError(
+                _(
+                    "Check-out must be later than check-in."
+                )
+            )
+
+        self._validate_capacity()
+        self._validate_rate_plan()
+
+    # ---------------------------------------------------------
+    # WRITE
+    # ---------------------------------------------------------
+    def write(self, vals):
+
+        protected_fields = {
+            "hotel_id",
+            "building_id",
+            "floor_id",
+            "room_category_id",
+            "room_id",
+            "rate_plan_id",
+            "check_in",
+            "check_out",
+        }
+
+        locked_states = (
+            "reserved",
+            "checked_in",
+            "checked_out",
+            "completed",
+            "cancelled",
+            "no_show",
+        )
+
+        service_locked_states = (
+            "checked_out",
+            "completed",
+            "cancelled",
+            "no_show",
+        )
+
+        for line in self:
+
+            reservation = line.reservation_id
+
+            if not reservation:
+                continue
+
+            # =====================================================
+            # ROOM / RESERVATION LINE FIELDS
+            # =====================================================
+
+            if (
+                    protected_fields.intersection(vals.keys())
+                    and reservation.state in locked_states
+            ):
+                raise UserError(
+                    _(
+                        "Room information cannot be modified after "
+                        "the reservation becomes operational."
+                    )
+                )
+
+            # =====================================================
+            # SERVICE LINES
+            # =====================================================
+
+            if (
+                    "service_line_ids" in vals
+                    and reservation.state in service_locked_states
+            ):
+                raise UserError(
+                    _(
+                        "Services cannot be modified after "
+                        "the reservation is closed."
+                    )
+                )
+
+        return super().write(vals)
+    # ---------------------------------------------------------
+    # DELETE
+    # ---------------------------------------------------------
+
+    def unlink(self):
+
+        for line in self:
+
+            if line.room_booking_id and line.room_booking_id.state in (
+                    "checked_in",
+                    "checked_out",
+            ):
+                raise UserError(
+                    _(
+                        "A reservation line cannot be deleted after "
+                        "the room has been checked in or checked out."
+                    )
+                )
+
+        return super().unlink()
+
+    def _sync_room_booking(self):
+        for line in self:
+
+            booking = line.room_booking_id
+
+            # No room booking exists yet.
+            if not booking:
+                continue
+
+            # Do not modify completed/cancelled/released bookings.
+            if booking.state in (
+                    "checked_out",
+                    "completed",
+                    "released",
+                    "cancelled",
+            ):
+                raise ValidationError(
+                    _(
+                        "The room booking %s can no longer be modified."
+                    ) % booking.display_name
+                )
+
+            if not line.room_id:
+                raise ValidationError(
+                    _("A room is required for the room booking.")
+                )
+
+            if not line.check_in or not line.check_out:
+                raise ValidationError(
+                    _(
+                        "Check-in and check-out dates are required "
+                        "for the room booking."
+                    )
+                )
+
+            if line.check_out <= line.check_in:
+                raise ValidationError(
+                    _("Check-out must be later than check-in.")
+                )
+
+            # Validate the new room/date combination
+            # before changing the existing booking.
+            overlapping_booking = self.env[
+                "hotel.room.booking"
+            ].search(
+                [
+                    ("id", "!=", booking.id),
+                    ("room_id", "=", line.room_id.id),
+                    (
+                        "state",
+                        "not in",
+                        ("cancelled", "released"),
+                    ),
+                    ("check_in", "<", line.check_out),
+                    ("check_out", ">", line.check_in),
+                ],
+                limit=1,
+            )
+
+            if overlapping_booking:
+                raise ValidationError(
+                    _(
+                        "Room %(room)s is already booked from "
+                        "%(start)s to %(end)s."
+                    )
+                    % {
+                        "room": line.room_id.display_name,
+                        "start": overlapping_booking.check_in,
+                        "end": overlapping_booking.check_out,
+                    }
+                )
+
+            booking.write({
+                "hotel_id": line.hotel_id.id,
+                "room_id": line.room_id.id,
+                "room_category_id": line.room_category_id.id,
+                "check_in": line.check_in,
+                "check_out": line.check_out,
+                "guest_id": line.reservation_id.partner_id.id,
+            })
+
+    @api.depends("check_in", "check_out")
+    def _compute_night_count(self):
+        for line in self:
+            if line.check_in and line.check_out:
+                duration = line.check_out - line.check_in
+                line.night_count = max(
+                    0,
+                    duration.days,
+                )
+            else:
+                line.night_count = 0
+
+    @api.constrains(
+        "check_in",
+        "check_out",
+        "adults",
+        "children",
+    )
+    def _check_reservation_line(self):
+        for line in self:
+
+            if (
+                    line.check_in
+                    and line.check_out
+                    and line.check_out <= line.check_in
+            ):
+                raise ValidationError(
+                    _(
+                        "Check-out must be later than check-in."
+                    )
+                )
+
+            if line.adults < 1:
+                raise ValidationError(
+                    _("At least one adult is required.")
+                )
+
+            if line.children < 0:
+                raise ValidationError(
+                    _("Children count cannot be negative.")
+                )
+
+    @api.onchange("reservation_id")
+    def _onchange_reservation_id(self):
+        for line in self:
+            if not line.reservation_id:
+                continue
+
+            reservation = line.reservation_id
+
+            line.hotel_id = reservation.hotel_id
+
+            if reservation.check_in:
+                line.check_in = reservation.check_in
+
+            if reservation.check_out:
+                line.check_out = reservation.check_out
+
+
+    @api.onchange(
+        "room_category_id",
+        "adults",
+        "children",
+    )
+    def _onchange_capacity(self):
+        for line in self:
+
+            if not line.room_category_id:
+                continue
+
+            if (
+                    line.adults
+                    > line.room_category_id.max_adults
+            ):
+                return {
+                    "warning": {
+                        "title": _("Adult Capacity Exceeded"),
+                        "message": _(
+                            "This room category allows a maximum "
+                            "of %s adults."
+                        )
+                                   % line.room_category_id.max_adults,
+                    }
+                }
+
+            if (
+                    line.children
+                    > line.room_category_id.max_children
+            ):
+                return {
+                    "warning": {
+                        "title": _("Child Capacity Exceeded"),
+                        "message": _(
+                            "This room category allows a maximum "
+                            "of %s children."
+                        )
+                                   % line.room_category_id.max_children,
+                    }
+                }

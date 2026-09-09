@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_hotel_maintenance_list" model="ir.ui.view">
+        <field name="name">hotel.maintenance.list</field>
+        <field name="model">hotel.maintenance</field>
+        <field name="arch" type="xml">
+            <list string="Maintenance"
+                  create="0"
+                  edit="0"
+                  delete="0">
+
+                <field name="name"/>
+                <field name="room_id"/>
+                <field name="room_category_id"/>
+                <field name="maintenance_type"/>
+                <field name="priority"
+                       widget="priority"/>
+                <field name="scheduled_date"/>
+                <field name="assigned_to"/>
+                <field name="state"
+                       widget="badge"/>
+
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_maintenance_kanban" model="ir.ui.view">
+        <field name="name">hotel.maintenance.kanban</field>
+        <field name="model">hotel.maintenance</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state"
+                    create="0"
+                    edit="0"
+                    delete="0">
+
+                <field name="name"/>
+                <field name="room_id"/>
+                <field name="room_category_id"/>
+                <field name="maintenance_type"/>
+                <field name="priority"/>
+                <field name="scheduled_date"/>
+                <field name="assigned_to"/>
+                <field name="state"/>
+
+                <templates>
+                    <t t-name="card">
+
+                        <div class="oe_kanban_global_click">
+
+                            <!-- Header -->
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong>
+                                    <field name="name"/>
+                                </strong>
+
+                                <field name="priority"
+                                       widget="priority"/>
+                            </div>
+
+                            <!-- Room -->
+                            <div class="mb-2">
+                                <i class="fa fa-bed me-1"/>
+                                <strong>
+                                    <field name="room_id"/>
+                                </strong>
+                            </div>
+
+                            <!-- Maintenance Type -->
+                            <div class="text-muted mb-2">
+                                <i class="fa fa-wrench me-1"/>
+                                <field name="maintenance_type"/>
+                            </div>
+
+                            <!-- Scheduled Date -->
+                            <div class="text-muted mb-2">
+                                <i class="fa fa-calendar me-1"/>
+                                <field name="scheduled_date"/>
+                            </div>
+
+                            <!-- Assigned User -->
+                            <div t-if="record.assigned_to.raw_value"
+                                 class="text-muted">
+
+                                <i class="fa fa-user me-1"/>
+                                <field name="assigned_to"/>
+
+                            </div>
+
+                        </div>
+
+                    </t>
+                </templates>
+
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_hotel_maintenance_form" model="ir.ui.view">
+        <field name="name">hotel.maintenance.form</field>
+        <field name="model">hotel.maintenance</field>
+        <field name="arch" type="xml">
+
+            <form string="Maintenance"
+                  create="0"
+                  edit="0"
+                  delete="0">
+
+                <header>
+
+                    <button name="action_start"
+                            string="Start Maintenance"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'pending'"/>
+
+                    <button name="action_assign_task"
+                            string="Assign"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state not in ('pending', 'in_progress')"/>
+
+                    <button name="action_done"
+                            string="Mark Completed"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'in_progress'"/>
+
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state in ('done', 'cancelled')"/>
+
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="pending,in_progress,done,cancelled"/>
+
+                </header>
+
+                <sheet>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"
+                                   readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group col="4">
+
+                        <!-- Room -->
+                        <group string="Room">
+
+                            <field name="room_id"
+                                   readonly="1"/>
+
+                            <field name="room_category_id"
+                                   readonly="1"/>
+
+                            <field name="maintenance_type"
+                                   readonly="1"/>
+
+                        </group>
+
+                        <!-- Maintenance -->
+                        <group string="Maintenance">
+
+                            <field name="priority"
+                                   readonly="1"/>
+
+                            <field name="assigned_to_domain" invisible="1"/>
+                            <field name="assigned_to"
+                                   domain="[('id', 'in', assigned_to_domain)]"
+                                   readonly="state != 'pending'"/>
+
+                            <field name="scheduled_date"
+                                   readonly="1"/>
+
+                        </group>
+
+                        <!-- Timing -->
+                        <group string="Timing">
+
+                            <field name="started_at"
+                                   readonly="1"/>
+
+                            <field name="completed_at"
+                                   readonly="1"/>
+
+                        </group>
+
+                        <!-- Company -->
+                        <group string="Company">
+
+                            <field name="company_id"
+                                   readonly="1"/>
+
+                        </group>
+
+                    </group>
+
+                    <separator string="Issue / Description"/>
+
+                    <field name="description"
+                           readonly="1"
+                           placeholder="Describe the maintenance issue..."/>
+
+                    <separator string="Resolution"/>
+
+                    <field name="resolution"
+                           readonly="1"
+                           placeholder="Describe the completed maintenance work..."/>
+
+                    <separator string="Notes"/>
+
+                    <field name="notes"
+                           readonly="1"
+                           placeholder="Maintenance notes..."/>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_maintenance_search" model="ir.ui.view">
+        <field name="name">hotel.maintenance.search</field>
+        <field name="model">hotel.maintenance</field>
+        <field name="arch" type="xml">
+
+            <search string="Maintenance">
+
+                <field name="name"/>
+                <field name="room_id"/>
+                <field name="room_category_id"/>
+                <field name="maintenance_type"/>
+                <field name="assigned_to"/>
+                <field name="state"/>
+
+                <separator/>
+
+                <filter name="pending"
+                        string="Pending"
+                        domain="[('state', '=', 'pending')]"/>
+
+                <filter name="in_progress"
+                        string="In Progress"
+                        domain="[('state', '=', 'in_progress')]"/>
+
+                <filter name="done"
+                        string="Completed"
+                        domain="[('state', '=', 'done')]"/>
+
+                <filter name="cancelled"
+                        string="Cancelled"
+                        domain="[('state', '=', 'cancelled')]"/>
+
+                <separator/>
+
+                <filter name="urgent"
+                        string="Urgent"
+                        domain="[('priority', '=', '2')]"/>
+
+                <filter name="high_priority"
+                        string="High Priority"
+                        domain="[('priority', '=', '1')]"/>
+
+                <separator/>
+
+                <group expand="0" string="Group By">
+
+                    <filter name="group_room"
+                            string="Room"
+                            context="{'group_by': 'room_id'}"/>
+
+                    <filter name="group_category"
+                            string="Room Category"
+                            context="{'group_by': 'room_category_id'}"/>
+
+                    <filter name="group_type"
+                            string="Maintenance Type"
+                            context="{'group_by': 'maintenance_type'}"/>
+
+                    <filter name="group_assigned"
+                            string="Assigned To"
+                            context="{'group_by': 'assigned_to'}"/>
+
+                    <filter name="group_state"
+                            string="Status"
+                            context="{'group_by': 'state'}"/>
+
+                </group>
+
+            </search>
+
+        </field>
+    </record>
+
+    <record id="action_hotel_maintenance" model="ir.actions.act_window">
+        <field name="name">Maintenance</field>
+        <field name="res_model">hotel.maintenance</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="view_id" ref="view_hotel_maintenance_kanban"/>
+        <field name="search_view_id" ref="view_hotel_maintenance_search"/>
+    </record>
+
+
+</odoo>

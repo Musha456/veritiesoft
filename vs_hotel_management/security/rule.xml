@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="rule_hotel_reservation_company" model="ir.rule">
+
+        <field name="name">
+            Hotel Reservation: Multi Company
+        </field>
+
+        <field name="model_id"
+               ref="model_hotel_reservation"/>
+
+        <field name="domain_force">
+            [('company_id', 'in', company_ids)]
+        </field>
+
+        <field name="groups"
+               eval="[
+               (4, ref('vs_hotel_management.group_hotel_room_user')),
+               (4, ref('vs_hotel_management.group_hotel_room_manager'))
+           ]"/>
+
+    </record>
+
+    <record id="rule_hotel_reservation_line_company" model="ir.rule">
+
+        <field name="name">
+            Hotel Reservation Line: Multi Company
+        </field>
+
+        <field name="model_id"
+               ref="model_hotel_reservation_line"/>
+
+        <field name="domain_force">
+            [('company_id', 'in', company_ids)]
+        </field>
+
+        <field name="groups"
+               eval="[
+               (4, ref('vs_hotel_management.group_hotel_room_user')),
+               (4, ref('vs_hotel_management.group_hotel_room_manager'))
+           ]"/>
+
+    </record>
+
+    <record id="rule_hotel_room_booking_company" model="ir.rule">
+
+        <field name="name">
+            Hotel Room Booking: Multi Company
+        </field>
+
+        <field name="model_id"
+               ref="model_hotel_room_booking"/>
+
+        <field name="domain_force">
+            [('company_id', 'in', company_ids)]
+        </field>
+
+        <field name="groups"
+               eval="[
+               (4, ref('vs_hotel_management.group_hotel_room_user')),
+               (4, ref('vs_hotel_management.group_hotel_room_manager'))
+           ]"/>
+
+    </record>
+
+</odoo>

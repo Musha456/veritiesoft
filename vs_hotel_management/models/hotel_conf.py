@@ -54,14 +54,12 @@ class HotelService(models.Model):
 
     reservation_id = fields.Many2one(
         "hotel.reservation",
-        required=True,
         ondelete="cascade",
         index=True,
     )
 
     reservation_line_id = fields.Many2one(
         "hotel.reservation.line",
-        required=True,
         ondelete="cascade",
         index=True,
     )
@@ -97,6 +95,10 @@ class HotelService(models.Model):
     )
 
     price = fields.Monetary(
+        tracking=True,
+    )
+
+    tax_amount = fields.Monetary(
         tracking=True,
     )
 

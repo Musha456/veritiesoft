@@ -5,7 +5,7 @@
 
         <field name="name">Summer Sale</field>
 
-        <field name="hotel_id" ref="hotel_demo"/>
+        <field name="hotel_id" ref="vs_hotel_management.hotel_demo"/>
 
         <field name="discount_type">percentage</field>
 

@@ -1,0 +1,896 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="view_hotel_reservation_form" model="ir.ui.view">
+        <field name="name">hotel.reservation.form</field>
+        <field name="model">hotel.reservation</field>
+        <field name="arch" type="xml">
+
+            <form string="Hotel Reservation">
+
+                <header>
+
+                    <button name="action_confirm"
+                            string="Confirm"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+
+                    <button name="action_reserve"
+                            string="Reserve"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state not in ('draft', 'confirmed')"/>
+
+                    <button name="action_check_in"
+                            string="Check In"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'reserved'"/>
+
+                    <button name="action_check_out"
+                            string="Check Out"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'checked_in'"/>
+
+                    <button name="action_complete"
+                            string="Complete"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'checked_out'"/>
+
+                    <button name="action_no_show"
+                            string="No Show"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state not in ('confirmed', 'reserved')"/>
+
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            class="btn-secondary"
+                            groups="vs_hotel_management.group_hotel_room_manager"
+                            invisible="state in ('cancelled', 'completed', 'checked_out')"/>
+
+                    <button name="action_reset_to_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state not in ('confirmed', 'cancelled')"/>
+
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="draft,confirmed,reserved,checked_in,checked_out,completed,no_show"/>
+
+                </header>
+
+                <sheet>
+
+                    <!-- ================================================= -->
+                    <!-- Smart Buttons -->
+                    <!-- ================================================= -->
+
+                    <div class="oe_button_box" name="button_box">
+
+                        <button name="action_open_room_bookings"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-bed">
+
+                            <field name="room_booking_count"
+                                   widget="statinfo"
+                                   string="Room Bookings"/>
+
+                        </button>
+
+
+                        <button name="action_view_guest_folios"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-money">
+
+                            <field name="folio_count"
+                                   widget="statinfo"
+                                   string="Folio"/>
+
+                        </button>
+
+
+                    </div>
+
+                    <!-- ================================================= -->
+                    <!-- Title -->
+                    <!-- ================================================= -->
+
+                    <div class="oe_title">
+
+                        <h1>
+                            <field name="name"
+                                   placeholder="Reservation Reference"/>
+                        </h1>
+
+                    </div>
+
+                    <!-- ================================================= -->
+                    <!-- Reservation Information -->
+                    <!-- ================================================= -->
+
+                    <group string="Guest Information" col="3">
+                        <group colspan="1">
+                            <field name="partner_id" required="1"/>
+                        </group>
+                        <group colspan="1">
+                            <field name="guest_phone"/>
+                        </group>
+                        <group colspan="1">
+                            <field name="guest_email"/>
+                        </group>
+
+
+                    </group>
+
+                    <group string="Reservation Information" col="3">
+                        <group colspan="1">
+                            <field name="hotel_id" required="1"/>
+                        </group>
+                        <group colspan="1">
+                            <field name="booking_date"/>
+                        </group>
+                        <group colspan="1">
+                            <field name="company_id"/>
+                        </group>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+
+                    <!-- ================================================= -->
+                    <!-- Stay Information -->
+                    <!-- ================================================= -->
+
+                    <group string="Stay" col="2">
+                        <group colspan="1">
+                            <field name="check_in" widget="daterange" options="{'end_date_field':'check_out'}"
+                                   required="1"/>
+                        </group>
+                        <group colspan="1">
+                            <field name="night_count" string="Total Night" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Guests" col="4">
+                        <group colspan="1">
+                            <field name="adult_count"/>
+                        </group>
+                        <group colspan="1">
+                            <field name="child_count"/>
+                        </group>
+                        <group colspan="1">
+                            <field name="guest_count" readonly="1"/>
+                        </group>
+                        <group colspan="1">
+                            <field name="room_count" readonly="1"/>
+                        </group>
+                    </group>
+
+
+                    <!-- ================================================= -->
+                    <!-- Reservation Lines -->
+                    <!-- ================================================= -->
+
+                    <notebook>
+                        <page string="Rooms">
+
+                            <field name="line_ids"
+                                   mode="list,form"
+                                   nolabel="1">
+                                <list>
+
+                                    <!--                                    <field name="room_domain" invisible="1"/>-->
+
+                                    <field name="room_id"
+                                           domain="room_domain"/>
+
+                                    <field name="check_in"/>
+                                    <field name="check_out"/>
+
+                                    <field name="guest_count"
+                                           sum="Total Guests"/>
+
+                                    <field name="room_amount"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"
+                                           sum="Room Amount"/>
+
+                                    <field name="service_amount"
+                                           readonly="1"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"
+                                           sum="Service Amount"/>
+
+                                    <field name="discount_amount"
+                                           optional="show"
+                                           readonly="1"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"
+                                           sum="Discount"/>
+
+                                    <!--                                    <field name="tax_amount"-->
+                                    <!--                                           optional="show"-->
+                                    <!--                                           readonly="1"-->
+                                    <!--                                           widget="monetary"-->
+                                    <!--                                           options="{'currency_field': 'currency_id'}"-->
+                                    <!--                                           sum="Room Tax"/>-->
+
+                                    <field name="total_tax_amount"
+                                           optional="show"
+                                           readonly="1"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"
+                                           sum="Tax Amount"/>
+
+                                    <!--                                    <field name="service_tax_amount"-->
+                                    <!--                                           optional="show"-->
+                                    <!--                                           readonly="1"-->
+                                    <!--                                           widget="monetary"-->
+                                    <!--                                           options="{'currency_field': 'currency_id'}"-->
+                                    <!--                                           sum="Service Tax"/>-->
+
+                                    <field name="total"
+                                           readonly="1"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"
+                                           sum="Total"/>
+
+                                </list>
+                                <form string="Reservation Room">
+
+                                    <sheet>
+
+                                        <group string="Room Information" col="3">
+                                            <group colspan="1">
+                                                <field name="room_booking_id" readonly="1"
+                                                       invisible="not room_booking_id"/>
+                                                <field name="hotel_id"/>
+                                                <field name="building_id"/>
+                                                <field name="floor_id"/>
+                                            </group>
+                                            <group colspan="1">
+                                                <field name="room_category_id"/>
+                                                <field name="room_id" invisible="not room_category_id"
+                                                       domain="room_domain"/>
+                                            </group>
+                                            <group colspan="1">
+                                                <field name="rate_plan_id"
+                                                       invisible="not room_category_id"
+                                                       domain="[('room_category_ids', 'in', [room_category_id])]"/>
+                                                <field name="room_price" readonly="1" invisible="not rate_plan_id"/>
+                                            </group>
+                                        </group>
+
+                                        <group string="Stay Information" col="3">
+                                            <group colspan="1">
+                                                <field name="check_in" readonly="1"/>
+                                            </group>
+                                            <group colspan="2">
+                                                <field name="check_out" readonly="1"/>
+                                            </group>
+                                        </group>
+                                        <group string="Guest Information" col="3">
+                                            <group colspan="1">
+                                                <field name="night_count" readonly="1"/>
+                                            </group>
+                                            <group colspan="1">
+                                                <field name="adults"/>
+                                            </group>
+                                            <group colspan="1">
+                                                <field name="children"/>
+                                            </group>
+                                        </group>
+                                        <notebook>
+
+                                            <page string="Services">
+
+                                                <field name="service_line_ids">
+
+                                                    <list editable="bottom">
+                                                        <field name="service_id"/>
+                                                        <field name="serve_date"/>
+                                                        <field name="quantity"/>
+                                                        <field name="price_unit"/>
+                                                        <field name="discount_id"/>
+                                                        <field name="discount_amount" readonly="1" sum="Discount"/>
+                                                        <field name="tax_ids" widget="many2many_tags"/>
+                                                        <!--                                                        <field name="tax_amount" readonly="1" sum="Tax"/>-->
+                                                        <!--                                                        <field name="total_tax_amount" readonly="1" sum="Tax Amount"/>-->
+                                                        <field name="subtotal" readonly="1" sum="Subtotal"/>
+                                                        <field name="total" readonly="1" sum="Total"/>
+                                                    </list>
+
+                                                </field>
+
+                                                <!--                                                <group class="oe_subtotal_footer">-->
+                                                <!--                                                    <field name="service_amount" readonly="1"/>-->
+                                                <!--                                                    <field name="service_tax_amount" readonly="1"/>-->
+                                                <!--                                                </group>-->
+
+                                            </page>
+
+                                            <page string="Pricing">
+
+                                                <group string="Room Pricing" col="3">
+                                                    <group colspan="1">
+                                                        <field name="room_amount" readonly="1"/>
+                                                    </group>
+                                                    <group colspan="1">
+                                                        <field name="discount_id"/>
+                                                    </group>
+                                                    <group colspan="1">
+                                                        <field name="discount_amount" invisible="not discount_id"
+                                                               readonly="1"/>
+                                                    </group>
+                                                </group>
+
+                                                <group string="Room Taxes" col="3">
+                                                    <group colspan="1">
+                                                        <field name="tax_ids" widget="many2many_tags"/>
+                                                    </group>
+                                                    <group colsan="2">
+                                                        <field name="tax_amount" invisible="not tax_ids" readonly="1"/>
+                                                    </group>
+                                                </group>
+
+                                            </page>
+
+                                            <page string="Notes">
+                                                <field name="note" placeholder="Add notes for this room..."/>
+                                            </page>
+
+                                        </notebook>
+
+                                        <group class="oe_subtotal_footer">
+
+                                            <!-- Room Charges -->
+                                            <field name="room_amount" readonly="1"/>
+                                            <field name="discount_amount" readonly="1"/>
+                                            <field name="tax_amount" readonly="1"/>
+
+                                            <separator/>
+
+                                            <!-- Service Charges -->
+                                            <field name="service_amount" readonly="1"/>
+                                            <field name="service_line_discounts" readonly="1"/>
+                                            <field name="service_tax_amount" readonly="1"/>
+
+                                            <separator/>
+
+                                            <!-- Summary -->
+                                            <field name="subtotal" readonly="1"/>
+                                            <field name="total"
+                                                   readonly="1"
+                                                   class="oe_subtotal"/>
+
+                                        </group>
+
+                                    </sheet>
+
+                                </form>
+
+                            </field>
+
+                        </page>
+                        <page string="Extra Information">
+                            <group>
+                                <group>
+                                    <field name="booking_source"/>
+                                    <field name="reference"/>
+                                    <field name="arrival_time"/>
+                                    <field name="departure_time"/>
+                                </group>
+                                <group>
+                                    <field name="payment_status"/>
+                                    <field name="reference"/>
+                                    <field name="arrival_time"/>
+                                    <field name="departure_time"/>
+                                </group>
+                            </group>
+                        </page>
+                        <!-- ================================================= -->
+                        <!-- Notes -->
+                        <!-- ================================================= -->
+
+                        <page string="Notes">
+
+                            <group string="Guest Notes">
+                                <field name="guest_notes" nolabel="1" placeholder="Notes from or about the guest..."/>
+                            </group>
+
+                            <group string="Internal Notes">
+                                <field name="internal_notes" nolabel="1" placeholder="Internal reservation notes..."/>
+                            </group>
+
+                        </page>
+
+                    </notebook>
+
+                    <!-- ================================================= -->
+                    <!-- Amount Summary -->
+                    <!-- ================================================= -->
+
+                    <group class="mt-3">
+
+                        <group/>
+
+                        <group class="oe_subtotal_footer">
+                            <field name="room_amount" readonly="1"/>
+                            <field name="service_amount" readonly="1"/>
+                            <field name="discount_amount" readonly="1"/>
+                            <field name="tax_amount" readonly="1"/>
+                            <field name="subtotal" readonly="1"/>
+                            <field name="total_amount" class="oe_subtotal" readonly="1"/>
+                        </group>
+
+                    </group>
+
+                    <!-- ================================================= -->
+                    <!-- Chatter -->
+                    <!-- ================================================= -->
+
+                    <chatter/>
+
+                </sheet>
+
+            </form>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_reservation_calendar" model="ir.ui.view">
+        <field name="name">hotel.reservation.calendar</field>
+        <field name="model">hotel.reservation</field>
+        <field name="arch" type="xml">
+
+            <calendar string="Reservations"
+                      date_start="check_in"
+                      date_stop="check_out"
+                      color="hotel_id"
+                      mode="month"
+                      quick_create="0"
+                      event_open_popup="1">
+
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="hotel_id"/>
+                <field name="state"/>
+                <field name="total_amount"/>
+
+            </calendar>
+
+        </field>
+    </record>
+
+    <!-- ========================================================= -->
+    <!-- Hotel Reservation Tree -->
+    <!-- ========================================================= -->
+    <record id="view_hotel_reservation_list" model="ir.ui.view">
+        <field name="name">hotel.reservation.list</field>
+        <field name="model">hotel.reservation</field>
+        <field name="arch" type="xml">
+
+            <list string="Reservations">
+
+                <field name="name"/>
+
+                <field name="partner_id"/>
+
+                <field name="hotel_id"/>
+
+                <field name="check_in"/>
+
+                <field name="check_out"/>
+
+                <field name="night_count"/>
+
+                <field name="room_count"/>
+
+                <field name="adult_count"/>
+
+                <field name="child_count"/>
+
+                <field name="total_amount"/>
+
+                <field name="state"
+                       widget="badge"/>
+
+            </list>
+
+        </field>
+    </record>
+
+    <!-- ========================================================= -->
+    <!-- Hotel Reservation Search -->
+    <!-- ========================================================= -->
+    <record id="view_hotel_reservation_search" model="ir.ui.view">
+        <field name="name">hotel.reservation.search</field>
+        <field name="model">hotel.reservation</field>
+        <field name="arch" type="xml">
+
+            <search string="Reservations">
+
+                <field name="name"
+                       string="Reference"/>
+
+                <field name="partner_id"
+                       string="Guest"/>
+
+                <field name="hotel_id"
+                       string="Hotel"/>
+
+                <field name="check_in"/>
+
+                <field name="check_out"/>
+
+                <field name="state"/>
+
+                <separator/>
+
+                <!-- Status -->
+
+                <filter name="draft"
+                        string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+
+                <filter name="confirmed"
+                        string="Confirmed"
+                        domain="[('state', '=', 'confirmed')]"/>
+
+                <filter name="reserved"
+                        string="Reserved"
+                        domain="[('state', '=', 'reserved')]"/>
+
+                <filter name="checked_in"
+                        string="Checked In"
+                        domain="[('state', '=', 'checked_in')]"/>
+
+                <filter name="checked_out"
+                        string="Checked Out"
+                        domain="[('state', '=', 'checked_out')]"/>
+
+                <filter name="completed"
+                        string="Completed"
+                        domain="[('state', '=', 'completed')]"/>
+
+                <filter name="cancelled"
+                        string="Cancelled"
+                        domain="[('state', '=', 'cancelled')]"/>
+
+                <filter name="no_show"
+                        string="No Show"
+                        domain="[('state', '=', 'no_show')]"/>
+
+                <separator/>
+
+                <!-- Date Filters -->
+
+                <filter name="check_in_today"
+                        string="Check-in Today"
+                        domain="[
+                        ('check_in', '&gt;=', context_today()),
+                        ('check_in', '&lt;', context_today() + relativedelta(days=1))
+                    ]"/>
+
+                <filter name="check_out_today"
+                        string="Check-out Today"
+                        domain="[
+                        ('check_out', '&gt;=', context_today()),
+                        ('check_out', '&lt;', context_today() + relativedelta(days=1))
+                    ]"/>
+
+                <filter name="upcoming"
+                        string="Upcoming"
+                        domain="[
+                        ('check_in', '&gt;=', context_today()),
+                        ('state', 'in', ('confirmed', 'reserved'))
+                    ]"/>
+
+                <separator/>
+
+                <!-- Group By -->
+
+                <group expand="0"
+                       string="Group By">
+
+                    <filter name="group_hotel"
+                            string="Hotel"
+                            context="{'group_by': 'hotel_id'}"/>
+
+                    <filter name="group_guest"
+                            string="Guest"
+                            context="{'group_by': 'partner_id'}"/>
+
+                    <filter name="group_state"
+                            string="Status"
+                            context="{'group_by': 'state'}"/>
+
+                    <filter name="group_check_in"
+                            string="Check-in"
+                            context="{'group_by': 'check_in'}"/>
+
+                    <filter name="group_check_out"
+                            string="Check-out"
+                            context="{'group_by': 'check_out'}"/>
+
+                </group>
+
+            </search>
+
+        </field>
+    </record>
+    <record id="view_hotel_reservation_kanban" model="ir.ui.view">
+        <field name="name">hotel.reservation.kanban</field>
+        <field name="model">hotel.reservation</field>
+        <field name="arch" type="xml">
+
+            <kanban class="o_kanban_record hotel_room_kanban_card"
+                    create="1"
+                    edit="1"
+                    delete="1">
+
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="hotel_id"/>
+                <field name="check_in"/>
+                <field name="check_out"/>
+                <field name="night_count"/>
+                <field name="adult_count"/>
+                <field name="child_count"/>
+                <field name="total_amount"/>
+                <field name="currency_id"/>
+                <field name="state"/>
+
+                <templates>
+
+                    <t t-name="card">
+
+                        <div class="oe_kanban_global_click hotel_room_kanban_card">
+
+                            <!-- HEADER -->
+                            <div class="hotel_reservation_header">
+
+                                <div class="d-flex align-items-center gap-2">
+
+                                    <i class="fa fa-ticket text-primary"/>
+
+                                    <strong class="text-truncate">
+                                        <field name="name"/>
+                                    </strong>
+
+                                </div>
+
+                                <field name="state"
+                                       widget="badge"/>
+
+                            </div>
+
+
+                            <!-- BODY -->
+                            <div class="hotel_room_body">
+
+                                <!-- GUEST & HOTEL -->
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mx-2">
+
+                                    <!-- GUEST -->
+                                    <div class="hotel_reservation_guest d-flex align-items-center">
+
+                                        <i class="fa fa-user text-primary me-1"/>
+
+                                        <div class="text-truncate">
+
+                                            <span class="hotel_reservation_label">
+                                                Guest
+                                            </span>
+
+                                            <strong>
+                                                <field name="partner_id"/>
+                                            </strong>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- HOTEL -->
+                                    <div class="hotel_reservation_hotel d-flex align-items-center">
+
+                                        <i class="fa fa-hotel me-1"/>
+
+                                        <span>
+                                            <field name="hotel_id"/>
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- DATES -->
+                                <div class="hotel_reservation_dates">
+
+                                    <div class="hotel_reservation_date">
+
+                                        <i class="fa fa-sign-in"/>
+
+                                        <div>
+                                            <span class="hotel_reservation_label">
+                                                Check-in
+                                            </span>
+
+                                            <strong>
+                                                <field name="check_in"/>
+                                            </strong>
+                                        </div>
+
+                                    </div>
+
+
+                                    <!--                                    <div class="hotel_reservation_date_arrow">-->
+                                    <!--                                        <i class="fa fa-long-arrow-right"/>-->
+                                    <!--                                    </div>-->
+
+
+                                    <div class="hotel_reservation_date">
+
+                                        <i class="fa fa-sign-out"/>
+
+                                        <div>
+                                            <span class="hotel_reservation_label">
+                                                Check-out
+                                            </span>
+
+                                            <strong>
+                                                <field name="check_out"/>
+                                            </strong>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- STATISTICS -->
+                                <div class="hotel_reservation_stats d-flex align-items-center flex-nowrap gap-2 mt-3">
+
+                                    <!-- Nights -->
+                                    <div class="hotel_reservation_stat d-flex align-items-center gap-1 flex-fill">
+                                        <i class="fa fa-moon-o text-primary"/>
+                                        <span class="hotel_reservation_stat_label">
+                                            Nights
+                                        </span>
+                                        <strong class="hotel_reservation_stat_value">
+                                            <field name="night_count"/>
+                                        </strong>
+                                    </div>
+
+                                    <!-- Rooms -->
+                                    <div class="hotel_reservation_stat d-flex align-items-center gap-1 flex-fill">
+                                        <i class="fa fa-bed text-primary"/>
+                                        <span class="hotel_reservation_stat_label">
+                                            Rooms
+                                        </span>
+                                        <strong class="hotel_reservation_stat_value">
+                                            <field name="room_count"/>
+                                        </strong>
+                                    </div>
+
+                                    <!-- Adults -->
+                                    <div class="hotel_reservation_stat d-flex align-items-center gap-1 flex-fill">
+                                        <i class="fa fa-user text-primary"/>
+                                        <span class="hotel_reservation_stat_label">
+                                            Adults
+                                        </span>
+                                        <strong class="hotel_reservation_stat_value">
+                                            <field name="adult_count"/>
+                                        </strong>
+                                    </div>
+
+                                    <!-- Children -->
+                                    <div class="hotel_reservation_stat d-flex align-items-center gap-1 flex-fill">
+                                        <i class="fa fa-child text-primary"/>
+                                        <span class="hotel_reservation_stat_label">
+                                            Children
+                                        </span>
+                                        <strong class="hotel_reservation_stat_value">
+                                            <field name="child_count"/>
+                                        </strong>
+                                    </div>
+
+                                </div>
+                            </div>
+
+
+                            <!-- FOOTER -->
+                            <div class="hotel_room_footer reservation">
+
+                                <div class="hotel_reservation_total">
+
+                                    <span class="text-muted">
+                                        <!--                                        <i class="fa fa-money"/>-->
+                                        Total
+                                    </span>
+
+                                    <strong class="hotel_reservation_total_amount">
+
+                                        <field name="total_amount"
+                                               widget="monetary"
+                                               options="{'currency_field': 'currency_id'}"/>
+
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </t>
+
+                </templates>
+
+            </kanban>
+
+        </field>
+    </record>
+    <!-- ========================================================= -->
+    <!-- Hotel Reservation Action -->
+    <!-- ========================================================= -->
+
+    <record id="action_hotel_reservation" model="ir.actions.act_window">
+
+        <field name="name">Reservations</field>
+
+        <field name="res_model">hotel.reservation</field>
+
+        <field name="view_mode">kanban,list,calendar,form</field>
+
+        <field name="search_view_id"
+               ref="view_hotel_reservation_search"/>
+
+    </record>
+
+    <!-- ========================================================= -->
+    <!-- Hotel Reservation Check-in Action -->
+    <!-- ========================================================= -->
+
+    <record id="action_hotel_reservation_checked_in" model="ir.actions.act_window">
+
+        <field name="name">Checked In</field>
+
+        <field name="res_model">hotel.reservation</field>
+
+        <field name="view_mode">kanban,list,calendar,form</field>
+
+        <field name="search_view_id" ref="view_hotel_reservation_search"/>
+
+        <field name="domain">[('state', '=', 'checked_in')]</field>
+
+    </record>
+
+    <!-- ========================================================= -->
+    <!-- Hotel Reservation Check-out Action -->
+    <!-- ========================================================= -->
+
+    <record id="action_hotel_reservation_checked_out" model="ir.actions.act_window">
+
+        <field name="name">Checked Out</field>
+
+        <field name="res_model">hotel.reservation</field>
+
+        <field name="view_mode">kanban,list,calendar,form</field>
+
+        <field name="search_view_id" ref="view_hotel_reservation_search"/>
+
+        <field name="domain">[('state', '=', 'checked_out')]</field>
+
+    </record>
+
+
+</odoo>

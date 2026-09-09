@@ -1,0 +1,253 @@
+/* ==========================================================
+   RESERVATION HEADER
+   ========================================================== */
+
+.hotel_reservation_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #ececec;
+}
+
+.hotel_reservation_header > div {
+    min-width: 0;
+}
+
+.hotel_reservation_header .fa {
+    font-size: 15px;
+}
+
+
+/* ==========================================================
+   GUEST
+   ========================================================== */
+
+.hotel_reservation_guest {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.hotel_reservation_guest .fa {
+    font-size: 17px;
+    width: 18px;
+}
+
+.hotel_reservation_guest strong {
+    display: block;
+    margin-top: 2px;
+}
+
+
+/* ==========================================================
+   HOTEL
+   ========================================================== */
+
+.hotel_reservation_hotel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-top: 12px;
+
+    color: #495057;
+    font-size: 13px;
+}
+
+.hotel_reservation_hotel .fa {
+    width: 18px;
+    color: #0d6efd;
+}
+
+
+/* ==========================================================
+   DATES
+   ========================================================== */
+
+.hotel_reservation_dates {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-top: 16px;
+    padding: 11px;
+
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.hotel_reservation_date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    flex: 1;
+    min-width: 0;
+}
+
+.hotel_reservation_date > .fa {
+    width: 28px;
+    height: 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 7px;
+
+    background: #eef5ff;
+    color: #0d6efd;
+}
+
+.hotel_reservation_date strong {
+    display: block;
+    margin-top: 2px;
+
+    font-size: 12px;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hotel_reservation_date_arrow {
+    color: #adb5bd;
+    font-size: 12px;
+}
+
+
+/* ==========================================================
+   TOTAL
+   ========================================================== */
+
+.hotel_reservation_total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.hotel_reservation_total > span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hotel_reservation_total .fa {
+    color: #0d6efd;
+}
+
+.hotel_reservation_total_amount {
+    font-size: 17px;
+    color: #212529;
+}
+
+
+/* ==========================================================
+   HOVER
+   ========================================================== */
+
+.hotel_room_kanban_card:hover
+.hotel_reservation_total_amount {
+    color: #0d6efd;
+}
+
+/* ==========================================================
+   STAT HEADER
+   ICON + LABEL
+   ========================================================== */
+
+.hotel_room_stat_header {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    min-height: 20px;
+}
+
+.hotel_room_stat_header i {
+    width: 18px;
+
+    color: #0d6efd;
+
+    font-size: 14px;
+
+    text-align: center;
+}
+
+.hotel_room_stat_label {
+    color: #6c757d;
+
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+/* ==========================================================
+   RESERVATION STATISTICS
+   Does not affect Room Kanban statistics
+   ========================================================== */
+
+.hotel_reservation_stats {
+
+    width: 100%;
+
+    .hotel_reservation_stat {
+
+        min-width: 0;
+
+        padding: 8px 10px;
+
+        background: #f8f9fa;
+
+        border: 1px solid #edf0f2;
+
+        border-radius: 9px;
+
+        white-space: nowrap;
+
+        transition: all .25s ease;
+
+        i {
+            flex-shrink: 0;
+
+            font-size: 13px;
+        }
+
+        .hotel_reservation_stat_label {
+
+            color: #6c757d;
+
+            font-size: 11px;
+
+            font-weight: 600;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+        .hotel_reservation_stat_value {
+
+            color: #212529;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            margin-left: auto;
+        }
+
+        &:hover {
+
+            background: #eef5ff;
+
+            border-color: #d8e7ff;
+
+        }
+
+    }
+
+}

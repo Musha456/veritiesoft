@@ -70,29 +70,22 @@
                                 class="btn-primary"
                                 invisible="status != 'occupied'"/>
 
-                        <button name="action_start_cleaning"
-                                type="object"
-                                string="Start Cleaning"
-                                class="btn-warning"
+                        <button name="action_start_cleaning" string="Start Cleaning" type="object" class="btn-primary"
                                 invisible="status != 'dirty'"/>
-
-                        <button name="action_mark_available"
-                                type="object"
-                                string="Mark Available"
-                                class="btn-success"
+                        <button name="action_mark_available" string="Mark Available" type="object" class="btn-primary"
                                 invisible="status != 'cleaning'"/>
 
                         <button name="action_start_maintenance"
                                 type="object"
                                 string="Maintenance"
                                 class="btn-secondary"
-                                invisible="status in ['maintenance','out_of_order']"/>
+                                invisible="status in ['maintenance','out_of_order','cleaning']"/>
 
                         <button name="action_mark_out_of_order"
                                 type="object"
                                 string="Out of Order"
                                 class="btn-danger"
-                                invisible="status == 'out_of_order'"/>
+                                invisible="status in ['out_of_order', 'cleaning', 'maintenance']"/>
 
                         <button name="action_finish_maintenance"
                                 type="object"
@@ -105,24 +98,42 @@
 
                 </header>
                 <sheet>
-                    <!--                    <div class="oe_button_box" name="button_box">-->
+                    <div class="oe_button_box" name="button_box">
 
-                    <!--                        <button name="action_view_reservations" type="object" class="oe_stat_button"-->
-                    <!--                                invisible="not reservation_count" icon="fa-calendar">-->
-                    <!--                            <field name="reservation_count" widget="statinfo" string="Reservations"/>-->
-                    <!--                        </button>-->
+                        <button name="action_view_reservations"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-calendar-check-o">
 
-                    <!--                        <button name="action_view_housekeeping" type="object" class="oe_stat_button"-->
-                    <!--                                invisible="not housekeeping_count" icon="fa-bed">-->
-                    <!--                            <field name="housekeeping_count" widget="statinfo" string="Housekeeping"/>-->
-                    <!--                        </button>-->
+                            <field name="reservation_count"
+                                   widget="statinfo"
+                                   string="Reservations"/>
 
-                    <!--                        <button name="action_view_maintenance" type="object" class="oe_stat_button"-->
-                    <!--                                invisible="not maintenance_count" icon="fa-wrench">-->
-                    <!--                            <field name="maintenance_count" widget="statinfo" string="Maintenance"/>-->
-                    <!--                        </button>-->
+                        </button>
 
-                    <!--                    </div>-->
+                        <button name="action_view_housekeeping"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-broom">
+
+                            <field name="housekeeping_count"
+                                   widget="statinfo"
+                                   string="Housekeeping"/>
+
+                        </button>
+
+                        <button name="action_view_maintenance"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-wrench">
+
+                            <field name="maintenance_count"
+                                   widget="statinfo"
+                                   string="Maintenance"/>
+
+                        </button>
+
+                    </div>
 
                     <!--                    Room Status Web Ribbon -->
                     <widget name="web_ribbon" title="Occupied" bg_color="text-bg-success"
@@ -206,7 +217,7 @@
                                     context="{'default_room_id': id}">
 
                                 <kanban
-                                        class="o_kanban_record"
+                                        class="o_kanban_record hotel_room_kanban_card"
                                         create="1"
                                         edit="1"
                                         delete="1">

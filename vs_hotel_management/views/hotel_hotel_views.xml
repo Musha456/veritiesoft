@@ -559,7 +559,7 @@
                                     context="{'default_hotel_id': id}">
 
                                 <kanban
-                                        class="o_kanban_record"
+                                        class="o_kanban_record hotel_room_kanban_card"
                                         create="1"
                                         edit="1"
                                         delete="1">
@@ -611,7 +611,7 @@
                                                         <div class="px-2 py-2 flex-grow-1">
 
                                                             <div class="d-flex justify-content-between align-items-center mb-2"
-                                                                 groups="vs_hotel_management.group_hotel_manager">
+                                                                 groups="vs_hotel_management.group_hotel_room_manager">
 
                                                                 <span class="text-muted small">
                                                                     Cover Image
@@ -628,7 +628,7 @@
 
                                                         <!-- Footer -->
                                                         <div class="px-2 py-1"
-                                                             groups="vs_hotel_management.group_hotel_manager">
+                                                             groups="vs_hotel_management.group_hotel_room_manager">
 
                                                             <div class="d-flex justify-content-end">
 

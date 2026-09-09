@@ -11,11 +11,13 @@
     'depends': [
         'base',
         'product',
-        'sale'
+        'sale',
+        'contacts'
     ],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
+        'security/rule.xml',
         'data/hotel_sequence.xml',
         'data/hotel_amenity_type_data.xml',
         'data/hotel_amenity_data.xml',
@@ -27,7 +29,7 @@
         'data/hotel_building_data.xml',
         'data/hotel_building_floor_data.xml',
         'data/hotel_room_data.xml',
-        'data/hotel_discount_data.xml',
+        # 'data/hotel_discount_data.xml',
         'views/res_config_settings_views.xml',
         'views/hotel_amenity_type_views.xml',
         'views/hotel_amenity_views.xml',
@@ -40,11 +42,20 @@
         'views/hotel_service_views.xml',
         'views/hotel_rate_plan_views.xml',
         'views/hotel_discount_views.xml',
+        'views/hotel_reservation_line_views.xml',
+        'views/hotel_reservation_views.xml',
+        'views/hotel_room_booking_views.xml',
+        'views/hotel_housekeeping_views.xml',
+        'views/hotel_maintenance_views.xml',
+        'views/res_partner_inherit_views.xml',
+        'views/hotel_guest_folio_views.xml',
+        'wizards/hotel_task_assignment_wizard_views.xml',
         'views/hotel_menus.xml'
     ],
     'assets': {
         'web.assets_backend': [
             'vs_hotel_management/static/src/scss/hotel_room.scss',
+            'vs_hotel_management/static/src/scss/hotel_reservation.scss',
         ],
     },
     'application': True,

@@ -183,6 +183,7 @@
 
     flex-direction:column;
 
+
 }
 
 /* ==========================================================
@@ -527,7 +528,7 @@
 
 .hotel_room_footer {
     margin-top: auto;
-    padding-top: 14px;
+    padding: 14px 16px;
     border-top: 1px solid #ececec;
 }
 
@@ -768,12 +769,10 @@
 
 }
 
-.o_kanban_record {
-
+.o_kanban_record:has(.hotel_room_kanban_card) {
     border: none !important;
-
     background: transparent !important;
-
+    box-shadow: none !important;
 }
 
 

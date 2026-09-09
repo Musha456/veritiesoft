@@ -236,12 +236,6 @@ class HotelHotel(models.Model):
     # Accounting
     # ---------------------------------------------------------
 
-    currency_id = fields.Many2one(
-        "res.currency",
-        required=True,
-        default=lambda self: self.env.company.currency_id,
-    )
-
     tax_ids = fields.Many2many(
         "account.tax",
         string="Default Taxes",

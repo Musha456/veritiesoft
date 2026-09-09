@@ -1,115 +1,212 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
 
-    <!--    ########## Hotel Main Menu ##########-->
+    <!-- =========================================================
+         HOTEL MAIN MENU
+    ========================================================== -->
     <menuitem id="menu_hotel_main"
               name="Hotel"
               web_icon="vs_hotel_management,static/description/icon.png"
               sequence="1"/>
 
-    <!--    ########## Hotel Room Configuration Menu ##########-->
-    <menuitem id="manu_hotel_room_configuration"
-              name="Rooms"
+
+    <!-- =========================================================
+         4. FRONT DESK
+    ========================================================== -->
+    <menuitem id="menu_hotel_front_desk"
+              name="Front Desk"
               parent="menu_hotel_main"
-              sequence="20"/>
+              sequence="4"/>
 
-    <!--    Hotel Amenity Type Menu-->
-    <menuitem
-            id="menu_hotel_configuration_amenity_type"
-            name="Amenity Types"
-            parent="manu_hotel_room_configuration"
-            sequence="1"
-            action="action_hotel_amenity_type"/>
+    <!-- Guests-->
+    <menuitem id="menu_hotel_guests"
+              name="Guests"
+              parent="menu_hotel_front_desk"
+              action="action_hotel_guest"
+              sequence="1"/>
 
-    <!--    Hotel Amenity Menu-->
-    <menuitem
-            id="menu_hotel_configuration_amenity"
-            name="Amenities"
-            parent="manu_hotel_room_configuration"
-            sequence="2"
-            action="action_hotel_amenity"/>
+    <!-- Check In -->
+    <menuitem id="menu_hotel_reservation_checked_in"
+              name="Check-in"
+              parent="menu_hotel_front_desk"
+              action="action_hotel_reservation_checked_in"
+              sequence="1"/>
 
-    <!--    Hotel Bed Type Menu-->
-    <menuitem
-            id="menu_hotel_configuration_bed_type"
-            name="Bed Types"
-            parent="manu_hotel_room_configuration"
-            sequence="3"
-            action="action_hotel_bed_type"/>
+    <!-- Check Out -->
+    <menuitem id="menu_hotel_reservation_checked_out"
+              name="Check-out"
+              parent="menu_hotel_front_desk"
+              action="action_hotel_reservation_checked_out"
+              sequence="1"/>
 
-    <!--    Hotel Room Categories Menu-->
-    <menuitem
-            id="menu_hotel_configuration_room_categories"
-            name="Room Categories"
-            parent="manu_hotel_room_configuration"
-            sequence="4"
-            action="action_hotel_room_categories"/>
-
-    <!--    Hotel Room Menu-->
-    <menuitem
-            id="menu_hotel_configuration_room_room"
-            name="Room"
-            parent="manu_hotel_room_configuration"
-            sequence="5"
-            action="action_hotel_room"/>
-
-    <!--    Hotel Building Menu-->
-    <menuitem
-            id="menu_hotel_configuration_building"
-            name="Building"
-            parent="manu_hotel_room_configuration"
-            sequence="6"
-            action="action_hotel_building"/>
-
-    <!--    Hotel Building Floor Menu-->
-    <menuitem
-            id="menu_hotel_configuration_building_floor"
-            name="Floor"
-            parent="manu_hotel_room_configuration"
-            sequence="7"
-            action="action_hotel_building_floor"/>
-
-    <!--    Hotel Menu-->
-    <menuitem
-            id="menu_hotel_configuration_hotel"
-            name="Hotel"
-            parent="manu_hotel_room_configuration"
-            sequence="8"
-            action="action_hotel_hotel"/>
-
-    <menuitem
-            id="menu_hotel_configuration"
-            name="Configuration"
-            parent="menu_hotel_main"
-            sequence="9"/>
-
-    <menuitem
-            id="menu_hotel_configuration_settings"
-            name="Settings"
-            parent="menu_hotel_configuration"
-            action="action_hotel_config_settings"
-            sequence="10"/>
-
-    <menuitem
-            id="menu_hotel_configuration_service"
-            name="Services"
-            parent="manu_hotel_room_configuration"
-            action="action_hotel_service"
-            sequence="10"/>
+    <!-- Reservations -->
+    <menuitem id="menu_hotel_reservation"
+              name="Reservations"
+              parent="menu_hotel_front_desk"
+              action="action_hotel_reservation"
+              sequence="1"/>
 
 
-    <menuitem
-            id="menu_hotel_configuration_rate_plan"
-            name="Rating Plan"
-            parent="manu_hotel_room_configuration"
-            action="action_hotel_rate_plan"
-            sequence="10"/>
+    <!-- =========================================================
+         4. OPERATIONS
+    ========================================================== -->
+    <menuitem id="menu_hotel_operations"
+              name="Operations"
+              parent="menu_hotel_main"
+              sequence="4"/>
 
-    <menuitem
-            id="menu_hotel_discount"
-            name="Discounts"
-            parent="manu_hotel_room_configuration"
-            sequence="80"
-            action="action_hotel_discount"/>
+
+    <!-- Room Availability -->
+    <menuitem id="menu_hotel_room_availability"
+              name="Room Availability"
+              parent="menu_hotel_operations"
+              action="action_hotel_room_booking_calendar"
+              sequence="2"/>
+
+    <!-- Room Bookings -->
+    <menuitem id="menu_hotel_room_booking"
+              name="Room Bookings"
+              parent="menu_hotel_operations"
+              action="action_hotel_room_booking"
+              sequence="3"/>
+
+    <!-- Housekeeping-->
+    <menuitem id="menu_hotel_housekeeping"
+              name="Housekeeping"
+              parent="menu_hotel_operations"
+              action="action_hotel_housekeeping"
+              sequence="4"/>
+
+    <!-- Maintenance-->
+    <menuitem id="menu_hotel_maintenance"
+              name="Maintenance"
+              parent="menu_hotel_operations"
+              action="action_hotel_maintenance"
+              sequence="40"/>
+<!-- Guest Folios-->
+    <menuitem id="menu_hotel_guest_folio"
+          name="Guest Folios"
+          parent="menu_hotel_operations"
+          action="action_hotel_guest_folio"
+          sequence="10"/>
+
+
+    <!-- =========================================================
+         5. CONFIGURATION
+    ========================================================== -->
+    <menuitem id="menu_hotel_configuration"
+              name="Configuration"
+              parent="menu_hotel_main"
+              sequence="90"/>
+
+    <menuitem id="menu_hotel_configuration_settings"
+              name="Settings"
+              parent="menu_hotel_configuration"
+              action="action_hotel_config_settings"
+              sequence="1"/>
+
+    <!-- =========================================================
+         1. HOTEL SETUP
+    ========================================================== -->
+    <menuitem id="menu_hotel_setup"
+              name="Hotel Setup"
+              parent="menu_hotel_configuration"
+              sequence="1"/>
+
+    <!-- Hotel -->
+    <menuitem id="menu_hotel_setup_hotel"
+              name="Hotels"
+              parent="menu_hotel_setup"
+              action="action_hotel_hotel"
+              sequence="1"/>
+
+    <!-- Buildings -->
+    <menuitem id="menu_hotel_setup_building"
+              name="Buildings"
+              parent="menu_hotel_setup"
+              action="action_hotel_building"
+              sequence="2"/>
+
+    <!-- Floors -->
+    <menuitem id="menu_hotel_setup_floor"
+              name="Floors"
+              parent="menu_hotel_setup"
+              action="action_hotel_building_floor"
+              sequence="3"/>
+
+
+    <!-- =========================================================
+         2. ROOM CONFIGURATION
+    ========================================================== -->
+    <menuitem id="menu_hotel_room_configuration"
+              name="Room Configuration"
+              parent="menu_hotel_configuration"
+              sequence="2"/>
+
+    <!-- Room Categories / Types -->
+    <menuitem id="menu_hotel_room_category"
+              name="Room Types"
+              parent="menu_hotel_room_configuration"
+              action="action_hotel_room_categories"
+              sequence="1"/>
+
+    <!-- Bed Types -->
+    <menuitem id="menu_hotel_bed_type"
+              name="Bed Types"
+              parent="menu_hotel_room_configuration"
+              action="action_hotel_bed_type"
+              sequence="2"/>
+
+    <!-- Amenity Types -->
+    <menuitem id="menu_hotel_amenity_type"
+              name="Amenity Types"
+              parent="menu_hotel_room_configuration"
+              action="action_hotel_amenity_type"
+              sequence="3"/>
+
+    <!-- Amenities -->
+    <menuitem id="menu_hotel_amenity"
+              name="Amenities"
+              parent="menu_hotel_room_configuration"
+              action="action_hotel_amenity"
+              sequence="4"/>
+
+    <!-- Rooms -->
+    <menuitem id="menu_hotel_room"
+              name="Rooms"
+              parent="menu_hotel_room_configuration"
+              action="action_hotel_room"
+              sequence="5"/>
+
+
+    <!-- =========================================================
+         3. PRICING & SERVICES
+    ========================================================== -->
+    <menuitem id="menu_hotel_pricing"
+              name="Pricing and Services"
+              parent="menu_hotel_configuration"
+              sequence="3"/>
+
+    <!-- Rate Plans -->
+    <menuitem id="menu_hotel_rate_plan"
+              name="Rate Plans"
+              parent="menu_hotel_pricing"
+              action="action_hotel_rate_plan"
+              sequence="1"/>
+
+    <!-- Services -->
+    <menuitem id="menu_hotel_service"
+              name="Services"
+              parent="menu_hotel_pricing"
+              action="action_hotel_service"
+              sequence="2"/>
+
+    <!-- Discounts -->
+    <menuitem id="menu_hotel_discount"
+              name="Discounts"
+              parent="menu_hotel_pricing"
+              action="action_hotel_discount"
+              sequence="3"/>
+
 
 </odoo>

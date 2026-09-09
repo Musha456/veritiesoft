@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<record id="view_hotel_reservation_line_form" model="ir.ui.view">
+    <field name="name">hotel.reservation.line.form</field>
+    <field name="model">hotel.reservation.line</field>
+    <field name="arch" type="xml">
+
+        <form string="Reservation Room">
+
+            <sheet>
+
+                <group>
+
+                    <!-- Room Information -->
+
+                    <group string="Room Information" col="4">
+
+                        <field name="hotel_id"
+                               colspan="3"/>
+
+                        <field name="room_category_id"
+                               colspan="3"/>
+
+                        <field name="room_id"
+                               domain="room_domain"
+                               colspan="3"/>
+
+                        <field name="rate_plan_id"
+                               colspan="3"/>
+
+                        <field name="room_booking_id"
+                               readonly="1"
+                               invisible="not room_booking_id"
+                               colspan="3"/>
+
+                    </group>
+
+                    <!-- Stay Information -->
+
+                    <group string="Stay Information" col="4">
+
+                        <field name="check_in"
+                               colspan="3"/>
+
+                        <field name="check_out"
+                               colspan="3"/>
+
+                        <field name="night_count"
+                               readonly="1"
+                               colspan="3"/>
+
+                        <field name="adults"
+                               colspan="3"/>
+
+                        <field name="children"
+                               colspan="3"/>
+
+                    </group>
+
+                </group>
+
+                <notebook>
+
+                    <!-- Services -->
+
+                    <page string="Services">
+
+                        <field name="service_line_ids"
+                               nolabel="1">
+
+                            <list editable="bottom">
+
+                                <field name="service_id"/>
+
+                                <field name="quantity"/>
+
+                                <field name="price_unit"/>
+
+                                <field name="discount_id"/>
+
+                                <field name="discount_amount"
+                                       readonly="1"/>
+
+                                <field name="tax_ids"
+                                       widget="many2many_tags"/>
+
+                                <field name="tax_amount"
+                                       readonly="1"/>
+
+                                <field name="subtotal"
+                                       readonly="1"/>
+
+                                <field name="total"
+                                       readonly="1"/>
+
+                            </list>
+
+                        </field>
+
+                        <group class="oe_subtotal_footer">
+
+                            <group>
+
+                                <field name="service_amount"
+                                       readonly="1"/>
+
+                                <field name="service_tax_amount"
+                                       readonly="1"/>
+
+                            </group>
+
+                        </group>
+
+                    </page>
+
+                    <!-- Pricing -->
+
+                    <page string="Pricing">
+
+                        <group col="4">
+
+                            <group string="Room Pricing"
+                                   col="4">
+
+                                <field name="room_amount"
+                                       readonly="1"
+                                       colspan="3"/>
+
+                                <field name="discount_id"
+                                       colspan="3"/>
+
+                                <field name="discount_amount"
+                                       readonly="1"
+                                       colspan="3"/>
+
+                            </group>
+
+                            <group string="Taxes"
+                                   col="4">
+
+                                <field name="tax_ids"
+                                       widget="many2many_tags"
+                                       colspan="3"/>
+
+                                <field name="tax_amount"
+                                       readonly="1"
+                                       colspan="3"/>
+
+                            </group>
+
+                        </group>
+
+                    </page>
+
+                    <!-- Notes -->
+
+                    <page string="Notes">
+
+                        <field name="note"
+                               placeholder="Add notes for this reservation room..."/>
+
+                    </page>
+
+                </notebook>
+
+                <!-- Amount Summary -->
+
+                <group class="oe_subtotal_footer oe_right">
+
+                    <field name="room_amount"
+                           readonly="1"/>
+
+                    <field name="service_amount"
+                           readonly="1"/>
+
+                    <field name="discount_amount"
+                           readonly="1"/>
+
+                    <field name="tax_amount"
+                           readonly="1"/>
+
+                    <field name="total"
+                           readonly="1"
+                           class="oe_subtotal"/>
+
+                </group>
+
+            </sheet>
+
+            <chatter/>
+
+        </form>
+
+    </field>
+</record>
+
+    <record id="view_hotel_reservation_line_tree" model="ir.ui.view">
+        <field name="name">hotel.reservation.line.tree</field>
+        <field name="model">hotel.reservation.line</field>
+        <field name="arch" type="xml">
+
+            <list string="Reservation Rooms"
+                  create="1"
+                  edit="1"
+                  delete="1">
+
+                <field name="sequence"
+                       widget="handle"/>
+
+                <field name="reservation_id"/>
+
+                <field name="hotel_id"/>
+
+                <field name="room_category_id"/>
+
+                <field name="room_id" />
+
+                <field name="check_in"/>
+
+                <field name="check_out"/>
+
+                <field name="night_count"/>
+
+                <field name="rate_plan_id"/>
+
+                <field name="room_amount"
+                       sum="Room Amount"/>
+
+                <field name="service_amount"
+                       sum="Services"/>
+
+                <field name="discount_amount"
+                       sum="Discount"/>
+
+                <field name="tax_amount"
+                       sum="Tax"/>
+
+                <field name="total"
+                       sum="Total"/>
+
+            </list>
+
+        </field>
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- Reservation Line Search -->
+    <!-- ========================================================= -->
+
+    <record id="view_hotel_reservation_line_search" model="ir.ui.view">
+        <field name="name">hotel.reservation.line.search</field>
+        <field name="model">hotel.reservation.line</field>
+        <field name="arch" type="xml">
+
+            <search string="Reservation Rooms">
+
+                <field name="reservation_id"/>
+
+                <field name="hotel_id"/>
+
+                <field name="room_category_id"/>
+
+                <field name="room_id"/>
+
+                <field name="rate_plan_id"/>
+
+                <field name="check_in"/>
+
+                <field name="check_out"/>
+
+                <separator/>
+
+                <filter name="today_checkins"
+                        string="Today's Check-ins"
+                        domain="[
+                        ('check_in', '&gt;=', context_today()),
+                        ('check_in', '&lt;', context_today() + relativedelta(days=1))
+                    ]"/>
+
+                <filter name="today_checkouts"
+                        string="Today's Check-outs"
+                        domain="[
+                        ('check_out', '&gt;=', context_today()),
+                        ('check_out', '&lt;', context_today() + relativedelta(days=1))
+                    ]"/>
+
+                <separator/>
+
+                <group expand="0"
+                       string="Group By">
+
+                    <filter name="group_hotel"
+                            string="Hotel"
+                            context="{'group_by': 'hotel_id'}"/>
+
+                    <filter name="group_room_category"
+                            string="Room Category"
+                            context="{'group_by': 'room_category_id'}"/>
+
+                    <filter name="group_room"
+                            string="Room"
+                            context="{'group_by': 'room_id'}"/>
+
+                    <filter name="group_rate_plan"
+                            string="Rate Plan"
+                            context="{'group_by': 'rate_plan_id'}"/>
+
+                    <filter name="group_check_in"
+                            string="Check-in"
+                            context="{'group_by': 'check_in'}"/>
+
+                </group>
+
+            </search>
+
+        </field>
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- Reservation Line Action -->
+    <!-- ========================================================= -->
+
+    <record id="action_hotel_reservation_line" model="ir.actions.act_window">
+
+        <field name="name">Reservation Rooms</field>
+
+        <field name="res_model">hotel.reservation.line</field>
+
+        <field name="view_mode">list,form</field>
+
+        <field name="search_view_id"
+               ref="view_hotel_reservation_line_search"/>
+
+        <field name="context">
+            {
+            'search_default_group_hotel': 1
+            }
+        </field>
+
+    </record>
+
+</odoo>

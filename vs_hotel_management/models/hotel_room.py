@@ -1,5 +1,5 @@
-from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError, UserError
 from collections import defaultdict
 from markupsafe import Markup, escape
 
@@ -47,6 +47,13 @@ class HotelRoom(models.Model):
 
     floor_id = fields.Many2one(
         "hotel.building.floor",
+        required=True,
+        ondelete="restrict",
+    )
+
+    hotel_id = fields.Many2one(
+        "hotel.hotel",
+        related="building_id.hotel_id",
         required=True,
         ondelete="restrict",
     )
@@ -116,17 +123,24 @@ class HotelRoom(models.Model):
         sanitize=True,
     )
 
+    booking_ids = fields.One2many(
+        "hotel.room.booking",
+        "room_id",
+        string="Bookings",
+    )
+
     reservation_count = fields.Integer(
         compute="_compute_reservation_count",
+    )
+
+    maintenance_count = fields.Integer(
+        compute="_compute_maintenance_count",
     )
 
     housekeeping_count = fields.Integer(
         compute="_compute_housekeeping_count",
     )
 
-    maintenance_count = fields.Integer(
-        compute="_compute_maintenance_count",
-    )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -136,6 +150,32 @@ class HotelRoom(models.Model):
                     "hotel.room"
                 ) or "/"
         return super().create(vals_list)
+
+    def _compute_reservation_count(self):
+        ReservationLine = self.env["hotel.reservation.line"]
+
+        for room in self:
+            room.reservation_count = ReservationLine.search_count([
+                ("room_id", "=", room.id),
+            ])
+
+    def _compute_housekeeping_count(self):
+        Housekeeping = self.env["hotel.housekeeping"]
+
+        for room in self:
+            room.housekeeping_count = Housekeeping.search_count([
+                ("room_id", "=", room.id),
+                # ("state", "in", ("pending", "in_progress")),
+            ])
+
+    def _compute_maintenance_count(self):
+        Maintenance = self.env["hotel.maintenance"]
+
+        for room in self:
+            room.maintenance_count = Maintenance.search_count([
+                ("room_id", "=", room.id),
+                ("state", "in", ("pending", "in_progress")),
+            ])
 
     @api.depends("room_number", "room_category_id")
     def _compute_display_name(self):
@@ -238,19 +278,201 @@ class HotelRoom(models.Model):
         self.write({"status": "dirty"})
 
     def action_start_cleaning(self):
-        self.write({"status": "cleaning"})
+        self.ensure_one()
+
+        if self.status != "dirty":
+            raise UserError(
+                _(
+                    "Room %s can only be sent for cleaning "
+                    "when its status is Dirty."
+                )
+                % self.display_name
+            )
+
+        Housekeeping = self.env["hotel.housekeeping"]
+
+        task = Housekeeping.search(
+            [
+                ("room_id", "=", self.id),
+                ("state", "in", ("pending", "in_progress")),
+            ],
+            order="id desc",
+            limit=1,
+        )
+
+        if not task:
+            task = Housekeeping.create_checkout_task(
+                room=self,
+            )
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Assign Housekeeping"),
+            "res_model": "hotel.task.assignment.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "default_task_type": "housekeeping",
+                "default_room_id": self.id,
+                "default_housekeeping_id": task.id,
+            },
+        }
 
     def action_mark_available(self):
-        self.write({"status": "available"})
+        Housekeeping = self.env["hotel.housekeeping"]
+
+        for room in self:
+            # if room.status != "cleaning":
+            #     raise UserError(
+            #         _(
+            #             "Room %s can only be marked available "
+            #             "after cleaning."
+            #         )
+            #         % room.display_name
+            #     )
+
+            if room.status == "cleaning":
+                task = Housekeeping.search(
+                    [
+                        ("room_id", "=", room.id),
+                        ("state", "=", "in_progress"),
+                    ],
+                    order="id desc",
+                    limit=1,
+                )
+
+                if task:
+                    task.action_done()
+
+            room.status = "available"
+
+        return True
 
     def action_start_maintenance(self):
-        self.write({"status": "maintenance"})
+        self.ensure_one()
+
+        if self.status in ("cleaning", "maintenance"):
+            raise UserError(
+                _(
+                    "Room %s is currently %s and cannot start "
+                    "another maintenance task."
+                )
+                % (self.display_name, self.status)
+            )
+
+        Maintenance = self.env["hotel.maintenance"]
+
+        task = Maintenance.search(
+            [
+                ("room_id", "=", self.id),
+                ("state", "in", ("pending", "in_progress")),
+            ],
+            order="id desc",
+            limit=1,
+        )
+
+        if not task:
+            task = Maintenance.create_room_maintenance(
+                room=self,
+                maintenance_type="corrective",
+            )
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Assign Maintenance"),
+            "res_model": "hotel.task.assignment.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "default_task_type": "maintenance",
+                "default_room_id": self.id,
+                "default_maintenance_id": task.id,
+            },
+        }
 
     def action_mark_out_of_order(self):
         self.write({"status": "out_of_order"})
 
     def action_finish_maintenance(self):
-        self.write({"status": "available"})
+        Maintenance = self.env["hotel.maintenance"]
+
+        for room in self:
+            # if room.status != "maintenance":
+            #     raise UserError(
+            #         _(
+            #             "Room %s is not currently under maintenance."
+            #         )
+            #         % room.display_name
+            #     )
+
+            if room.status == "maintenance":
+                maintenance = Maintenance.search(
+                    [
+                        ("room_id", "=", room.id),
+                        ("state", "=", "in_progress"),
+                    ],
+                    order="id desc",
+                    limit=1,
+                )
+
+                if maintenance:
+                    maintenance.write({
+                        "state": "done",
+                        "completed_at": fields.Datetime.now(),
+                    })
+
+            room.status = "available"
+
+        return True
+
+    def action_view_reservations(self):
+        self.ensure_one()
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Reservations"),
+            "res_model": "hotel.reservation.line",
+            "view_mode": "list,form",
+            "domain": [
+                ("room_id", "=", self.id),
+            ],
+            "context": {
+                "default_room_id": self.id,
+            },
+        }
+
+    def action_view_housekeeping(self):
+        self.ensure_one()
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Housekeeping"),
+            "res_model": "hotel.housekeeping",
+            "view_mode": "kanban,list,form",
+            "domain": [
+                ("room_id", "=", self.id),
+            ],
+            "context": {
+                "default_room_id": self.id,
+            },
+        }
+
+    def action_view_maintenance(self):
+        self.ensure_one()
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Maintenance"),
+            "res_model": "hotel.maintenance",
+            "view_mode": "kanban,list,form",
+            "domain": [
+                ("room_id", "=", self.id),
+            ],
+            "context": {
+                "default_room_id": self.id,
+            },
+        }
+
 
     _sql_constraints = [
         (
@@ -264,3 +486,37 @@ class HotelRoom(models.Model):
             "Code must be unique per company.",
         ),
     ]
+
+    def _is_available_for_period(
+            self,
+            check_in,
+            check_out,
+            exclude_booking=None,
+    ):
+        self.ensure_one()
+
+        if not check_in or not check_out:
+            return False
+
+        domain = [
+            ("room_id", "=", self.id),
+            ("state", "in", [
+                "reserved",
+                "confirmed",
+                "checked_in",
+            ]),
+            ("check_in", "<", check_out),
+            ("check_out", ">", check_in),
+        ]
+
+        if exclude_booking:
+            domain.append(
+                ("id", "!=", exclude_booking.id)
+            )
+
+        return not bool(
+            self.env["hotel.room.booking"].search(
+                domain,
+                limit=1,
+            )
+        )

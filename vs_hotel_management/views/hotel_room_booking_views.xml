@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_hotel_room_booking_list" model="ir.ui.view">
+        <field name="name">hotel.room.booking.list</field>
+        <field name="model">hotel.room.booking</field>
+        <field name="arch" type="xml">
+
+            <list string="Room Bookings"
+                  create="0"
+                  edit="0"
+                  delete="0">
+
+                <field name="name"/>
+
+                <field name="room_id"/>
+
+                <field name="reservation_id"/>
+
+                <field name="check_in"/>
+
+                <field name="check_out"/>
+
+                <field name="night_count"/>
+
+                <field name="adult_count"/>
+
+                <field name="child_count"/>
+
+                <field name="guest_count"/>
+
+                <field name="state"
+                       widget="badge"/>
+
+            </list>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_room_booking_form" model="ir.ui.view">
+        <field name="name">hotel.room.booking.form</field>
+        <field name="model">hotel.room.booking</field>
+        <field name="arch" type="xml">
+
+            <form string="Room Booking"
+                  create="0"
+                  edit="0"
+                  delete="0">
+
+                <header>
+
+                    <button name="action_check_in"
+                            string="Check In"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'reserved'"/>
+
+                    <button name="action_check_out"
+                            string="Check Out"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'checked_in'"/>
+
+                    <button name="action_release"
+                            string="Release"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state not in ('reserved', 'checked_in')"/>
+
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'reserved'"/>
+
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="
+                           reserved,
+                           checked_in,
+                           checked_out,
+                           released,
+                           completed,
+                           cancelled"/>
+
+                </header>
+
+                <sheet>
+
+                    <div class="oe_title">
+
+                        <h1>
+                            <field name="name"
+                                   readonly="1"/>
+                        </h1>
+
+                    </div>
+
+                    <group string="Booking Information" col="3">
+                        <group col="3">
+                            <field name="reservation_id"
+                                   readonly="1"/>
+                        </group>
+                        <group col="3">
+                            <field name="reservation_line_id"
+                                   readonly="1"/>
+                        </group>
+                        <group col="3">
+                            <field name="room_id"
+                                   readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Stay Information" col="3">
+
+                        <group colspan="1">
+                            <field name="check_in"
+                                   readonly="1"/>
+                        </group>
+                        <group colspan="1">
+                            <field name="check_out"
+                                   readonly="1"/>
+                        </group>
+                        <group colspan="1">
+                            <field name="night_count"
+                                   readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Guests" col="3">
+                        <group colspan="1">
+                            <field name="adult_count"
+                                   readonly="1"/>
+                        </group>
+                        <group colspan="1">
+                            <field name="child_count"
+                                   readonly="1"/>
+                        </group>
+                        <group colspan="1">
+                            <field name="guest_count"
+                                   readonly="1"/>
+                        </group>
+                    </group>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_room_booking_search" model="ir.ui.view">
+        <field name="name">hotel.room.booking.search</field>
+        <field name="model">hotel.room.booking</field>
+        <field name="arch" type="xml">
+
+            <search string="Room Bookings">
+
+                <field name="name"
+                       string="Booking"/>
+
+                <field name="room_id"
+                       string="Room"/>
+
+                <field name="reservation_id"
+                       string="Reservation"/>
+
+                <field name="check_in"/>
+
+                <field name="check_out"/>
+
+                <field name="state"/>
+
+                <separator/>
+
+                <filter name="draft_bookings"
+                        string="Draft Bookings"
+                        domain="[('state', '=', 'draft')]"/>
+
+                 <filter name="active_bookings"
+                        string="Active Bookings"
+                        domain="[('state', 'in', ('reserved', 'checked_in'))]"/>
+
+                <filter name="reserved"
+                        string="Reserved"
+                        domain="[('state', '=', 'reserved')]"/>
+
+                <filter name="checked_in"
+                        string="Checked In"
+                        domain="[('state', '=', 'checked_in')]"/>
+
+                <filter name="checked_out"
+                        string="Checked Out"
+                        domain="[('state', '=', 'checked_out')]"/>
+
+                <filter name="released"
+                        string="Released"
+                        domain="[('state', '=', 'released')]"/>
+
+                <filter name="cancelled"
+                        string="Cancelled"
+                        domain="[('state', '=', 'cancelled')]"/>
+
+                <filter name="completed"
+                        string="Completed"
+                        domain="[('state', '=', 'completed')]"/>
+
+                <separator/>
+
+                <filter name="today_checkins"
+                        string="Today's Check-ins"
+                        domain="[
+                        ('check_in', '>=', context_today()),
+                        ('check_in', '&lt;',
+                         context_today() + relativedelta(days=1))
+                    ]"/>
+
+                <filter name="today_checkouts"
+                        string="Today's Check-outs"
+                        domain="[
+                        ('check_out', '>=', context_today()),
+                        ('check_out', '&lt;',
+                         context_today() + relativedelta(days=1))
+                    ]"/>
+
+                <separator/>
+
+                <group expand="0"
+                       string="Group By">
+
+                    <filter name="group_room"
+                            string="Room"
+                            context="{'group_by': 'room_id'}"/>
+
+                    <filter name="group_state"
+                            string="Status"
+                            context="{'group_by': 'state'}"/>
+
+                    <filter name="group_check_in"
+                            string="Check-in"
+                            context="{'group_by': 'check_in'}"/>
+
+                </group>
+
+            </search>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_room_booking_calendar" model="ir.ui.view">
+        <field name="name">hotel.room.booking.calendar</field>
+        <field name="model">hotel.room.booking</field>
+        <field name="arch" type="xml">
+
+            <calendar string="Room Availability"
+                      date_start="check_in"
+                      date_stop="check_out"
+                      mode="month"
+                      color="room_id"
+                      quick_create="0"
+                      create="0"
+                      edit="0"
+                      delete="0">
+
+                <field name="name"/>
+
+                <field name="room_id"/>
+
+                <field name="reservation_id"/>
+
+                <field name="state"/>
+
+                <field name="adult_count"/>
+
+                <field name="child_count"/>
+
+                <field name="guest_count"/>
+
+            </calendar>
+
+        </field>
+    </record>
+
+
+    <record id="action_hotel_room_booking" model="ir.actions.act_window">
+
+        <field name="name">Room Bookings</field>
+
+        <field name="res_model">hotel.room.booking</field>
+
+        <field name="view_mode">list,form</field>
+
+        <field name="search_view_id"
+               ref="view_hotel_room_booking_search"/>
+
+    </record>
+
+    <record id="action_hotel_room_booking_calendar"
+            model="ir.actions.act_window">
+
+        <field name="name">Room Availability</field>
+
+        <field name="res_model">hotel.room.booking</field>
+
+        <field name="view_mode">calendar,list,form</field>
+
+        <field name="view_id"
+               ref="view_hotel_room_booking_calendar"/>
+
+        <field name="search_view_id"
+               ref="view_hotel_room_booking_search"/>
+
+        <field name="context">
+            {
+            "search_default_reserved": 1,
+            "search_default_checked_in": 1
+            }
+        </field>
+
+    </record>
+
+</odoo>
