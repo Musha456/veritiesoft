@@ -90,9 +90,10 @@
                                 class="oe_stat_button"
                                 icon="fa-money">
 
-                            <field name="folio_count"
+                            <field name="folio_balance"
                                    widget="statinfo"
-                                   string="Folio"/>
+                                   string="Folio Balance"
+                                   options="{'currency_field': 'currency_id'}"/>
 
                         </button>
 
@@ -201,18 +202,23 @@
                                            options="{'currency_field': 'currency_id'}"
                                            sum="Room Amount"/>
 
+                                    <field name="product_id"/>
+
                                     <field name="service_amount"
                                            readonly="1"
                                            widget="monetary"
                                            options="{'currency_field': 'currency_id'}"
                                            sum="Service Amount"/>
 
+
                                     <field name="discount_amount"
                                            optional="show"
                                            readonly="1"
                                            widget="monetary"
                                            options="{'currency_field': 'currency_id'}"
-                                           sum="Discount"/>
+                                           sum="Total Discount"/>
+
+                                    <field name="tax_ids" widget="many2many_tags"/>
 
                                     <!--                                    <field name="tax_amount"-->
                                     <!--                                           optional="show"-->
@@ -226,7 +232,7 @@
                                            readonly="1"
                                            widget="monetary"
                                            options="{'currency_field': 'currency_id'}"
-                                           sum="Tax Amount"/>
+                                           sum="Total Tax Amount"/>
 
                                     <!--                                    <field name="service_tax_amount"-->
                                     <!--                                           optional="show"-->
@@ -293,7 +299,7 @@
                                                 <field name="service_line_ids">
 
                                                     <list editable="bottom">
-                                                        <field name="service_id"/>
+                                                        <field name="product_id"/>
                                                         <field name="serve_date"/>
                                                         <field name="quantity"/>
                                                         <field name="price_unit"/>
@@ -349,22 +355,24 @@
 
                                         <group class="oe_subtotal_footer">
 
-                                            <!-- Room Charges -->
+                                            <!-- Charges -->
                                             <field name="room_amount" readonly="1"/>
-                                            <field name="discount_amount" readonly="1"/>
-                                            <field name="tax_amount" readonly="1"/>
-
-                                            <separator/>
-
-                                            <!-- Service Charges -->
                                             <field name="service_amount" readonly="1"/>
+
+                                            <separator string="Discount"/>
+
+                                            <field name="discount_amount" readonly="1"/>
                                             <field name="service_line_discounts" readonly="1"/>
+                                            <field name="total_discount_amount" readonly="1"/>
+
+                                            <separator string="Tax"/>
+
+                                            <field name="tax_amount" readonly="1"/>
                                             <field name="service_tax_amount" readonly="1"/>
+                                            <field name="total_tax_amount" readonly="1"/>
 
-                                            <separator/>
-
-                                            <!-- Summary -->
                                             <field name="subtotal" readonly="1"/>
+
                                             <field name="total"
                                                    readonly="1"
                                                    class="oe_subtotal"/>
@@ -421,12 +429,26 @@
                         <group/>
 
                         <group class="oe_subtotal_footer">
+
                             <field name="room_amount" readonly="1"/>
                             <field name="service_amount" readonly="1"/>
+
+                            <separator string="Discount"/>
+
+                            <field name="room_discount_amount" readonly="1"/>
+                            <field name="service_discount_amount" readonly="1"/>
                             <field name="discount_amount" readonly="1"/>
+
+                            <separator string="Tax"/>
+
+                            <field name="room_tax_amount" readonly="1"/>
+                            <field name="service_tax_amount" readonly="1"/>
                             <field name="tax_amount" readonly="1"/>
+
                             <field name="subtotal" readonly="1"/>
+
                             <field name="total_amount" class="oe_subtotal" readonly="1"/>
+
                         </group>
 
                     </group>

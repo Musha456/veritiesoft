@@ -49,7 +49,7 @@ class HotelHotel(models.Model):
     )
 
     service_ids = fields.One2many(
-        "hotel.service",
+        "product.product",
         "hotel_id",
         "Hotel Services"
     )
@@ -577,7 +577,7 @@ class HotelHotel(models.Model):
         return {
             "type": "ir.actions.act_window",
             "name": "Services",
-            "res_model": "hotel.service",
+            "res_model": "product.product",
             "view_mode": "list,form",
             "domain": [("hotel_id", "=", self.id)],
         }

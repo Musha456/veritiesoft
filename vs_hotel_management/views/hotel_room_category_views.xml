@@ -40,7 +40,7 @@
         <field name="name">hotel.room.category.form</field>
         <field name="model">hotel.room.category</field>
         <field name="arch" type="xml">
-            <form string="Amenity Type">
+            <form string="Room Category">
                 <sheet>
                     <div class="oe_button_box" name="button_box">
 
@@ -68,6 +68,7 @@
 
                             <group>
                                 <field name="code" readonly="1"/>
+                                <field name="product_id"/>
                                 <field name="company_id" groups="base.group_multi_company"/>
                             </group>
 

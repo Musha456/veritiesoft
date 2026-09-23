@@ -48,7 +48,7 @@
         <field name="name">hotel.room.form</field>
         <field name="model">hotel.room</field>
         <field name="arch" type="xml">
-            <form string="Amenity Type">
+            <form string="Rooms">
                 <header>
 
                     <div groups="vs_hotel_management.group_hotel_room_manager">
@@ -160,6 +160,7 @@
 
                             <group>
                                 <field name="room_number"/>
+                                <field name="product_id"/>
                                 <field name="room_category_id"/>
                                 <field name="building_id"/>
                                 <field name="floor_id" invisible="not building_id"

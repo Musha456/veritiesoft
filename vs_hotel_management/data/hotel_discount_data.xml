@@ -1,36 +1,451 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<odoo noupdate="1">
+<odoo>
 
-    <record id="hotel_discount_summer" model="hotel.discount">
+    <data noupdate="1">
 
-        <field name="name">Summer Sale</field>
+        <!-- ========================================================= -->
+        <!-- Early Booking Discount                                     -->
+        <!-- ========================================================= -->
 
-        <field name="hotel_id" ref="vs_hotel_management.hotel_demo"/>
+        <record id="hotel_discount_early_booking" model="hotel.discount">
 
-        <field name="discount_type">percentage</field>
+            <field name="name">Early Booking Discount</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
 
-        <field name="discount">15</field>
+            <field name="description">
+                Save 10% when the reservation is made in advance.
+            </field>
 
-        <field name="state">active</field>
+            <field name="discount_type">percentage</field>
+            <field name="discount">10</field>
+            <field name="maximum_discount">100.00</field>
 
-        <field name="date_start">2026-06-01</field>
+            <field name="priority">1</field>
+            <field name="website_published">1</field>
+            <field name="combinable">0</field>
 
-        <field name="date_end">2026-08-31</field>
+            <field name="minimum_nights">1</field>
+            <field name="maximum_nights">0</field>
 
-    </record>
+            <field name="minimum_amount">0.00</field>
 
-    <record id="hotel_discount_weekend" model="hotel.discount">
+            <field name="minimum_adults">1</field>
+            <field name="minimum_children">0</field>
 
-        <field name="name">Weekend Offer</field>
+            <field name="minimum_advance_days">14</field>
+            <field name="maximum_advance_days">365</field>
 
-        <field name="hotel_id" ref="hotel_demo"/>
+            <field name="coupon_required">0</field>
 
-        <field name="discount_type">fixed</field>
+            <field name="monday">1</field>
+            <field name="tuesday">1</field>
+            <field name="wednesday">1</field>
+            <field name="thursday">1</field>
+            <field name="friday">1</field>
+            <field name="saturday">1</field>
+            <field name="sunday">1</field>
 
-        <field name="discount">25</field>
+            <field name="state">active</field>
 
-        <field name="state">active</field>
+        </record>
 
-    </record>
+
+        <!-- ========================================================= -->
+        <!-- Long Stay Discount                                         -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_discount_long_stay" model="hotel.discount">
+
+            <field name="name">Long Stay Discount</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="description">
+                Save 15% on extended stays of seven nights or more.
+            </field>
+
+            <field name="discount_type">percentage</field>
+            <field name="discount">15</field>
+            <field name="maximum_discount">250.00</field>
+
+            <field name="priority">2</field>
+            <field name="website_published">1</field>
+            <field name="combinable">0</field>
+
+            <field name="minimum_nights">7</field>
+            <field name="maximum_nights">0</field>
+
+            <field name="minimum_amount">0.00</field>
+
+            <field name="minimum_adults">1</field>
+            <field name="minimum_children">0</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">365</field>
+
+            <field name="coupon_required">0</field>
+
+            <field name="monday">1</field>
+            <field name="tuesday">1</field>
+            <field name="wednesday">1</field>
+            <field name="thursday">1</field>
+            <field name="friday">1</field>
+            <field name="saturday">1</field>
+            <field name="sunday">1</field>
+
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Weekend Discount                                           -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_discount_weekend" model="hotel.discount">
+
+            <field name="name">Weekend Special</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="description">
+                Special 12% discount for weekend stays.
+            </field>
+
+            <field name="discount_type">percentage</field>
+            <field name="discount">12</field>
+            <field name="maximum_discount">150.00</field>
+
+            <field name="priority">2</field>
+            <field name="website_published">1</field>
+            <field name="combinable">0</field>
+
+            <field name="minimum_nights">2</field>
+            <field name="maximum_nights">3</field>
+
+            <field name="minimum_amount">0.00</field>
+
+            <field name="minimum_adults">1</field>
+            <field name="minimum_children">0</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">90</field>
+
+            <field name="coupon_required">0</field>
+
+            <field name="monday">0</field>
+            <field name="tuesday">0</field>
+            <field name="wednesday">0</field>
+            <field name="thursday">0</field>
+            <field name="friday">1</field>
+            <field name="saturday">1</field>
+            <field name="sunday">1</field>
+
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Member Discount                                            -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_discount_member" model="hotel.discount">
+
+            <field name="name">Member Discount</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="description">
+                Exclusive 10% discount for registered hotel members.
+            </field>
+
+            <field name="discount_type">percentage</field>
+            <field name="discount">10</field>
+            <field name="maximum_discount">150.00</field>
+
+            <field name="priority">2</field>
+            <field name="website_published">1</field>
+            <field name="combinable">0</field>
+
+            <field name="minimum_nights">1</field>
+            <field name="maximum_nights">0</field>
+
+            <field name="minimum_amount">50.00</field>
+
+            <field name="minimum_adults">1</field>
+            <field name="minimum_children">0</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">365</field>
+
+            <field name="coupon_required">1</field>
+            <field name="coupon_code">MEMBER10</field>
+
+            <field name="monday">1</field>
+            <field name="tuesday">1</field>
+            <field name="wednesday">1</field>
+            <field name="thursday">1</field>
+            <field name="friday">1</field>
+            <field name="saturday">1</field>
+            <field name="sunday">1</field>
+
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Corporate Discount                                         -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_discount_corporate" model="hotel.discount">
+
+            <field name="name">Corporate Discount</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="description">
+                Special corporate booking discount for business stays.
+            </field>
+
+            <field name="discount_type">percentage</field>
+            <field name="discount">12</field>
+            <field name="maximum_discount">200.00</field>
+
+            <field name="priority">2</field>
+            <field name="website_published">0</field>
+            <field name="combinable">0</field>
+
+            <field name="minimum_nights">1</field>
+            <field name="maximum_nights">0</field>
+
+            <field name="minimum_amount">100.00</field>
+
+            <field name="minimum_adults">1</field>
+            <field name="minimum_children">0</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">365</field>
+
+            <field name="coupon_required">1</field>
+            <field name="coupon_code">CORPORATE12</field>
+
+            <field name="monday">1</field>
+            <field name="tuesday">1</field>
+            <field name="wednesday">1</field>
+            <field name="thursday">1</field>
+            <field name="friday">1</field>
+            <field name="saturday">0</field>
+            <field name="sunday">0</field>
+
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Fixed Amount Promotion                                     -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_discount_fixed_promotion" model="hotel.discount">
+
+            <field name="name">Summer Stay Offer</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="description">
+                Fixed discount of 25 on qualifying summer reservations.
+            </field>
+
+            <field name="discount_type">fixed</field>
+            <field name="discount">25.00</field>
+
+            <field name="priority">2</field>
+            <field name="website_published">1</field>
+            <field name="combinable">0</field>
+
+            <field name="minimum_nights">2</field>
+            <field name="maximum_nights">14</field>
+
+            <field name="minimum_amount">150.00</field>
+
+            <field name="minimum_adults">1</field>
+            <field name="minimum_children">0</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">90</field>
+
+            <field name="coupon_required">1</field>
+            <field name="coupon_code">SUMMER25</field>
+
+            <field name="monday">1</field>
+            <field name="tuesday">1</field>
+            <field name="wednesday">1</field>
+            <field name="thursday">1</field>
+            <field name="friday">1</field>
+            <field name="saturday">1</field>
+            <field name="sunday">1</field>
+
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Family Discount                                            -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_discount_family" model="hotel.discount">
+
+            <field name="name">Family Stay Discount</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="description">
+                8% discount for family reservations with children.
+            </field>
+
+            <field name="discount_type">percentage</field>
+            <field name="discount">8</field>
+            <field name="maximum_discount">100.00</field>
+
+            <field name="priority">1</field>
+            <field name="website_published">1</field>
+            <field name="combinable">0</field>
+
+            <field name="minimum_nights">2</field>
+            <field name="maximum_nights">14</field>
+
+            <field name="minimum_amount">100.00</field>
+
+            <field name="minimum_adults">2</field>
+            <field name="minimum_children">1</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">180</field>
+
+            <field name="coupon_required">0</field>
+
+            <field name="monday">1</field>
+            <field name="tuesday">1</field>
+            <field name="wednesday">1</field>
+            <field name="thursday">1</field>
+            <field name="friday">1</field>
+            <field name="saturday">1</field>
+            <field name="sunday">1</field>
+
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Deluxe Room Discount                                       -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_discount_deluxe_room" model="hotel.discount">
+
+            <field name="name">Deluxe Room Offer</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="description">
+                Special 15% discount applicable to Deluxe Rooms.
+            </field>
+
+            <field name="discount_type">percentage</field>
+            <field name="discount">15</field>
+            <field name="maximum_discount">175.00</field>
+
+            <field name="priority">2</field>
+            <field name="website_published">1</field>
+            <field name="combinable">0</field>
+
+            <field name="room_category_ids" eval="[
+                (6, 0, [
+                    ref('hotel_room_category_deluxe_room')
+                ])
+            ]"/>
+
+            <field name="minimum_nights">1</field>
+            <field name="maximum_nights">7</field>
+
+            <field name="minimum_amount">100.00</field>
+
+            <field name="minimum_adults">1</field>
+            <field name="minimum_children">0</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">60</field>
+
+            <field name="coupon_required">0</field>
+
+            <field name="monday">1</field>
+            <field name="tuesday">1</field>
+            <field name="wednesday">1</field>
+            <field name="thursday">1</field>
+            <field name="friday">1</field>
+            <field name="saturday">1</field>
+            <field name="sunday">1</field>
+
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Expired Promotional Discount                              -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_discount_expired_promotion" model="hotel.discount">
+
+            <field name="name">New Year Promotion</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="description">
+                Previous seasonal promotional offer.
+            </field>
+
+            <field name="discount_type">percentage</field>
+            <field name="discount">20</field>
+            <field name="maximum_discount">200.00</field>
+
+            <field name="priority">1</field>
+            <field name="website_published">0</field>
+            <field name="combinable">0</field>
+
+            <field name="date_start">2025-12-01</field>
+            <field name="date_end">2026-01-15</field>
+
+            <field name="minimum_nights">2</field>
+            <field name="maximum_nights">14</field>
+
+            <field name="minimum_amount">100.00</field>
+
+            <field name="minimum_adults">1</field>
+            <field name="minimum_children">0</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">90</field>
+
+            <field name="coupon_required">0</field>
+
+            <field name="monday">1</field>
+            <field name="tuesday">1</field>
+            <field name="wednesday">1</field>
+            <field name="thursday">1</field>
+            <field name="friday">1</field>
+            <field name="saturday">1</field>
+            <field name="sunday">1</field>
+
+            <field name="state">expired</field>
+            <field name="active">0</field>
+
+        </record>
+
+    </data>
 
 </odoo>

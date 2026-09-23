@@ -509,16 +509,28 @@
 
                             <field name="service_ids"
                                    nolabel="1"
-                                   mode="kanban,form"
-                                   context="{'default_hotel_id': id}">
+                                   mode="kanban,form">
+
                                 <list>
-                                    <field name="icon" widget="image" options="{'size':[40,40]}"/>
+
+                                    <field name="image_128"
+                                           widget="image"
+                                           options="{'size': [40, 40]}"/>
+
                                     <field name="name"/>
-                                    <field name="category"/>
-                                    <field name="price" widget="monetary"/>
-                                    <field name="is_complimentary" string="Complimentary" widget="boolean_toggle" readonly="1"/>
-                                    <field name="code"/>
+
+                                    <field name="categ_id"/>
+
+                                    <field name="list_price"
+                                           widget="monetary"/>
+
+                                    <field name="is_complimentary"
+                                           string="Complimentary"
+                                           widget="boolean_toggle"
+                                           readonly="1"/>
+
                                 </list>
+
                             </field>
 
                         </page>

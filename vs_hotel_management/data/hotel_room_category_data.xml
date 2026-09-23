@@ -1,39 +1,189 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
     <data noupdate="1">
+
+        <!-- Standard Room -->
         <record id="hotel_room_category_standard_room" model="hotel.room.category">
             <field name="name">Standard Room</field>
             <field name="bed_type_id" ref="vs_hotel_management.hotel_bed_type_single_bed"/>
+            <field name="amenity_ids" eval="[
+                (6, 0, [
+                    ref('hotel_amenity_shower'),
+                    ref('hotel_amenity_towels'),
+                    ref('hotel_amenity_wardrobe'),
+                    ref('hotel_amenity_wifi'),
+                    ref('hotel_amenity_tv'),
+                    ref('hotel_amenity_coffee_maker'),
+                    ref('hotel_amenity_kettle'),
+                    ref('hotel_amenity_air_conditioning'),
+                    ref('hotel_amenity_heating'),
+                    ref('hotel_amenity_safe'),
+                    ref('hotel_amenity_smoke_detector'),
+                    ref('hotel_amenity_work_desk')
+                ])
+            ]"/>
         </record>
 
+        <!-- Deluxe Room -->
         <record id="hotel_room_category_deluxe_room" model="hotel.room.category">
             <field name="name">Deluxe Room</field>
             <field name="bed_type_id" ref="vs_hotel_management.hotel_bed_type_twin_bed"/>
+            <field name="amenity_ids" eval="[
+                (6, 0, [
+                    ref('hotel_amenity_hair_dryer'),
+                    ref('hotel_amenity_shower'),
+                    ref('hotel_amenity_bathtub'),
+                    ref('hotel_amenity_towels'),
+                    ref('hotel_amenity_wardrobe'),
+                    ref('hotel_amenity_wifi'),
+                    ref('hotel_amenity_tv'),
+                    ref('hotel_amenity_cable_tv'),
+                    ref('hotel_amenity_mini_bar'),
+                    ref('hotel_amenity_coffee_maker'),
+                    ref('hotel_amenity_kettle'),
+                    ref('hotel_amenity_air_conditioning'),
+                    ref('hotel_amenity_heating'),
+                    ref('hotel_amenity_safe'),
+                    ref('hotel_amenity_smoke_detector'),
+                    ref('hotel_amenity_balcony'),
+                    ref('hotel_amenity_work_desk')
+                ])
+            ]"/>
         </record>
 
+        <!-- Executive Room -->
         <record id="hotel_room_category_executive_room" model="hotel.room.category">
             <field name="name">Executive Room</field>
             <field name="bed_type_id" ref="vs_hotel_management.hotel_bed_type_double_bed"/>
+            <field name="amenity_ids" eval="[
+                (6, 0, [
+                    ref('hotel_amenity_hair_dryer'),
+                    ref('hotel_amenity_shower'),
+                    ref('hotel_amenity_bathtub'),
+                    ref('hotel_amenity_towels'),
+                    ref('hotel_amenity_wardrobe'),
+                    ref('hotel_amenity_wifi'),
+                    ref('hotel_amenity_tv'),
+                    ref('hotel_amenity_cable_tv'),
+                    ref('hotel_amenity_mini_bar'),
+                    ref('hotel_amenity_coffee_maker'),
+                    ref('hotel_amenity_kettle'),
+                    ref('hotel_amenity_air_conditioning'),
+                    ref('hotel_amenity_heating'),
+                    ref('hotel_amenity_safe'),
+                    ref('hotel_amenity_smoke_detector'),
+                    ref('hotel_amenity_balcony'),
+                    ref('hotel_amenity_work_desk')
+                ])
+            ]"/>
         </record>
 
+        <!-- Family Room -->
         <record id="hotel_room_category_family_room" model="hotel.room.category">
             <field name="name">Family Room</field>
             <field name="bed_type_id" ref="vs_hotel_management.hotel_bed_type_queen_bed"/>
+            <field name="amenity_ids" eval="[
+                (6, 0, [
+                    ref('hotel_amenity_hair_dryer'),
+                    ref('hotel_amenity_shower'),
+                    ref('hotel_amenity_towels'),
+                    ref('hotel_amenity_wardrobe'),
+                    ref('hotel_amenity_wifi'),
+                    ref('hotel_amenity_tv'),
+                    ref('hotel_amenity_cable_tv'),
+                    ref('hotel_amenity_mini_bar'),
+                    ref('hotel_amenity_coffee_maker'),
+                    ref('hotel_amenity_kettle'),
+                    ref('hotel_amenity_air_conditioning'),
+                    ref('hotel_amenity_heating'),
+                    ref('hotel_amenity_safe'),
+                    ref('hotel_amenity_smoke_detector'),
+                    ref('hotel_amenity_balcony'),
+                    ref('hotel_amenity_work_desk')
+                ])
+            ]"/>
         </record>
 
+        <!-- Junior Suite -->
         <record id="hotel_room_category_junior_suite" model="hotel.room.category">
             <field name="name">Junior Suite</field>
             <field name="bed_type_id" ref="vs_hotel_management.hotel_bed_type_king_bed"/>
+            <field name="amenity_ids" eval="[
+                (6, 0, [
+                    ref('hotel_amenity_hair_dryer'),
+                    ref('hotel_amenity_shower'),
+                    ref('hotel_amenity_bathtub'),
+                    ref('hotel_amenity_towels'),
+                    ref('hotel_amenity_wardrobe'),
+                    ref('hotel_amenity_wifi'),
+                    ref('hotel_amenity_tv'),
+                    ref('hotel_amenity_cable_tv'),
+                    ref('hotel_amenity_mini_bar'),
+                    ref('hotel_amenity_coffee_maker'),
+                    ref('hotel_amenity_kettle'),
+                    ref('hotel_amenity_air_conditioning'),
+                    ref('hotel_amenity_heating'),
+                    ref('hotel_amenity_safe'),
+                    ref('hotel_amenity_smoke_detector'),
+                    ref('hotel_amenity_balcony'),
+                    ref('hotel_amenity_work_desk')
+                ])
+            ]"/>
         </record>
 
+        <!-- Executive Suite -->
         <record id="hotel_room_category_executive_suite" model="hotel.room.category">
             <field name="name">Executive Suite</field>
             <field name="bed_type_id" ref="vs_hotel_management.hotel_bed_type_california_king_bed"/>
+            <field name="amenity_ids" eval="[
+                (6, 0, [
+                    ref('hotel_amenity_hair_dryer'),
+                    ref('hotel_amenity_shower'),
+                    ref('hotel_amenity_bathtub'),
+                    ref('hotel_amenity_towels'),
+                    ref('hotel_amenity_wardrobe'),
+                    ref('hotel_amenity_wifi'),
+                    ref('hotel_amenity_tv'),
+                    ref('hotel_amenity_cable_tv'),
+                    ref('hotel_amenity_mini_bar'),
+                    ref('hotel_amenity_coffee_maker'),
+                    ref('hotel_amenity_kettle'),
+                    ref('hotel_amenity_air_conditioning'),
+                    ref('hotel_amenity_heating'),
+                    ref('hotel_amenity_safe'),
+                    ref('hotel_amenity_smoke_detector'),
+                    ref('hotel_amenity_balcony'),
+                    ref('hotel_amenity_work_desk')
+                ])
+            ]"/>
         </record>
 
+        <!-- Presidential Suite -->
         <record id="hotel_room_category_presidential_suite" model="hotel.room.category">
             <field name="name">Presidential Suite</field>
             <field name="bed_type_id" ref="vs_hotel_management.hotel_bed_type_bunk_bed"/>
+            <field name="amenity_ids" eval="[
+                (6, 0, [
+                    ref('hotel_amenity_hair_dryer'),
+                    ref('hotel_amenity_shower'),
+                    ref('hotel_amenity_bathtub'),
+                    ref('hotel_amenity_towels'),
+                    ref('hotel_amenity_wardrobe'),
+                    ref('hotel_amenity_wifi'),
+                    ref('hotel_amenity_tv'),
+                    ref('hotel_amenity_cable_tv'),
+                    ref('hotel_amenity_mini_bar'),
+                    ref('hotel_amenity_coffee_maker'),
+                    ref('hotel_amenity_kettle'),
+                    ref('hotel_amenity_air_conditioning'),
+                    ref('hotel_amenity_heating'),
+                    ref('hotel_amenity_safe'),
+                    ref('hotel_amenity_smoke_detector'),
+                    ref('hotel_amenity_wheelchair'),
+                    ref('hotel_amenity_balcony'),
+                    ref('hotel_amenity_work_desk')
+                ])
+            ]"/>
         </record>
 
     </data>

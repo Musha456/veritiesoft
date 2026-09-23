@@ -72,15 +72,6 @@
         <field name="company_id" eval="False"/>
     </record>
 
-    <record id="seq_hotel_service" model="ir.sequence">
-        <field name="name">Hotel Service</field>
-        <field name="code">hotel.service</field>
-        <field name="prefix">HS</field>
-        <field name="padding">5</field>
-        <field name="number_increment">1</field>
-        <field name="company_id" eval="False"/>
-    </record>
-
     <record id="seq_hotel_rate_plan" model="ir.sequence">
         <field name="name">Hotel Rate Plan</field>
         <field name="code">hotel.rate.plan</field>
@@ -133,13 +124,25 @@
         <field name="company_id" eval="False"/>
     </record>
 
+
+    <!-- ================= Hotel Guest Sequence ================= -->
+
+    <record id="seq_hotel_guest" model="ir.sequence">
+        <field name="name">Hotel Guest</field>
+        <field name="code">hotel.guest</field>
+        <field name="prefix">GST/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+
     <record id="seq_hotel_guest_folio" model="ir.sequence">
-    <field name="name">Guest Folio</field>
-    <field name="code">hotel.guest.folio</field>
-    <field name="prefix">FOL/</field>
-    <field name="padding">5</field>
-    <field name="company_id" eval="False"/>
-</record>
+        <field name="name">Guest Folio</field>
+        <field name="code">hotel.guest.folio</field>
+        <field name="prefix">FOL/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
 
 
 </odoo>

@@ -1,6 +1,8 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
+from pkg_resources import require
+
 
 class HotelRatePlan(models.Model):
     _name = "hotel.rate.plan"
@@ -75,6 +77,7 @@ class HotelRatePlan(models.Model):
 
     room_category_ids = fields.Many2many(
         "hotel.room.category",
+        require=True,
         string="Room Categories",
     )
 

@@ -27,9 +27,6 @@ vs_hotel_management.access_hotel_building_manager,hotel.building.manager,model_h
 vs_hotel_management.access_hotel_building_floor_user,hotel.building.floor.user,model_hotel_building_floor,group_hotel_room_user,1,0,0,0
 vs_hotel_management.access_hotel_building_floor_manager,hotel.building.floor.manager,model_hotel_building_floor,group_hotel_room_manager,1,1,1,1
 
-vs_hotel_management.access_hotel_service_user,hotel.service.user,model_hotel_service,group_hotel_room_user,1,0,0,0
-vs_hotel_management.access_hotel_service_manager,hotel.service.manager,model_hotel_service,group_hotel_room_manager,1,1,1,1
-
 vs_hotel_management.access_hotel_hotel_image_user,hotel.hotel.image.user,model_hotel_hotel_image,group_hotel_room_user,1,0,0,0
 vs_hotel_management.access_hotel_hotel_image_manager,hotel.hotel.image.manager,model_hotel_hotel_image,group_hotel_room_manager,1,1,1,1
 

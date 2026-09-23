@@ -58,6 +58,14 @@ class HotelRoom(models.Model):
         ondelete="restrict",
     )
 
+    product_id = fields.Many2one(
+        "product.product",
+        string="Room Product",
+        related="room_category_id.product_id",
+        store=True,
+        readonly=True,
+    )
+
     room_category_id = fields.Many2one(
         "hotel.room.category",
         required=True,
@@ -101,6 +109,8 @@ class HotelRoom(models.Model):
         compute="_compute_cover_image",
         store=True,
     )
+
+
 
     # To be use seperate model for better statuses customization
     status = fields.Selection(

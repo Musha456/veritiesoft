@@ -5,7 +5,7 @@ from . import hotel_building_floor
 from . import hotel_room
 from . import hotel_hotel_image
 from . import hotel_building
-from . import hotel_conf
+from . import product_template_inherit
 from . import hotel_hotel
 from . import hotel_rate_plan
 from . import hotel_discount

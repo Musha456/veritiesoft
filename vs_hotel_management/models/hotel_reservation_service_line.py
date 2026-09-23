@@ -17,11 +17,18 @@ class HotelReservationServiceLine(models.Model):
         index=True,
     )
 
-    service_id = fields.Many2one(
-        "hotel.service",
+    product_id = fields.Many2one(
+        "product.product",
         string="Service",
         required=True,
         ondelete="restrict",
+        domain=[
+            ("is_hotel_service", "=", True),
+            ("sale_ok", "=", True),
+            ("type", "=", "service"),
+        ],
+        check_company=True,
+        index=True,
     )
 
     serve_date = fields.Datetime(
@@ -91,21 +98,16 @@ class HotelReservationServiceLine(models.Model):
         string="Note",
     )
 
-    @api.onchange("service_id")
-    def _onchange_service_id(self):
+    @api.onchange("product_id")
+    def _onchange_product_id(self):
         for line in self:
-
-            if not line.service_id:
+            if not line.product_id:
                 line.price_unit = 0.0
                 line.tax_ids = False
                 continue
 
-            service = line.service_id
-
-            line.price_unit = service.price
-
-            if hasattr(service, "tax_ids"):
-                line.tax_ids = service.tax_ids
+            line.price_unit = line.product_id.list_price
+            line.tax_ids = line.product_id.taxes_id
 
     @api.onchange("quantity")
     def _onchange_quantity(self):
@@ -171,11 +173,7 @@ class HotelReservationServiceLine(models.Model):
                     currency=line.currency_id,
                     quantity=1.0,
                     product=False,
-                    partner=(
-                        line.reservation_line_id
-                        .reservation_id
-                        .partner_id
-                    ),
+                    partner=line.reservation_line_id.reservation_id.partner_id,
                 )
 
                 tax_amount = taxes["total_included"] - taxes[
@@ -188,7 +186,7 @@ class HotelReservationServiceLine(models.Model):
     # _sql_constraints = [
     #     (
     #         "reservation_line_service_unique",
-    #         "unique(reservation_line_id, service_id)",
+    #         "unique(reservation_line_id, product_id)",
     #         "The same service cannot be added twice to the same room reservation.",
     #     ),
     # ]

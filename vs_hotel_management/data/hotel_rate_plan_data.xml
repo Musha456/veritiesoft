@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <data noupdate="1">
+
+        <!-- ========================================================= -->
+        <!-- Standard Room                                              -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_rate_plan_standard_bar" model="hotel.rate.plan">
+
+            <field name="name">Standard Room - Best Available Rate</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="room_category_ids" eval="[
+                (6, 0, [ref('hotel_room_category_standard_room')])
+            ]"/>
+
+            <field name="description">
+                Standard flexible rate for Standard Rooms.
+            </field>
+
+            <field name="base_price">80.00</field>
+            <field name="extra_adult_price">20.00</field>
+            <field name="child_price">10.00</field>
+
+            <field name="meal_plan">room_only</field>
+            <field name="cancellation_policy">flexible</field>
+            <field name="pricing_method">per_room</field>
+            <field name="rate_type">standard</field>
+            <field name="priority">1</field>
+
+            <field name="minimum_nights">1</field>
+            <field name="maximum_nights">30</field>
+            <field name="minimum_adults">1</field>
+            <field name="maximum_adults">2</field>
+            <field name="minimum_children">0</field>
+            <field name="maximum_children">2</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">365</field>
+
+            <field name="website_published">1</field>
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Deluxe Room                                                -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_rate_plan_deluxe_bar" model="hotel.rate.plan">
+
+            <field name="name">Deluxe Room - Best Available Rate</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="room_category_ids" eval="[
+                (6, 0, [ref('hotel_room_category_deluxe_room')])
+            ]"/>
+
+            <field name="description">
+                Standard flexible rate for Deluxe Rooms.
+            </field>
+
+            <field name="base_price">120.00</field>
+            <field name="extra_adult_price">30.00</field>
+            <field name="child_price">15.00</field>
+
+            <field name="meal_plan">room_only</field>
+            <field name="cancellation_policy">flexible</field>
+            <field name="pricing_method">per_room</field>
+            <field name="rate_type">standard</field>
+            <field name="priority">1</field>
+
+            <field name="minimum_nights">1</field>
+            <field name="maximum_nights">30</field>
+            <field name="minimum_adults">1</field>
+            <field name="maximum_adults">2</field>
+            <field name="minimum_children">0</field>
+            <field name="maximum_children">2</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">365</field>
+
+            <field name="website_published">1</field>
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Executive Room                                             -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_rate_plan_executive_bar" model="hotel.rate.plan">
+
+            <field name="name">Executive Room - Best Available Rate</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="room_category_ids" eval="[
+                (6, 0, [ref('hotel_room_category_executive_room')])
+            ]"/>
+
+            <field name="description">
+                Flexible rate for Executive Rooms.
+            </field>
+
+            <field name="base_price">145.00</field>
+            <field name="extra_adult_price">35.00</field>
+            <field name="child_price">17.50</field>
+
+            <field name="meal_plan">room_only</field>
+            <field name="cancellation_policy">flexible</field>
+            <field name="pricing_method">per_room</field>
+            <field name="rate_type">standard</field>
+            <field name="priority">1</field>
+
+            <field name="minimum_nights">1</field>
+            <field name="maximum_nights">30</field>
+            <field name="minimum_adults">1</field>
+            <field name="maximum_adults">2</field>
+            <field name="minimum_children">0</field>
+            <field name="maximum_children">2</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">365</field>
+
+            <field name="website_published">1</field>
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Family Room                                                -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_rate_plan_family_bar" model="hotel.rate.plan">
+
+            <field name="name">Family Room - Best Available Rate</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="room_category_ids" eval="[
+                (6, 0, [ref('hotel_room_category_family_room')])
+            ]"/>
+
+            <field name="description">
+                Flexible rate for Family Rooms.
+            </field>
+
+            <field name="base_price">165.00</field>
+            <field name="extra_adult_price">35.00</field>
+            <field name="child_price">15.00</field>
+
+            <field name="meal_plan">room_only</field>
+            <field name="cancellation_policy">flexible</field>
+            <field name="pricing_method">per_room</field>
+            <field name="rate_type">standard</field>
+            <field name="priority">1</field>
+
+            <field name="minimum_nights">1</field>
+            <field name="maximum_nights">30</field>
+            <field name="minimum_adults">1</field>
+            <field name="maximum_adults">2</field>
+            <field name="minimum_children">0</field>
+            <field name="maximum_children">4</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">365</field>
+
+            <field name="website_published">1</field>
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Junior Suite                                               -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_rate_plan_junior_suite_bar" model="hotel.rate.plan">
+
+            <field name="name">Junior Suite - Best Available Rate</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="room_category_ids" eval="[
+                (6, 0, [ref('hotel_room_category_junior_suite')])
+            ]"/>
+
+            <field name="description">
+                Flexible rate for Junior Suites.
+            </field>
+
+            <field name="base_price">190.00</field>
+            <field name="extra_adult_price">45.00</field>
+            <field name="child_price">20.00</field>
+
+            <field name="meal_plan">room_only</field>
+            <field name="cancellation_policy">flexible</field>
+            <field name="pricing_method">per_room</field>
+            <field name="rate_type">standard</field>
+            <field name="priority">1</field>
+
+            <field name="minimum_nights">1</field>
+            <field name="maximum_nights">30</field>
+            <field name="minimum_adults">1</field>
+            <field name="maximum_adults">2</field>
+            <field name="minimum_children">0</field>
+            <field name="maximum_children">2</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">365</field>
+
+            <field name="website_published">1</field>
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Executive Suite                                            -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_rate_plan_executive_suite_bar" model="hotel.rate.plan">
+
+            <field name="name">Executive Suite - Best Available Rate</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="room_category_ids" eval="[
+                (6, 0, [ref('hotel_room_category_executive_suite')])
+            ]"/>
+
+            <field name="description">
+                Flexible rate for Executive Suites.
+            </field>
+
+            <field name="base_price">240.00</field>
+            <field name="extra_adult_price">50.00</field>
+            <field name="child_price">25.00</field>
+
+            <field name="meal_plan">breakfast</field>
+            <field name="cancellation_policy">flexible</field>
+            <field name="pricing_method">per_room</field>
+            <field name="rate_type">standard</field>
+            <field name="priority">1</field>
+
+            <field name="minimum_nights">1</field>
+            <field name="maximum_nights">30</field>
+            <field name="minimum_adults">1</field>
+            <field name="maximum_adults">2</field>
+            <field name="minimum_children">0</field>
+            <field name="maximum_children">2</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">365</field>
+
+            <field name="website_published">1</field>
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Presidential Suite                                         -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_rate_plan_presidential_suite_bar" model="hotel.rate.plan">
+
+            <field name="name">Presidential Suite - Best Available Rate</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="room_category_ids" eval="[
+                (6, 0, [ref('hotel_room_category_presidential_suite')])
+            ]"/>
+
+            <field name="description">
+                Premium flexible rate for the Presidential Suite.
+            </field>
+
+            <field name="base_price">400.00</field>
+            <field name="extra_adult_price">75.00</field>
+            <field name="child_price">35.00</field>
+
+            <field name="meal_plan">breakfast</field>
+            <field name="cancellation_policy">flexible</field>
+            <field name="pricing_method">per_room</field>
+            <field name="rate_type">standard</field>
+            <field name="priority">1</field>
+
+            <field name="minimum_nights">1</field>
+            <field name="maximum_nights">30</field>
+            <field name="minimum_adults">1</field>
+            <field name="maximum_adults">4</field>
+            <field name="minimum_children">0</field>
+            <field name="maximum_children">3</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">365</field>
+
+            <field name="website_published">1</field>
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Promotional Rate - Deluxe Room                             -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_rate_plan_deluxe_promotion" model="hotel.rate.plan">
+
+            <field name="name">Deluxe Room - Weekend Promotion</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="room_category_ids" eval="[
+                (6, 0, [ref('hotel_room_category_deluxe_room')])
+            ]"/>
+
+            <field name="description">
+                Promotional weekend rate for Deluxe Rooms with breakfast included.
+            </field>
+
+            <field name="base_price">105.00</field>
+            <field name="extra_adult_price">25.00</field>
+            <field name="child_price">12.50</field>
+
+            <field name="meal_plan">breakfast</field>
+            <field name="cancellation_policy">moderate</field>
+            <field name="pricing_method">per_room</field>
+            <field name="rate_type">promotion</field>
+            <field name="priority">2</field>
+
+            <field name="minimum_nights">2</field>
+            <field name="maximum_nights">3</field>
+
+            <field name="minimum_adults">1</field>
+            <field name="maximum_adults">2</field>
+
+            <field name="minimum_children">0</field>
+            <field name="maximum_children">2</field>
+
+            <field name="minimum_advance_days">1</field>
+            <field name="maximum_advance_days">90</field>
+
+            <field name="monday">0</field>
+            <field name="tuesday">0</field>
+            <field name="wednesday">0</field>
+            <field name="thursday">0</field>
+            <field name="friday">1</field>
+            <field name="saturday">1</field>
+            <field name="sunday">1</field>
+
+            <field name="website_published">1</field>
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Corporate Rate - Executive Room                            -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_rate_plan_executive_corporate" model="hotel.rate.plan">
+
+            <field name="name">Executive Room - Corporate Rate</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="room_category_ids" eval="[
+                (6, 0, [ref('hotel_room_category_executive_room')])
+            ]"/>
+
+            <field name="description">
+                Special corporate accommodation rate for Executive Rooms.
+            </field>
+
+            <field name="base_price">125.00</field>
+            <field name="extra_adult_price">30.00</field>
+            <field name="child_price">15.00</field>
+
+            <field name="meal_plan">breakfast</field>
+            <field name="cancellation_policy">moderate</field>
+            <field name="pricing_method">per_room</field>
+            <field name="rate_type">corporate</field>
+            <field name="priority">2</field>
+
+            <field name="minimum_nights">1</field>
+            <field name="maximum_nights">30</field>
+
+            <field name="minimum_adults">1</field>
+            <field name="maximum_adults">2</field>
+
+            <field name="minimum_children">0</field>
+            <field name="maximum_children">2</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">365</field>
+
+            <field name="website_published">0</field>
+            <field name="state">active</field>
+
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!-- Member Rate - Deluxe Room                                  -->
+        <!-- ========================================================= -->
+
+        <record id="hotel_rate_plan_deluxe_member" model="hotel.rate.plan">
+
+            <field name="name">Deluxe Room - Member Rate</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="company_id" ref="base.main_company"/>
+
+            <field name="room_category_ids" eval="[
+                (6, 0, [ref('hotel_room_category_deluxe_room')])
+            ]"/>
+
+            <field name="description">
+                Preferred member rate for Deluxe Rooms.
+            </field>
+
+            <field name="base_price">108.00</field>
+            <field name="extra_adult_price">25.00</field>
+            <field name="child_price">12.50</field>
+
+            <field name="meal_plan">room_only</field>
+            <field name="cancellation_policy">flexible</field>
+            <field name="pricing_method">per_room</field>
+            <field name="rate_type">member</field>
+            <field name="priority">2</field>
+
+            <field name="minimum_nights">1</field>
+            <field name="maximum_nights">30</field>
+
+            <field name="minimum_adults">1</field>
+            <field name="maximum_adults">2</field>
+
+            <field name="minimum_children">0</field>
+            <field name="maximum_children">2</field>
+
+            <field name="minimum_advance_days">0</field>
+            <field name="maximum_advance_days">365</field>
+
+            <field name="website_published">0</field>
+            <field name="state">active</field>
+
+        </record>
+
+    </data>
+
+</odoo>

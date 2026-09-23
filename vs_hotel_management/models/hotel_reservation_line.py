@@ -161,7 +161,6 @@ class HotelReservationLine(models.Model):
         store=True,
     )
 
-
     discount_id = fields.Many2one(
         "hotel.discount",
     )
@@ -188,14 +187,14 @@ class HotelReservationLine(models.Model):
     )
 
     total_discount_amount = fields.Monetary(
-        string="Total Discount Amount",
+        string="Total Discount",
         compute="_compute_amounts",
         currency_field="currency_id",
         store=True,
     )
 
     tax_amount = fields.Monetary(
-        string="Room Tax Amount",
+        string="Room Tax",
         compute="_compute_amounts",
         currency_field="currency_id",
         store=True,
@@ -204,6 +203,14 @@ class HotelReservationLine(models.Model):
     tax_ids = fields.Many2many(
         "account.tax",
         string="Taxes",
+    )
+
+    product_id = fields.Many2one(
+        "product.product",
+        string="Room Product",
+        related="room_id.room_category_id.product_id",
+        store=True,
+        readonly=True,
     )
 
     total_tax_amount = fields.Monetary(
@@ -275,7 +282,7 @@ class HotelReservationLine(models.Model):
     )
 
     service_tax_amount = fields.Monetary(
-        string="Service Tax Amount",
+        string="Service Tax",
         compute="_compute_amounts",
         currency_field="currency_id",
         store=True,
@@ -545,22 +552,6 @@ class HotelReservationLine(models.Model):
                     )
                 )
 
-    # @api.constrains(
-    #     "hotel_id",
-    #     "company_id",
-    # )
-    # def _check_company(self):
-    #
-    #     for record in self:
-    #
-    #         if (
-    #                 record.hotel_id
-    #                 and record.hotel_id.company_id != record.company_id
-    #         ):
-    #             raise ValidationError(
-    #                 _("Company mismatch.")
-    #             )
-
     def _get_base_price(self):
         """Return the base room price."""
 
@@ -582,26 +573,20 @@ class HotelReservationLine(models.Model):
         """Calculate applicable discount."""
         self.ensure_one()
 
-        self.discount_amount = 0.0
-        self.service_line_discounts = 0.0
-        self.total_discount_amount = 0.0
-
-        if not self.discount_id:
-            return
-
         room_total = self.room_amount
         discount_amount = 0.0
 
-        if self.discount_id.discount_type == "fixed":
-            discount_amount = min(
-                self.discount_id.discount,
-                room_total,
-            )
+        if self.discount_id:
+            if self.discount_id.discount_type == "fixed":
+                discount_amount = min(
+                    self.discount_id.discount,
+                    room_total,
+                )
 
-        elif self.discount_id.discount_type == "percentage":
-            discount_amount = (
-                    room_total * self.discount_id.discount / 100
-            )
+            elif self.discount_id.discount_type == "percentage":
+                discount_amount = (
+                        room_total * self.discount_id.discount / 100
+                )
 
         service_line_discounts = sum(
             self.service_line_ids.mapped("discount_amount")
@@ -613,23 +598,21 @@ class HotelReservationLine(models.Model):
                 discount_amount + service_line_discounts
         )
 
-
+    @api.depends(
+        "room_amount",
+        "discount_amount",
+        "tax_ids",
+    )
     def _apply_taxes(self):
         for line in self:
+            taxable_amount = line.room_amount - line.discount_amount
 
-            taxable_amount = (line.room_amount - line.total_discount_amount)
+            print("Tax Ids", line.tax_ids)
+            print("Taxable Amount", taxable_amount)
 
-            # Calculate taxes applicable to the room/rate.
-            # Do NOT include service_line taxes here.
+            tax_amount = 0.0
 
-            line.tax_amount = 0.0
-
-            # for line in self:
-            #     service_lines = line.service_line_ids
-            #
-            #     service_line_discounts = sum(service_lines.mapped("discount_amount"))
-
-            if line.tax_ids:
+            if line.tax_ids and taxable_amount > 0:
                 taxes = line.tax_ids.compute_all(
                     taxable_amount,
                     currency=line.currency_id,
@@ -638,23 +621,68 @@ class HotelReservationLine(models.Model):
                     partner=line.reservation_id.partner_id,
                 )
 
-                line.tax_amount = (
+                tax_amount = (
                         taxes["total_included"]
                         - taxes["total_excluded"]
                 )
 
+            line.tax_amount = tax_amount
+
+    @api.depends(
+        "service_line_ids",
+        "service_line_ids.quantity",
+        "service_line_ids.price_unit",
+        "service_line_ids.subtotal",
+        "service_line_ids.tax_amount",
+        "service_line_ids.discount_amount",
+    )
     def _apply_services(self):
         for line in self:
             service_lines = line.service_line_ids
-            line.service_amount = sum(service_lines.mapped("subtotal"))
-            line.service_tax_amount = sum(service_lines.mapped("tax_amount"))
 
+            line.service_amount = sum(
+                service_line.quantity * service_line.price_unit
+                for service_line in service_lines
+            )
+
+            line.service_tax_amount = sum(
+                service_lines.mapped("tax_amount")
+            )
+
+    @api.depends(
+        "room_amount",
+        "discount_amount",
+        "service_amount",
+        "service_line_ids.discount_amount",
+        "tax_amount",
+        "service_tax_amount",
+    )
     def _compute_total(self):
         for line in self:
-            line.subtotal = (line.room_amount - line.total_discount_amount + line.service_amount)
-            total_tax_amount = line.tax_amount + line.service_tax_amount
-            self.total_tax_amount = total_tax_amount
-            line.total = (line.subtotal + total_tax_amount)
+            room_discount = line.discount_amount
+            service_discount = sum(
+                line.service_line_ids.mapped("discount_amount")
+            )
+
+            line.total_discount_amount = (
+                    room_discount + service_discount
+            )
+
+            line.subtotal = (
+                    line.room_amount
+                    + line.service_amount
+                    - line.total_discount_amount
+            )
+
+            line.total_tax_amount = (
+                    line.tax_amount
+                    + line.service_tax_amount
+            )
+
+            line.total = (
+                    line.subtotal
+                    + line.total_tax_amount
+            )
 
     def _validate_booking_period(self):
         """Validate reservation dates."""
@@ -819,9 +847,6 @@ class HotelReservationLine(models.Model):
             raise ValidationError(
                 _("The selected room is under maintenance.")
             )
-
-
-
 
     @api.model
     def _get_reserved_states(self):
@@ -1024,7 +1049,6 @@ class HotelReservationLine(models.Model):
                 line._validate_reservation_line()
 
         return records
-
 
     def _change_room(self, new_room):
         """Change the room safely."""
@@ -1241,7 +1265,6 @@ class HotelReservationLine(models.Model):
 
         return bookings
 
-
     def _release_room_booking(self):
         """
         Release a reserved room booking.
@@ -1453,6 +1476,7 @@ class HotelReservationLine(models.Model):
                 )
 
         return super().write(vals)
+
     # ---------------------------------------------------------
     # DELETE
     # ---------------------------------------------------------
@@ -1612,7 +1636,6 @@ class HotelReservationLine(models.Model):
 
             if reservation.check_out:
                 line.check_out = reservation.check_out
-
 
     @api.onchange(
         "room_category_id",

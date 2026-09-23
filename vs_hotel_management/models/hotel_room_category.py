@@ -1,5 +1,5 @@
-from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError, UserError
 
 class HotelRoomCategory(models.Model):
     _name = "hotel.room.category"
@@ -95,6 +95,17 @@ class HotelRoomCategory(models.Model):
     #     compute="_compute_reservation_count",
     # )
 
+    product_id = fields.Many2one(
+        "product.product",
+        string="Room Product",
+        required=True,
+        check_company=True,
+        default=lambda self: self.env.ref(
+            "vs_hotel_management.product_template_hotel_accommodation",
+            raise_if_not_found=False,
+        ),
+    )
+
     def _compute_room_count(self):
         for record in self:
             Room = self.env["hotel.room"]
@@ -138,6 +149,19 @@ class HotelRoomCategory(models.Model):
                     "hotel.room.category"
                 ) or "/"
         return super().create(vals_list)
+
+    def unlink(self):
+        protected_product = self.env.ref(
+            "vs_hotel_management.product_hotel_accommodation",
+            raise_if_not_found=False,
+        )
+
+        if protected_product and protected_product in self:
+            raise UserError(
+                _("The Hotel Accommodation product cannot be deleted. You can archive it instead.")
+            )
+
+        return super().unlink()
 
     @api.depends("max_adults", "max_children")
     def _compute_max_occupancy(self):

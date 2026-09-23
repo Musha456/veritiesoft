@@ -43,9 +43,32 @@ class HotelGuestFolioLine(models.Model):
         default="other",
     )
 
-    service_id = fields.Many2one(
-        "hotel.service",
-        string="Service",
+    product_id = fields.Many2one(
+        "product.product",
+        string="Product",
+        check_company=True,
+        domain="[('sale_ok', '=', True), ('company_id', '=', company_id)]",
+    )
+
+    tax_ids = fields.Many2many(
+        "account.tax",
+        string="Taxes",
+    )
+
+    invoice_line_id = fields.Many2one(
+        "account.move.line",
+        string="Invoice Line",
+        readonly=True,
+        ondelete="set null",
+        index=True,
+    )
+
+    invoice_id = fields.Many2one(
+        "account.move",
+        string="Invoice",
+        related="invoice_line_id.move_id",
+        store=True,
+        readonly=True,
     )
 
     quantity = fields.Float(
@@ -118,6 +141,13 @@ class HotelGuestFolioLine(models.Model):
         index=True,
     )
 
+    reservation_service_line_id = fields.Many2one(
+        "hotel.reservation.service.line",
+        string="Reservation Service Line",
+        ondelete="restrict",
+        index=True,
+    )
+
     room_booking_id = fields.Many2one(
         "hotel.room.booking",
         string="Room Booking",
@@ -134,19 +164,37 @@ class HotelGuestFolioLine(models.Model):
         "quantity",
         "unit_price",
         "discount",
+        "tax_ids",
     )
     def _compute_amounts(self):
         for line in self:
             gross = line.quantity * line.unit_price
 
-            discount_amount = gross * (
-                    line.discount / 100.0
+            discount_amount = (
+                    gross * (line.discount / 100.0)
             )
 
             amount_untaxed = gross - discount_amount
 
+            tax_amount = 0.0
+
+            if line.tax_ids and amount_untaxed > 0:
+                taxes = line.tax_ids.compute_all(
+                    amount_untaxed,
+                    currency=line.currency_id,
+                    quantity=1.0,
+                    product=False,
+                    partner=line.folio_id.partner_id,
+                )
+
+                tax_amount = (
+                        taxes["total_included"]
+                        - taxes["total_excluded"]
+                )
+
             line.discount_amount = discount_amount
             line.amount_untaxed = amount_untaxed
+            line.tax_amount = tax_amount
             line.total_amount = (
-                    amount_untaxed + line.tax_amount
+                    amount_untaxed + tax_amount
             )

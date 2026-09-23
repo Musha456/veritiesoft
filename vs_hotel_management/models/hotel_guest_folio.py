@@ -93,6 +93,15 @@ class HotelGuestFolio(models.Model):
         string="Folio Lines",
     )
 
+    invoice_id = fields.Many2one(
+        "account.move",
+        string="Invoice",
+        readonly=True,
+        copy=False,
+        ondelete="set null",
+        index=True,
+    )
+
     amount_untaxed = fields.Monetary(
         string="Untaxed Amount",
         compute="_compute_amounts",
@@ -133,6 +142,24 @@ class HotelGuestFolio(models.Model):
         compute="_compute_amounts",
         store=True,
         currency_field="currency_id",
+    )
+
+    invoice_count = fields.Integer(
+        string="Invoices",
+        compute="_compute_amounts",
+    )
+
+    invoice_state = fields.Selection(
+        related="invoice_id.payment_state",
+        string="Invoice Payment Status",
+        readonly=True,
+    )
+
+    invoice_amount = fields.Monetary(
+        string="Invoice Amount",
+        related="invoice_id.amount_total",
+        currency_field="currency_id",
+        readonly=True,
     )
 
     notes = fields.Text(
@@ -190,6 +217,8 @@ class HotelGuestFolio(models.Model):
             folio.balance_amount = (
                 folio.total_amount - folio.paid_amount
             )
+
+            folio.invoice_count = 1 if folio.invoice_id else 0
 
     def _populate_from_reservation(self):
         for folio in self:
@@ -251,26 +280,16 @@ class HotelGuestFolio(models.Model):
             self,
             description,
             charge_type,
-            service=None,
+            product=None,
             quantity=1.0,
             unit_price=0.0,
             discount=0.0,
-            tax_amount=0.0,
+            tax_ids=None,
             reservation_line=None,
+            reservation_service_line=None,
             room_booking=None,
     ):
         self.ensure_one()
-
-        if self.state not in ("open", "partially_paid"):
-            raise UserError(
-                _("Charges can only be added to an open folio.")
-            )
-
-        if not description:
-            raise UserError(_("Charge description is required."))
-
-        if quantity <= 0:
-            raise UserError(_("Quantity must be greater than zero."))
 
         return self.env["hotel.guest.folio.line"].create({
             "folio_id": self.id,
@@ -278,11 +297,21 @@ class HotelGuestFolio(models.Model):
             "description": description,
             "charge_type": charge_type,
 
-            "service_id": service.id if service else False,
+            "product_id": (
+                product.id
+                if product
+                else False
+            ),
 
             "reservation_line_id": (
                 reservation_line.id
                 if reservation_line
+                else False
+            ),
+
+            "reservation_service_line_id": (
+                reservation_service_line.id
+                if reservation_service_line
                 else False
             ),
 
@@ -295,5 +324,94 @@ class HotelGuestFolio(models.Model):
             "quantity": quantity,
             "unit_price": unit_price,
             "discount": discount,
-            "tax_amount": tax_amount,
+
+            "tax_ids": (
+                [(6, 0, tax_ids.ids)]
+                if tax_ids
+                else False
+            ),
         })
+
+    def action_create_invoice(self):
+        AccountMove = self.env["account.move"]
+
+        for folio in self:
+            if folio.invoice_id:
+                raise UserError(
+                    _("An invoice has already been created for folio %s.")
+                    % folio.display_name
+                )
+
+            if folio.state == "cancelled":
+                raise UserError(
+                    _("A cancelled folio cannot be invoiced.")
+                )
+
+            if not folio.line_ids:
+                raise UserError(
+                    _("Cannot create an invoice without folio charges.")
+                )
+
+            invoice_lines = []
+
+            for line in folio.line_ids.filtered(
+                    lambda line: line.charge_type != "payment"
+            ):
+                if not line.product_id:
+                    raise UserError(
+                        _(
+                            "Product is required for folio line '%s' "
+                            "before creating the invoice."
+                        )
+                        % line.description
+                    )
+
+                invoice_lines.append(
+                    (
+                        0,
+                        0,
+                        {
+                            "product_id": line.product_id.id,
+                            "name": line.description,
+                            "quantity": line.quantity,
+                            "price_unit": line.unit_price,
+                            "discount": line.discount,
+                        },
+                    )
+                )
+
+            if not invoice_lines:
+                raise UserError(
+                    _("There are no invoiceable charges on folio %s.")
+                    % folio.display_name
+                )
+
+            invoice = AccountMove.create({
+                "move_type": "out_invoice",
+                "partner_id": folio.partner_id.id,
+                "invoice_date": fields.Date.context_today(self),
+                "currency_id": folio.currency_id.id,
+                "invoice_origin": folio.name,
+                "ref": folio.name,
+                "invoice_line_ids": invoice_lines,
+            })
+
+            folio.invoice_id = invoice.id
+
+        return True
+
+    def action_view_invoice(self):
+        self.ensure_one()
+
+        if not self.invoice_id:
+            raise UserError(
+                _("No invoice has been created for this folio.")
+            )
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Guest Invoice"),
+            "res_model": "account.move",
+            "view_mode": "form",
+            "res_id": self.invoice_id.id,
+        }

@@ -138,14 +138,32 @@ class HotelReservation(models.Model):
         readonly=True,
     )
 
+    room_discount_amount = fields.Monetary(
+        compute="_compute_amounts",
+        string="Room Discount",
+        store=True,
+        currency_field="currency_id",
+    )
+
+
+    service_discount_amount = fields.Monetary(
+        compute="_compute_amounts",
+        string="Service Discount",
+        store=True,
+        currency_field="currency_id",
+    )
+
+
     discount_amount = fields.Monetary(
         compute="_compute_amounts",
+        string="Total Discount",
         store=True,
         currency_field="currency_id",
     )
 
     tax_amount = fields.Monetary(
         compute="_compute_amounts",
+        string="Total Tax",
         store=True,
         currency_field="currency_id",
     )
@@ -170,6 +188,13 @@ class HotelReservation(models.Model):
 
     service_tax_amount = fields.Monetary(
         string="Service Tax",
+        compute="_compute_amounts",
+        currency_field="currency_id",
+        store=True,
+    )
+
+    room_tax_amount = fields.Monetary(
+        string="Room Tax",
         compute="_compute_amounts",
         currency_field="currency_id",
         store=True,
@@ -274,7 +299,7 @@ class HotelReservation(models.Model):
     )
 
     service_ids = fields.One2many(
-        "hotel.service",
+        "product.product",
         "reservation_id",
         string="Services",
     )
@@ -322,19 +347,22 @@ class HotelReservation(models.Model):
         string="Guest Folios",
     )
 
-    folio_count = fields.Integer(
-        string="Folios",
-        compute="_compute_folio_count",
+    folio_balance = fields.Monetary(
+        string="Folio Balance",
+        compute="_compute_folio_balance",
+        currency_field="currency_id",
     )
 
-    def _compute_folio_count(self):
+    def _compute_folio_balance(self):
         Folio = self.env["hotel.guest.folio"]
 
         for reservation in self:
-            reservation.folio_count = Folio.search_count(
-                [
-                    ("reservation_id", "=", reservation.id),
-                ]
+            folios = Folio.search([
+                ("reservation_id", "=", reservation.id),
+            ])
+
+            reservation.folio_balance = sum(
+                folios.mapped("balance_amount")
             )
 
     # ---------------------------------------------------------
@@ -350,13 +378,17 @@ class HotelReservation(models.Model):
                 delta = record.check_out.date() - record.check_in.date()
                 record.night_count = max(delta.days, 1)
 
-    @api.depends("line_ids", "line_ids.room_amount", "line_ids.service_amount", "line_ids.service_tax_amount", "line_ids.total_discount_amount", "line_ids.tax_amount", "line_ids.subtotal", "line_ids.total")
+    @api.depends("line_ids", "line_ids.room_amount", "line_ids.service_amount", "line_ids.service_tax_amount", "line_ids.discount_amount","line_ids.service_line_discounts","line_ids.total_discount_amount", "line_ids.tax_amount", "line_ids.subtotal", "line_ids.total")
     def _compute_amounts(self):
         for reservation in self:
             lines = reservation.line_ids
             reservation.room_amount = sum(lines.mapped("room_amount"))
             reservation.service_amount = sum(lines.mapped("service_amount"))
+            reservation.room_discount_amount = sum(lines.mapped("discount_amount"))
+            reservation.service_discount_amount = sum(lines.mapped("service_line_discounts"))
             reservation.discount_amount = sum(lines.mapped("total_discount_amount"))
+            reservation.room_tax_amount = sum(lines.mapped("tax_amount"))
+            reservation.service_tax_amount = sum(lines.mapped("service_tax_amount"))
             reservation.tax_amount = (sum(lines.mapped("tax_amount")) + sum(lines.mapped("service_tax_amount")))
             reservation.subtotal = sum(lines.mapped("subtotal"))
             reservation.total_amount = sum(lines.mapped("total"))
@@ -765,21 +797,73 @@ class HotelReservation(models.Model):
                                        line.discount_amount / line.room_amount
                                ) * 100.0
 
-                # Tax is already calculated on reservation line
-                tax_amount = line.tax_amount or 0.0
-
-                # Reuse the central folio charge method
                 folio.add_charge(
                     description=_("Room %s") % line.room_id.display_name,
                     charge_type="room",
+                    product=line.product_id,
                     quantity=quantity,
                     unit_price=unit_price,
                     discount=discount,
-                    tax_amount=tax_amount,
+                    tax_ids=line.tax_ids,
                     reservation_line=line,
                     room_booking=line.room_booking_id,
                 )
 
+    def _create_folio_service_charges(self, folio):
+        self.ensure_one()
+
+        for reservation_line in self.line_ids:
+            for service_line in reservation_line.service_line_ids:
+
+                existing_line = self.env[
+                    "hotel.guest.folio.line"
+                ].search(
+                    [
+                        ("folio_id", "=", folio.id),
+                        (
+                            "reservation_service_line_id",
+                            "=",
+                            service_line.id,
+                        ),
+                    ],
+                    limit=1,
+                )
+
+                if existing_line:
+                    continue
+
+                product = service_line.product_id
+
+                if not product:
+                    continue
+
+                gross_amount = (
+                        service_line.quantity
+                        * service_line.price_unit
+                )
+
+                discount_percentage = 0.0
+
+                if gross_amount:
+                    discount_percentage = (
+                                                  service_line.discount_amount
+                                                  / gross_amount
+                                          ) * 100.0
+
+                folio.add_charge(
+                    description=product.display_name,
+                    charge_type="service",
+                    product=product,
+                    quantity=service_line.quantity,
+                    unit_price=service_line.price_unit,
+                    discount=discount_percentage,
+                    tax_ids=service_line.tax_ids,
+                    reservation_line=reservation_line,
+                    reservation_service_line=service_line,
+                    room_booking=(
+                        reservation_line.room_booking_id
+                    ),
+                )
     # =========================================================
     # CHECK OUT
     # =========================================================
@@ -805,6 +889,15 @@ class HotelReservation(models.Model):
                 raise UserError(_("There are no checked-in rooms to check out."))
 
             bookings.action_check_out()
+
+            folio = reservation.folio_ids.filtered(
+                lambda f: f.state in ("open", "partially_paid")
+            )[:1]
+
+            if folio:
+                reservation._create_folio_service_charges(folio)
+
+            reservation.state = "checked_out"
 
         return True
 
