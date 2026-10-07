@@ -314,7 +314,15 @@ class HotelRoomBooking(models.Model):
                 raise UserError(_("Only checked-in room bookings can be checked out."))
 
             booking.write({"state":"checked_out"})
-            booking.room_id.write({"status":"dirty"})
+
+            mark_room_dirty_on_checkout = self.env['ir.config_parameter'].sudo().get_param('vs_hotel_management.mark_room_dirty_on_checkout')
+
+            print("Mark room dirty on checkout",mark_room_dirty_on_checkout)
+
+            if mark_room_dirty_on_checkout:
+                booking.room_id.write({"status":"dirty"})
+            else:
+                booking.room_id.write({"status": "available"})
 
             if booking.reservation_id:
 

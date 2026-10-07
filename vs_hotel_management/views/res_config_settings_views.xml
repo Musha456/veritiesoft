@@ -10,7 +10,8 @@
 
                 <xpath expr="//form" position="inside">
 
-                    <app data-string="Hotel Management" string="Hotel Management" name="vs_hotel_management" groups="vs_hotel_management.group_hotel_room_manager"
+                    <app data-string="Hotel Management" string="Hotel Management" name="vs_hotel_management"
+                         groups="vs_hotel_management.group_hotel_room_manager"
                          logo="/vs_hotel_management/static/description/icon.png">
 
                         <block title="General">
@@ -24,6 +25,16 @@
                             <setting string="Default Check-out Time">
 
                                 <field name="checkout_time_default" widget="float_time"/>
+
+                            </setting>
+
+                        </block>
+
+                        <block title="Room Automation">
+
+                            <setting string="Mark Room Dirty on Check-out">
+
+                                <field name="mark_room_dirty_on_checkout" widget="boolean_toggle"/>
 
                             </setting>
 

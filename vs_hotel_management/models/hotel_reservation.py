@@ -541,8 +541,11 @@ class HotelReservation(models.Model):
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
 
-        checkin_time = float(self.env["ir.config_parameter"].sudo().get_param("vs_hotel_management.checkin_time_default", default="14.0"))
-        checkout_time = float(self.env["ir.config_parameter"].sudo().get_param("vs_hotel_management.checkout_time_default", default="12.0"))
+        checkin_time = float(self.env["ir.config_parameter"].sudo().get_param("vs_hotel_management.checkin_time_default"))
+        checkout_time = float(self.env["ir.config_parameter"].sudo().get_param("vs_hotel_management.checkout_time_default"))
+
+        print("Checkin Time",checkin_time)
+        print("Checkout Time",checkout_time)
 
         today = fields.Date.context_today(self)
         tomorrow = today + relativedelta(days=1)

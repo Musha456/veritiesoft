@@ -64,11 +64,11 @@
 <!--                                class="btn-primary"-->
 <!--                                invisible="status != 'reserved'"/>-->
 
-                        <button name="action_mark_dirty"
-                                type="object"
-                                string="Check Out"
-                                class="btn-primary"
-                                invisible="status != 'occupied'"/>
+<!--                        <button name="action_mark_dirty"-->
+<!--                                type="object"-->
+<!--                                string="Check Out"-->
+<!--                                class="btn-primary"-->
+<!--                                invisible="status != 'occupied'"/>-->
 
                         <button name="action_start_cleaning" string="Start Cleaning" type="object" class="btn-primary"
                                 invisible="status != 'dirty'"/>
@@ -80,13 +80,13 @@
                                 type="object"
                                 string="Maintenance"
                                 class="btn-secondary"
-                                invisible="status in ['maintenance','out_of_order','cleaning']"/>
+                                invisible="status in ['maintenance','occupied','out_of_order','cleaning']"/>
 
                         <button name="action_mark_out_of_order"
                                 type="object"
                                 string="Out of Order"
                                 class="btn-danger"
-                                invisible="status in ['out_of_order', 'cleaning', 'maintenance']"/>
+                                invisible="status in ['out_of_order','occupied','cleaning','maintenance']"/>
 
                         <button name="action_finish_maintenance"
                                 type="object"

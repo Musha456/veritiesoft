@@ -59,3 +59,9 @@ class ResConfigSettings(models.TransientModel):
         config_parameter="vs_hotel_management.auto_generate_room_category_code",
         default=True,
     )
+
+    mark_room_dirty_on_checkout = fields.Boolean(
+        string="Mark Room Dirty on Checkout",
+        config_paramter="vs_hotel_management.mark_room_dirty_on_checkout",
+        default=True,
+    )
