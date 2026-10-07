@@ -182,6 +182,13 @@ class HotelRoomBooking(models.Model):
                     or "/"
                 )
 
+        room_ids = [vals["room_id"] for vals in vals_list if vals.get("room_id")]
+        if room_ids:
+            self.env.cr.execute(
+                "SELECT id FROM hotel_room WHERE id IN %s FOR UPDATE",
+                (tuple(room_ids),)
+            )
+
         bookings = super().create(vals_list)
 
         for booking in bookings:
@@ -209,9 +216,9 @@ class HotelRoomBooking(models.Model):
 
         for booking in self:
 
-            if booking.state in (
-                "released",
-                "cancelled",
+            if booking.state not in (
+                "reserved",
+                "checked_in",
             ):
                 continue
 
@@ -268,10 +275,22 @@ class HotelRoomBooking(models.Model):
 
         for booking in self:
             if booking.state != "reserved":
-                raise UserError(_("Ony reserved room bookings can be checked in."))
+                raise UserError(_("Only reserved room bookings can be checked in."))
 
             if not booking.room_id:
                 raise UserError(_("A room is required before check-in."))
+
+            if booking.room_id.status in ("maintenance", "out_of_order"):
+                raise ValidationError(
+                    _("Room '%s' cannot be checked in because it is currently unavailable due to %s.")
+                    % (booking.room_id.display_name, booking.room_id.status.replace("_", " "))
+                )
+
+            if booking.room_id.status in ("cleaning", "dirty"):
+                raise ValidationError(
+                    _("Room '%s' is not ready for check-in (status: %s).")
+                    % (booking.room_id.display_name, booking.room_id.status.title())
+                )
 
             booking.write({"state":"checked_in"})
             booking.room_id.write({"status":"occupied"})
@@ -461,17 +480,14 @@ class HotelRoomBooking(models.Model):
             if not booking.check_in or not booking.check_out:
                 continue
 
-            if booking.state in (
-                    "cancelled",
-                    "released",
-            ):
+            if booking.state not in ("reserved", "checked_in"):
                 continue
 
             overlapping_booking = self.search(
                 [
                     ("id", "!=", booking.id),
                     ("room_id", "=", booking.room_id.id),
-                    ("state", "not in", ("cancelled", "released")),
+                    ("state", "in", ("reserved", "checked_in")),
                     ("check_in", "<", booking.check_out),
                     ("check_out", ">", booking.check_in),
                 ],
@@ -561,43 +577,5 @@ class HotelRoomBooking(models.Model):
                     _(
                         "Booking dates must match the "
                         "reservation line dates."
-                    )
-                )
-
-    @api.constrains(
-        "room_id",
-        "check_in",
-        "check_out",
-        "state",
-    )
-    def _check_room_overlap(self):
-        for booking in self:
-
-            if booking.state in (
-                    "cancelled",
-                    "released",
-            ):
-                continue
-
-            overlapping = self.search([
-                ("id", "!=", booking.id),
-                ("room_id", "=", booking.room_id.id),
-                ("state", "not in", [
-                    "cancelled",
-                    "released",
-                ]),
-                ("check_in", "<", booking.check_out),
-                ("check_out", ">", booking.check_in),
-            ], limit=1)
-
-            if overlapping:
-                raise ValidationError(
-                    _(
-                        "Room %s is already booked from %s to %s."
-                    )
-                    % (
-                        booking.room_id.display_name,
-                        overlapping.check_in,
-                        overlapping.check_out,
                     )
                 )

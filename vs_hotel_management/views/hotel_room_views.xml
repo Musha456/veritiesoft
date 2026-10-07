@@ -58,11 +58,11 @@
                                 class="btn-primary"
                                 invisible="status != 'available'"/>
 
-                        <button name="action_check_in"
-                                type="object"
-                                string="Check In"
-                                class="btn-primary"
-                                invisible="status != 'reserved'"/>
+<!--                        <button name="action_check_in"-->
+<!--                                type="object"-->
+<!--                                string="Check In"-->
+<!--                                class="btn-primary"-->
+<!--                                invisible="status != 'reserved'"/>-->
 
                         <button name="action_mark_dirty"
                                 type="object"
@@ -72,6 +72,7 @@
 
                         <button name="action_start_cleaning" string="Start Cleaning" type="object" class="btn-primary"
                                 invisible="status != 'dirty'"/>
+
                         <button name="action_mark_available" string="Mark Available" type="object" class="btn-primary"
                                 invisible="status != 'cleaning'"/>
 
@@ -523,9 +524,9 @@
                                 <hr class="my-2"/>
 
                                 <!-- Amenities -->
-                                <div class="hotel_room_amenities">
-                                    <field name="amenity_groups_html" widget="html"/>
-                                </div>
+<!--                                <div class="hotel_room_amenities">-->
+<!--                                    <field name="amenity_groups_html" widget="html" readonly="1" nolabel="1"/>-->
+<!--                                </div>-->
                             </div>
 
                         </div>

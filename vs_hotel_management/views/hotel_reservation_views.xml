@@ -20,7 +20,7 @@
                             string="Reserve"
                             type="object"
                             class="btn-primary"
-                            invisible="state not in ('draft', 'confirmed')"/>
+                            invisible="state != 'confirmed'"/>
 
                     <button name="action_check_in"
                             string="Check In"
@@ -51,7 +51,12 @@
                             type="object"
                             class="btn-secondary"
                             groups="vs_hotel_management.group_hotel_room_manager"
-                            invisible="state in ('cancelled', 'completed', 'checked_out')"/>
+                            invisible="state in ('draft', 'cancelled', 'completed', 'checked_out')"/>
+
+                    <button name="action_send_reservation_email"
+                            string="Send by Email"
+                            type="object"
+                            class="btn-secondary"/>
 
                     <button name="action_reset_to_draft"
                             string="Reset to Draft"
@@ -84,19 +89,21 @@
 
                         </button>
 
-
                         <button name="action_view_guest_folios"
                                 type="object"
                                 class="oe_stat_button"
                                 icon="fa-money">
-
-                            <field name="folio_balance"
-                                   widget="statinfo"
-                                   string="Folio Balance"
-                                   options="{'currency_field': 'currency_id'}"/>
-
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="folio_balance"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                </span>
+                                <span class="o_stat_text">
+                                    Folios (<field name="folio_count" class="oe_inline"/>)
+                                </span>
+                            </div>
                         </button>
-
 
                     </div>
 
@@ -183,31 +190,32 @@
 
                             <field name="line_ids"
                                    mode="list,form"
-                                   nolabel="1">
+                                   nolabel="1"
+                                   context="{'default_hotel_id': hotel_id, 'default_check_in': check_in, 'default_check_out': check_out}">
                                 <list>
 
-                                    <!--                                    <field name="room_domain" invisible="1"/>-->
-
+                                    <field name="available_room_ids" column_invisible="1"/>
+                                    <field name="hotel_id" column_invisible="1"/>
+<!--                                    <field name="building_id" optional="show"/>-->
+<!--                                    <field name="floor_id" optional="show"/>-->
+<!--                                    <field name="room_category_id" optional="show"/>-->
                                     <field name="room_id"
-                                           domain="room_domain"/>
+                                           domain="[('id', 'in', available_room_ids)]"
+                                           required="1"/>
 
-                                    <field name="check_in"/>
-                                    <field name="check_out"/>
+<!--                                    <field name="check_in"/>-->
+<!--                                    <field name="check_out"/>-->
 
                                     <field name="guest_count"
                                            sum="Total Guests"/>
 
                                     <field name="room_amount"
-                                           widget="monetary"
-                                           options="{'currency_field': 'currency_id'}"
                                            sum="Room Amount"/>
 
-                                    <field name="product_id"/>
+                                    <field name="product_id" optional="hide"/>
 
                                     <field name="service_amount"
                                            readonly="1"
-                                           widget="monetary"
-                                           options="{'currency_field': 'currency_id'}"
                                            sum="Service Amount"/>
 
 
@@ -218,14 +226,7 @@
                                            options="{'currency_field': 'currency_id'}"
                                            sum="Total Discount"/>
 
-                                    <field name="tax_ids" widget="many2many_tags"/>
-
-                                    <!--                                    <field name="tax_amount"-->
-                                    <!--                                           optional="show"-->
-                                    <!--                                           readonly="1"-->
-                                    <!--                                           widget="monetary"-->
-                                    <!--                                           options="{'currency_field': 'currency_id'}"-->
-                                    <!--                                           sum="Room Tax"/>-->
+                                    <field name="tax_ids" widget="many2many_tags" optional="show"/>
 
                                     <field name="total_tax_amount"
                                            optional="show"
@@ -233,13 +234,6 @@
                                            widget="monetary"
                                            options="{'currency_field': 'currency_id'}"
                                            sum="Total Tax Amount"/>
-
-                                    <!--                                    <field name="service_tax_amount"-->
-                                    <!--                                           optional="show"-->
-                                    <!--                                           readonly="1"-->
-                                    <!--                                           widget="monetary"-->
-                                    <!--                                           options="{'currency_field': 'currency_id'}"-->
-                                    <!--                                           sum="Service Tax"/>-->
 
                                     <field name="total"
                                            readonly="1"
@@ -251,23 +245,24 @@
                                 <form string="Reservation Room">
 
                                     <sheet>
+                                        <field name="available_room_ids" invisible="1"/>
 
                                         <group string="Room Information" col="3">
                                             <group colspan="1">
                                                 <field name="room_booking_id" readonly="1"
                                                        invisible="not room_booking_id"/>
-                                                <field name="hotel_id"/>
+                                                <field name="hotel_id" required="1"/>
                                                 <field name="building_id"/>
                                                 <field name="floor_id"/>
                                             </group>
                                             <group colspan="1">
                                                 <field name="room_category_id"/>
-                                                <field name="room_id" invisible="not room_category_id"
-                                                       domain="room_domain"/>
+                                                <field name="room_id"
+                                                       domain="[('id', 'in', available_room_ids)]"
+                                                       required="1"/>
                                             </group>
                                             <group colspan="1">
                                                 <field name="rate_plan_id"
-                                                       invisible="not room_category_id"
                                                        domain="[('room_category_ids', 'in', [room_category_id])]"/>
                                                 <field name="room_price" readonly="1" invisible="not rate_plan_id"/>
                                             </group>
@@ -386,6 +381,35 @@
                             </field>
 
                         </page>
+
+                        <page string="Guest Info"
+                              name="hotel_guest_info"
+                              >
+
+                            <group>
+
+                                <group string="Guest Information">
+
+                                    <field name="nationality"/>
+
+                                    <field name="date_of_birth"/>
+
+                                    <field name="gender"/>
+
+                                </group>
+
+                                <group string="Identification">
+
+                                    <field name="id_type"/>
+
+                                    <field name="id_number"/>
+
+                                </group>
+
+                            </group>
+
+                        </page>
+
                         <page string="Extra Information">
                             <group>
                                 <group>
@@ -396,16 +420,13 @@
                                 </group>
                                 <group>
                                     <field name="payment_status"/>
-                                    <field name="reference"/>
-                                    <field name="arrival_time"/>
-                                    <field name="departure_time"/>
                                 </group>
                             </group>
                         </page>
+
                         <!-- ================================================= -->
                         <!-- Notes -->
                         <!-- ================================================= -->
-
                         <page string="Notes">
 
                             <group string="Guest Notes">

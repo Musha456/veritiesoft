@@ -8,6 +8,7 @@
         <form string="Reservation Room">
 
             <sheet>
+                <field name="available_room_ids" invisible="1"/>
 
                 <group>
 
@@ -18,14 +19,21 @@
                         <field name="hotel_id"
                                colspan="3"/>
 
+                        <field name="building_id"
+                               colspan="3"/>
+
+                        <field name="floor_id"
+                               colspan="3"/>
+
                         <field name="room_category_id"
                                colspan="3"/>
 
                         <field name="room_id"
-                               domain="room_domain"
+                               domain="[('id', 'in', available_room_ids)]"
                                colspan="3"/>
 
                         <field name="rate_plan_id"
+                               domain="[('room_category_ids', 'in', [room_category_id])]"
                                colspan="3"/>
 
                         <field name="room_booking_id"
@@ -210,6 +218,10 @@
                 <field name="reservation_id"/>
 
                 <field name="hotel_id"/>
+
+                <field name="building_id" optional="show"/>
+
+                <field name="floor_id" optional="show"/>
 
                 <field name="room_category_id"/>
 

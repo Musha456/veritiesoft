@@ -376,6 +376,7 @@ class HotelGuestFolio(models.Model):
                             "quantity": line.quantity,
                             "price_unit": line.unit_price,
                             "discount": line.discount,
+                            "tax_ids": [(6, 0, line.tax_ids.ids)],
                         },
                     )
                 )
@@ -414,4 +415,34 @@ class HotelGuestFolio(models.Model):
             "res_model": "account.move",
             "view_mode": "form",
             "res_id": self.invoice_id.id,
+        }
+
+    def action_send_folio_email(self):
+        """Open email composer with guest folio template."""
+        self.ensure_one()
+        template = self.env.ref(
+            "vs_hotel_management.mail_template_hotel_guest_folio",
+            raise_if_not_found=False,
+        )
+        compose_form = self.env.ref(
+            "mail.email_compose_message_wizard_form",
+            raise_if_not_found=False,
+        )
+        ctx = {
+            "default_model": "hotel.guest.folio",
+            "default_res_ids": self.ids,
+            "default_use_template": bool(template),
+            "default_template_id": template.id if template else False,
+            "default_composition_mode": "comment",
+            "mark_so_as_sent": True,
+            "force_email": True,
+        }
+        return {
+            "type": "ir.actions.act_window",
+            "view_mode": "form",
+            "res_model": "mail.compose.message",
+            "views": [(compose_form.id if compose_form else False, "form")],
+            "view_id": compose_form.id if compose_form else False,
+            "target": "new",
+            "context": ctx,
         }

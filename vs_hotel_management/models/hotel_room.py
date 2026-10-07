@@ -2,6 +2,8 @@ from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError, UserError
 from collections import defaultdict
 from markupsafe import Markup, escape
+import logging
+_logger = logging.getLogger(__name__)
 
 
 class HotelRoom(models.Model):
@@ -154,11 +156,17 @@ class HotelRoom(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        auto = self.env["ir.config_parameter"].sudo().get_param(
+            "vs_hotel_management.auto_generate_room_number", default=False
+        )
         for vals in vals_list:
-            if vals.get("code", "/") == "/":
+            if auto and vals.get("code", "/") in ("/", False, ""):
                 vals["code"] = self.env["ir.sequence"].next_by_code(
                     "hotel.room"
-                ) or "/"
+                ) or vals.get("room_number") or "/"
+            elif vals.get("code", "/") in ("/", False, ""):
+                seq_code = self.env["ir.sequence"].next_by_code("hotel.room")
+                vals["code"] = seq_code or vals.get("room_number") or "/"
         return super().create(vals_list)
 
     def _compute_reservation_count(self):
@@ -497,36 +505,317 @@ class HotelRoom(models.Model):
         ),
     ]
 
+    def is_available(
+            self,
+            check_in,
+            check_out,
+            current_reservation=None,
+            current_line=None,
+            exclude_booking=None,
+            for_check_in=False,
+            raise_exception=False,
+    ):
+        """Central availability helper determining whether a room is available for a date range.
+        Handles:
+        1. Date validity (check_in < check_out)
+        2. Operational room status (maintenance, out_of_order, active; cleaning/dirty/occupied for current/check-in)
+        3. Blocking reservation states (confirmed, reserved, checked_in)
+        4. Date overlap (existing_in < new_out and existing_out > new_in)
+        5. Current reservation exclusion and same-reservation multi-room duplicate checks
+        """
+        self.ensure_one()
+
+        # 1. Date validity
+        if not check_in:
+            if raise_exception:
+                raise ValidationError(_("Please select the check-in date."))
+            return False
+
+        if not check_out:
+            if raise_exception:
+                raise ValidationError(_("Please select the check-out date."))
+            return False
+
+        if check_out <= check_in:
+            if raise_exception:
+                raise ValidationError(_("Check-out must be after check-in."))
+            return False
+
+        # 2. Operational room status
+        if not self.active:
+            if raise_exception:
+                raise ValidationError(
+                    _("Room '%s' is inactive and cannot be reserved.")
+                    % self.display_name
+                )
+            return False
+
+        if self.status == "out_of_order":
+            if raise_exception:
+                raise ValidationError(
+                    _("Room '%s' is out of order.")
+                    % self.display_name
+                )
+            return False
+
+        if self.status == "maintenance":
+            if raise_exception:
+                raise ValidationError(
+                    _("Room '%s' is currently unavailable due to maintenance.")
+                    % self.display_name
+                )
+            return False
+
+        now = fields.Datetime.now()
+
+        if for_check_in or (check_in <= now < check_out):
+            if self.status == "occupied":
+                is_curr_reservation_booking = False
+
+                if current_reservation and current_reservation._origin.id:
+                    matching_booking = self.env["hotel.room.booking"].search([
+                        ("room_id", "=", self.id),
+                        (
+                            "reservation_id",
+                            "=",
+                            current_reservation._origin.id,
+                        ),
+                        ("state", "=", "checked_in"),
+                    ], limit=1)
+
+                    if matching_booking:
+                        is_curr_reservation_booking = True
+
+                if not is_curr_reservation_booking:
+                    if raise_exception:
+                        raise ValidationError(
+                            _("Room '%s' is currently occupied.")
+                            % self.display_name
+                        )
+                    return False
+
+            if self.status in ("cleaning", "dirty"):
+                if for_check_in:
+                    if raise_exception:
+                        status_label = dict(
+                            self._fields["status"].selection
+                        ).get(self.status, self.status)
+
+                        raise ValidationError(
+                            _(
+                                "Room '%s' is not ready for check-in "
+                                "(current status: %s)."
+                            )
+                            % (self.display_name, status_label)
+                        )
+
+                    return False
+
+                elif check_in <= now < check_out:
+                    if raise_exception:
+                        raise ValidationError(
+                            _(
+                                "Room '%s' is currently unavailable "
+                                "due to cleaning."
+                            )
+                            % self.display_name
+                        )
+
+                    return False
+
+        # 3. Blocking reservation lines
+        # Blocking states: confirmed, reserved, checked_in
+        res_line_domain = [
+            ("room_id", "=", self.id),
+            (
+                "reservation_id.state",
+                "in",
+                ("confirmed", "reserved", "checked_in"),
+            ),
+            ("check_in", "<", check_out),
+            ("check_out", ">", check_in),
+        ]
+
+        # Only exclude the current reservation if it is an existing
+        # database record. New reservations have a temporary NewId.
+        if current_reservation and current_reservation._origin.id:
+            res_line_domain.append(
+                (
+                    "reservation_id",
+                    "!=",
+                    current_reservation._origin.id,
+                )
+            )
+
+        if current_line and current_line._origin.id:
+            res_line_domain.append(
+                ("id", "!=", current_line._origin.id)
+            )
+
+        conflict_line = self.env["hotel.reservation.line"].search(
+            res_line_domain,
+            limit=1,
+        )
+
+        if conflict_line:
+            _logger.info(
+                "ROOM AVAILABILITY BLOCKED BY RESERVATION LINE | "
+                "Room=%s | Conflict Line=%s | Reservation=%s | "
+                "Check-in=%s | Check-out=%s | State=%s",
+                self.display_name,
+                conflict_line.id,
+                conflict_line.reservation_id.id,
+                conflict_line.check_in,
+                conflict_line.check_out,
+                conflict_line.reservation_id.state,
+            )
+
+            if raise_exception:
+                raise ValidationError(
+                    _(
+                        "Room '%(room)s' is already reserved from "
+                        "%(check_in)s to %(check_out)s."
+                    )
+                    % {
+                        "room": self.display_name,
+                        "check_in": conflict_line.check_in,
+                        "check_out": conflict_line.check_out,
+                    }
+                )
+
+            return False
+
+        # 4. Blocking room bookings
+        # Blocking states: reserved, checked_in
+        booking_domain = [
+            ("room_id", "=", self.id),
+            ("state", "in", ("reserved", "checked_in")),
+            ("check_in", "<", check_out),
+            ("check_out", ">", check_in),
+        ]
+
+        if exclude_booking and exclude_booking._origin.id:
+            booking_domain.append(
+                ("id", "!=", exclude_booking._origin.id)
+            )
+
+        # Only apply the reservation exclusion for an existing
+        # database reservation. Never pass a NewId to a search domain.
+        if current_reservation and current_reservation._origin.id:
+            booking_domain.append(
+                (
+                    "reservation_id",
+                    "!=",
+                    current_reservation._origin.id,
+                )
+            )
+
+        if current_line and current_line.room_booking_id:
+            if current_line.room_booking_id._origin.id:
+                booking_domain.append(
+                    (
+                        "id",
+                        "!=",
+                        current_line.room_booking_id._origin.id,
+                    )
+                )
+
+        conflict_booking = self.env["hotel.room.booking"].search(
+            booking_domain,
+            limit=1,
+        )
+
+        if conflict_booking:
+            _logger.info(
+                "ROOM AVAILABILITY BLOCKED BY ROOM BOOKING | "
+                "Room=%s | Booking=%s | Reservation=%s | "
+                "Check-in=%s | Check-out=%s | State=%s",
+                self.display_name,
+                conflict_booking.id,
+                conflict_booking.reservation_id.id,
+                conflict_booking.check_in,
+                conflict_booking.check_out,
+                conflict_booking.state,
+            )
+
+            if raise_exception:
+                raise ValidationError(
+                    _(
+                        "Room '%(room)s' is already booked from "
+                        "%(check_in)s to %(check_out)s."
+                    )
+                    % {
+                        "room": self.display_name,
+                        "check_in": conflict_booking.check_in,
+                        "check_out": conflict_booking.check_out,
+                    }
+                )
+
+            return False
+
+        # 5. Check duplicate room on other lines of the same reservation
+        if current_reservation:
+            same_res_lines = current_reservation.line_ids.filtered(
+                lambda l: (
+                        l.room_id.id == self.id
+                        and (
+                                not current_line
+                                or l != current_line
+                        )
+                )
+            )
+
+            for ol in same_res_lines:
+                ol_in = ol.check_in or current_reservation.check_in
+                ol_out = ol.check_out or current_reservation.check_out
+
+                if (
+                        ol_in
+                        and ol_out
+                        and ol_in < check_out
+                        and ol_out > check_in
+                ):
+                    if raise_exception:
+                        raise ValidationError(
+                            _(
+                                "Room '%s' is assigned more than once "
+                                "for overlapping dates."
+                            )
+                            % self.display_name
+                        )
+
+                    return False
+
+        return True
+
+    def is_room_available(
+            self,
+            check_in,
+            check_out,
+            current_reservation=None,
+    ):
+        """Central availability helper on hotel.room."""
+        return self.is_available(
+            check_in=check_in,
+            check_out=check_out,
+            current_reservation=current_reservation,
+        )
+
     def _is_available_for_period(
             self,
             check_in,
             check_out,
             exclude_booking=None,
+            current_reservation=None,
+            current_line=None,
+            for_check_in=False,
     ):
-        self.ensure_one()
-
-        if not check_in or not check_out:
-            return False
-
-        domain = [
-            ("room_id", "=", self.id),
-            ("state", "in", [
-                "reserved",
-                "confirmed",
-                "checked_in",
-            ]),
-            ("check_in", "<", check_out),
-            ("check_out", ">", check_in),
-        ]
-
-        if exclude_booking:
-            domain.append(
-                ("id", "!=", exclude_booking.id)
-            )
-
-        return not bool(
-            self.env["hotel.room.booking"].search(
-                domain,
-                limit=1,
-            )
+        return self.is_available(
+            check_in=check_in,
+            check_out=check_out,
+            exclude_booking=exclude_booking,
+            current_reservation=current_reservation,
+            current_line=current_line,
+            for_check_in=for_check_in,
+            raise_exception=False,
         )

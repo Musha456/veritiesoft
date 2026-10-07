@@ -2,12 +2,11 @@
 <odoo>
     <data noupdate="0">
 
-
         <!-- ========================================================== -->
-        <!-- Hotel -->
+        <!-- Hotel Top Level Category -->
         <!-- ========================================================== -->
         <record model="ir.module.category" id="module_category_hotel">
-            <field name="name">Hotel</field>
+            <field name="name">Hotel Management</field>
             <field name="sequence">1</field>
         </record>
 
@@ -20,6 +19,34 @@
             <field name="sequence">0</field>
         </record>
 
+        <record id="group_hotel_setting_manager" model="res.groups">
+            <field name="name">Settings Manager</field>
+            <field name="category_id" ref="module_category_hotel_management"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- Reservation -->
+        <!-- ========================================================== -->
+        <record model="ir.module.category" id="module_category_hotel_reservation">
+            <field name="name">Reservation</field>
+            <field name="parent_id" ref="vs_hotel_management.module_category_hotel"/>
+            <field name="sequence">10</field>
+        </record>
+
+        <record id="group_hotel_reservation_user" model="res.groups">
+            <field name="name">Reservation User</field>
+            <field name="category_id" ref="vs_hotel_management.module_category_hotel_reservation"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <record id="group_hotel_reservation_manager" model="res.groups">
+            <field name="name">Reservation Manager</field>
+            <field name="category_id" ref="vs_hotel_management.module_category_hotel_reservation"/>
+            <field name="implied_ids" eval="[(4, ref('group_hotel_reservation_user'))]"/>
+        </record>
 
         <!-- ========================================================== -->
         <!-- Room -->
@@ -27,17 +54,9 @@
         <record model="ir.module.category" id="module_category_hotel_room">
             <field name="name">Room</field>
             <field name="parent_id" ref="vs_hotel_management.module_category_hotel"/>
-            <field name="sequence">10</field>
+            <field name="sequence">11</field>
         </record>
 
-        <!-- Configuration Setting Group-->
-        <record id="group_hotel_setting_manager" model="res.groups">
-            <field name="name">Settings Manager</field>
-            <field name="category_id" ref="module_category_hotel_management"/>
-        </record>
-
-
-        <!-- Group Room User-->
         <record id="group_hotel_room_user" model="res.groups">
             <field name="name">Room User</field>
             <field name="comment">The user will have access of read and write permission</field>
@@ -46,47 +65,26 @@
             <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
 
-
-        <!-- Group Room Manager-->
+        <!-- Group Room Manager (Hotel General Manager) -->
         <record id="group_hotel_room_manager" model="res.groups">
-            <field name="name">Room Manager</field>
+            <field name="name">Room Manager (Hotel Manager)</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel_room"/>
-            <field name="implied_ids" eval="[(4, ref('group_hotel_room_user'))]"/>
-        </record>
-
-        <!-- Category Hotel Reservation Management-->
-        <record model="ir.module.category" id="module_category_hotel_reservation">
-            <field name="name">Reservation</field>
-            <field name="parent_id" ref="vs_hotel_management.module_category_hotel"/>
-            <field name="sequence">11</field>
-        </record>
-
-        <!-- Group Reservation User-->
-        <record id="group_hotel_reservation_user" model="res.groups">
-            <field name="name">Reservation User</field>
-            <field name="category_id" ref="vs_hotel_management.module_category_hotel_reservation"/>
-            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
-        </record>
-
-        <!-- Group Reservation Manager-->
-        <record id="group_hotel_reservation_manager" model="res.groups">
-            <field name="name">Reservation Manager</field>
-            <field name="category_id" ref="vs_hotel_management.module_category_hotel_reservation"/>
-            <field name="implied_ids" eval="[(4, ref('group_hotel_reservation_user'))]"/>
+            <field name="implied_ids" eval="[
+                (4, ref('group_hotel_room_user')),
+                (4, ref('group_hotel_reservation_manager')),
+                (4, ref('group_hotel_setting_manager'))
+            ]"/>
         </record>
 
         <!-- ========================================================== -->
         <!-- Housekeeping -->
         <!-- ========================================================== -->
-
         <record model="ir.module.category" id="module_category_hotel_housekeeping">
             <field name="name">Housekeeping</field>
             <field name="parent_id" ref="vs_hotel_management.module_category_hotel"/>
             <field name="sequence">12</field>
         </record>
 
-        <!-- Group Housekeeping User -->
         <record id="group_hotel_housekeeping_user" model="res.groups">
             <field name="name">Housekeeping User</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel_housekeeping"/>
@@ -94,7 +92,6 @@
             <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
 
-        <!-- Group Housekeeping Manager -->
         <record id="group_hotel_housekeeping_manager" model="res.groups">
             <field name="name">Housekeeping Manager</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel_housekeeping"/>
@@ -104,14 +101,12 @@
         <!-- ========================================================== -->
         <!-- Maintenance -->
         <!-- ========================================================== -->
-
         <record model="ir.module.category" id="module_category_hotel_maintenance">
             <field name="name">Maintenance</field>
             <field name="parent_id" ref="vs_hotel_management.module_category_hotel"/>
             <field name="sequence">13</field>
         </record>
 
-        <!-- Group Maintenance User -->
         <record id="group_hotel_maintenance_user" model="res.groups">
             <field name="name">Maintenance User</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel_maintenance"/>
@@ -119,7 +114,6 @@
             <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
 
-        <!-- Group Maintenance Manager -->
         <record id="group_hotel_maintenance_manager" model="res.groups">
             <field name="name">Maintenance Manager</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel_maintenance"/>
@@ -127,66 +121,14 @@
         </record>
 
         <!-- ========================================================== -->
-        <!-- Restaurant -->
+        <!-- Billing -->
         <!-- ========================================================== -->
-
-        <record model="ir.module.category" id="module_category_hotel_restaurant">
-            <field name="name">Restaurant</field>
+        <record model="ir.module.category" id="module_category_hotel_billing">
+            <field name="name">Billing</field>
             <field name="parent_id" ref="vs_hotel_management.module_category_hotel"/>
             <field name="sequence">14</field>
         </record>
 
-        <!-- Group Restaurant User -->
-        <record id="group_hotel_restaurant_user" model="res.groups">
-            <field name="name">Restaurant User</field>
-            <field name="category_id" ref="vs_hotel_management.module_category_hotel_restaurant"/>
-            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
-        </record>
-
-        <!-- Group Restaurant Manager -->
-        <record id="group_hotel_restaurant_manager" model="res.groups">
-            <field name="name">Restaurant Manager</field>
-            <field name="category_id" ref="vs_hotel_management.module_category_hotel_restaurant"/>
-            <field name="implied_ids" eval="[(4, ref('group_hotel_restaurant_user'))]"/>
-        </record>
-
-        <!-- ========================================================== -->
-        <!-- Laundry -->
-        <!-- ========================================================== -->
-
-        <record model="ir.module.category" id="module_category_hotel_laundry">
-            <field name="name">Laundry</field>
-            <field name="parent_id" ref="vs_hotel_management.module_category_hotel"/>
-            <field name="sequence">15</field>
-        </record>
-
-        <!-- Group Laundry User -->
-        <record id="group_hotel_laundry_user" model="res.groups">
-            <field name="name">Laundry User</field>
-            <field name="category_id" ref="vs_hotel_management.module_category_hotel_laundry"/>
-            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
-        </record>
-
-        <!-- Group Laundry Manager -->
-        <record id="group_hotel_laundry_manager" model="res.groups">
-            <field name="name">Laundry Manager</field>
-            <field name="category_id" ref="vs_hotel_management.module_category_hotel_laundry"/>
-            <field name="implied_ids" eval="[(4, ref('group_hotel_laundry_user'))]"/>
-        </record>
-
-        <!-- ========================================================== -->
-        <!-- Billing -->
-        <!-- ========================================================== -->
-
-        <record model="ir.module.category" id="module_category_hotel_billing">
-            <field name="name">Billing</field>
-            <field name="parent_id" ref="vs_hotel_management.module_category_hotel"/>
-            <field name="sequence">16</field>
-        </record>
-
-        <!-- Group Billing User -->
         <record id="group_hotel_billing_user" model="res.groups">
             <field name="name">Billing User</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel_billing"/>
@@ -194,7 +136,6 @@
             <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
 
-        <!-- Group Billing Manager -->
         <record id="group_hotel_billing_manager" model="res.groups">
             <field name="name">Billing Manager</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel_billing"/>
@@ -204,14 +145,12 @@
         <!-- ========================================================== -->
         <!-- Reporting -->
         <!-- ========================================================== -->
-
         <record model="ir.module.category" id="module_category_hotel_reporting">
             <field name="name">Reporting</field>
             <field name="parent_id" ref="vs_hotel_management.module_category_hotel"/>
-            <field name="sequence">17</field>
+            <field name="sequence">15</field>
         </record>
 
-        <!-- Group Reporting User -->
         <record id="group_hotel_reporting_user" model="res.groups">
             <field name="name">Reporting User</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel_reporting"/>
@@ -219,11 +158,20 @@
             <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
 
-        <!-- Group Reporting Manager -->
         <record id="group_hotel_reporting_manager" model="res.groups">
             <field name="name">Reporting Manager</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel_reporting"/>
             <field name="implied_ids" eval="[(4, ref('group_hotel_reporting_user'))]"/>
+        </record>
+
+        <!-- Room Manager inherits Housekeeping, Maintenance, Billing & Reporting Managers -->
+        <record id="group_hotel_room_manager" model="res.groups">
+            <field name="implied_ids" eval="[
+                (4, ref('group_hotel_housekeeping_manager')),
+                (4, ref('group_hotel_maintenance_manager')),
+                (4, ref('group_hotel_billing_manager')),
+                (4, ref('group_hotel_reporting_manager'))
+            ]"/>
         </record>
 
     </data>

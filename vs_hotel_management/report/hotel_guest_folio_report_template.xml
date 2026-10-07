@@ -1,0 +1,560 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_hotel_guest_folio_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+
+                    <div class="page"
+                         style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                                font-size: 12px;
+                                color: #374151;
+                                line-height: 1.45;">
+
+                        <!-- ================================================= -->
+                        <!-- REPORT TITLE -->
+                        <!-- ================================================= -->
+                        <div class="row align-items-start mb-4">
+
+                            <div class="col-8">
+                                <div style="border-left: 4px solid #1a3a5f; padding-left: 12px;">
+                                    <div style="font-size: 22px;
+                                                font-weight: 700;
+                                                color: #1a3a5f;
+                                                line-height: 1.2;">
+                                        GUEST FOLIO
+                                    </div>
+                                    <div style="font-size: 12px;
+                                                color: #6b7280;
+                                                margin-top: 3px;">
+                                        BILL STATEMENT
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-4 text-end">
+                                <div style="font-size: 12px; color: #6b7280;">
+                                    Folio No.
+                                </div>
+                                <div style="font-size: 15px;
+                                            font-weight: 700;
+                                            color: #1f2937;">
+                                    <span t-field="o.name"/>
+                                </div>
+
+                                <div style="margin-top: 6px;
+                                            font-size: 11px;
+                                            color: #6b7280;">
+                                    <span t-field="o.state"
+                                          style="text-transform: uppercase;"/>
+                                    <span style="margin: 0 4px;">•</span>
+                                    <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- HOTEL & GUEST INFORMATION -->
+                        <!-- ================================================= -->
+                        <div class="row mb-4">
+
+                            <!-- HOTEL DETAILS -->
+                            <div class="col-6">
+                                <div style="padding: 14px 16px;
+                                            border: 1px solid #e5e7eb;
+                                            background-color: #fafafa;
+                                            min-height: 125px;">
+
+                                    <div style="font-size: 10px;
+                                                font-weight: 700;
+                                                letter-spacing: 0.7px;
+                                                color: #1a3a5f;
+                                                text-transform: uppercase;
+                                                padding-bottom: 7px;
+                                                margin-bottom: 9px;
+                                                border-bottom: 1px solid #e5e7eb;">
+                                        Hotel Details
+                                    </div>
+
+                                    <div style="font-size: 14px;
+                                                font-weight: 700;
+                                                color: #1f2937;
+                                                margin-bottom: 4px;">
+                                        <span t-field="o.hotel_id.name"/>
+                                    </div>
+
+                                    <div t-if="o.hotel_id.street"
+                                         style="color: #4b5563;">
+                                        <span t-field="o.hotel_id.street"/>
+                                    </div>
+
+                                    <div t-if="o.hotel_id.city"
+                                         style="color: #4b5563;">
+                                        <span t-field="o.hotel_id.city"/>
+                                        <t t-if="o.hotel_id.country_id">
+                                            , <span t-field="o.hotel_id.country_id.name"/>
+                                        </t>
+                                    </div>
+
+                                    <div t-if="o.hotel_id.phone"
+                                         style="color: #4b5563; margin-top: 4px;">
+                                        Phone:
+                                        <span t-field="o.hotel_id.phone"/>
+                                    </div>
+
+                                    <div t-if="o.hotel_id.email"
+                                         style="color: #4b5563;">
+                                        Email:
+                                        <span t-field="o.hotel_id.email"/>
+                                    </div>
+
+                                </div>
+                            </div>
+
+
+                            <!-- GUEST DETAILS -->
+                            <div class="col-6">
+                                <div style="padding: 14px 16px;
+                                            border: 1px solid #e5e7eb;
+                                            background-color: #fafafa;
+                                            min-height: 125px;">
+
+                                    <div style="font-size: 10px;
+                                                font-weight: 700;
+                                                letter-spacing: 0.7px;
+                                                color: #1a3a5f;
+                                                text-transform: uppercase;
+                                                padding-bottom: 7px;
+                                                margin-bottom: 9px;
+                                                border-bottom: 1px solid #e5e7eb;">
+                                        Guest Details
+                                    </div>
+
+                                    <div style="font-size: 14px;
+                                                font-weight: 700;
+                                                color: #1f2937;
+                                                margin-bottom: 4px;">
+                                        <span t-field="o.partner_id.name"/>
+                                    </div>
+
+                                    <div t-if="o.partner_id.phone"
+                                         style="color: #4b5563;">
+                                        Phone:
+                                        <span t-field="o.partner_id.phone"/>
+                                    </div>
+
+                                    <div t-if="o.partner_id.email"
+                                         style="color: #4b5563;">
+                                        Email:
+                                        <span t-field="o.partner_id.email"/>
+                                    </div>
+
+                                    <div t-if="o.partner_id.id_number"
+                                         style="color: #4b5563;">
+                                        ID Number:
+                                        <span t-field="o.partner_id.id_number"/>
+                                    </div>
+
+                                    <div t-if="o.reservation_id"
+                                         style="color: #4b5563; margin-top: 4px;">
+                                        Reservation:
+                                        <strong>
+                                            <span t-field="o.reservation_id.name"/>
+                                        </strong>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- STAY SUMMARY -->
+                        <!-- ================================================= -->
+                        <div style="font-size: 10px;
+                                    font-weight: 700;
+                                    letter-spacing: 0.7px;
+                                    color: #1a3a5f;
+                                    text-transform: uppercase;
+                                    margin-bottom: 8px;">
+                            Stay Summary
+                        </div>
+
+                        <div class="row mb-4"
+                             style="border-top: 1px solid #e5e7eb;
+                                    border-bottom: 1px solid #e5e7eb;
+                                    padding: 11px 0;">
+
+                            <div class="col-3">
+                                <div style="font-size: 10px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;">
+                                    Check-In
+                                </div>
+                                <div style="font-weight: 600;
+                                            color: #1f2937;
+                                            margin-top: 2px;">
+                                    <span t-field="o.check_in"/>
+                                </div>
+                            </div>
+
+                            <div class="col-3">
+                                <div style="font-size: 10px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;">
+                                    Check-Out
+                                </div>
+                                <div style="font-weight: 600;
+                                            color: #1f2937;
+                                            margin-top: 2px;">
+                                    <span t-field="o.check_out"/>
+                                </div>
+                            </div>
+
+                            <div class="col-3">
+                                <div style="font-size: 10px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;">
+                                    Room(s)
+                                </div>
+
+                                <div style="font-weight: 600;
+                                            color: #1f2937;
+                                            margin-top: 2px;">
+
+                                    <t t-if="o.reservation_id">
+                                        <t t-foreach="o.reservation_id.line_ids" t-as="rl">
+                                            <span t-field="rl.room_id.display_name"/>
+                                            <t t-if="not rl_last">, </t>
+                                        </t>
+                                    </t>
+
+                                    <t t-elif="o.room_booking_id">
+                                        <span t-field="o.room_booking_id.room_id.name"/>
+                                    </t>
+
+                                </div>
+                            </div>
+
+                            <div class="col-3">
+                                <div style="font-size: 10px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;">
+                                    Invoice Ref
+                                </div>
+
+                                <div style="font-weight: 600;
+                                            color: #1f2937;
+                                            margin-top: 2px;">
+
+                                    <t t-if="o.invoice_id">
+                                        <span t-field="o.invoice_id.name"/>
+                                    </t>
+
+                                    <t t-else="">
+                                        <span style="color: #9ca3af;">
+                                            Not Invoiced
+                                        </span>
+                                    </t>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- CHARGES & PAYMENTS -->
+                        <!-- ================================================= -->
+                        <div style="font-size: 10px;
+                                    font-weight: 700;
+                                    letter-spacing: 0.7px;
+                                    color: #1a3a5f;
+                                    text-transform: uppercase;
+                                    margin-bottom: 8px;">
+                            Charges &amp; Payments
+                        </div>
+
+                        <table class="table table-sm mb-4"
+                               style="width: 100%;
+                                      border-collapse: collapse;
+                                      border: none;
+                                      font-size: 11px;">
+
+                            <thead>
+                                <tr style="background-color: #f3f4f6;
+                                           color: #374151;
+                                           border-top: 1px solid #dfe3e8;
+                                           border-bottom: 1px solid #dfe3e8;">
+
+                                    <th style="padding: 8px 7px;
+                                               border: none;
+                                               font-weight: 700;">
+                                        Date
+                                    </th>
+
+                                    <th style="padding: 8px 7px;
+                                               border: none;
+                                               font-weight: 700;">
+                                        Description
+                                    </th>
+
+                                    <th style="padding: 8px 7px;
+                                               border: none;
+                                               font-weight: 700;">
+                                        Type
+                                    </th>
+
+                                    <th class="text-center"
+                                        style="padding: 8px 7px;
+                                               border: none;
+                                               font-weight: 700;">
+                                        Qty
+                                    </th>
+
+                                    <th class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;
+                                               font-weight: 700;">
+                                        Unit Price
+                                    </th>
+
+                                    <th class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;
+                                               font-weight: 700;">
+                                        Disc %
+                                    </th>
+
+                                    <th class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;
+                                               font-weight: 700;">
+                                        Tax
+                                    </th>
+
+                                    <th class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;
+                                               font-weight: 700;">
+                                        Total
+                                    </th>
+
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                <tr t-foreach="o.line_ids" t-as="line"
+                                    style="border-bottom: 1px solid #edf0f2;">
+
+                                    <td style="padding: 8px 7px;
+                                               border: none;
+                                               color: #6b7280;
+                                               white-space: nowrap;">
+                                        <span t-field="line.date"
+                                              t-options='{"widget": "date"}'/>
+                                    </td>
+
+                                    <td style="padding: 8px 7px;
+                                               border: none;
+                                               color: #1f2937;">
+                                        <strong>
+                                            <span t-field="line.description"/>
+                                        </strong>
+                                    </td>
+
+                                    <td style="padding: 8px 7px;
+                                               border: none;
+                                               color: #6b7280;">
+                                        <span t-field="line.charge_type"
+                                              style="text-transform: capitalize;"/>
+                                    </td>
+
+                                    <td class="text-center"
+                                        style="padding: 8px 7px;
+                                               border: none;">
+                                        <span t-field="line.quantity"/>
+                                    </td>
+
+                                    <td class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;
+                                               white-space: nowrap;">
+                                        <span t-field="line.unit_price"
+                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                    </td>
+
+                                    <td class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;">
+                                        <t t-if="line.discount">
+                                            <span t-field="line.discount"/>%
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color: #9ca3af;">—</span>
+                                        </t>
+                                    </td>
+
+                                    <td class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;
+                                               white-space: nowrap;">
+                                        <span t-field="line.tax_amount"
+                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                    </td>
+
+                                    <td class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;
+                                               white-space: nowrap;
+                                               color: #1f2937;">
+                                        <strong>
+                                            <span t-field="line.total_amount"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </strong>
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+
+                        <!-- ================================================= -->
+                        <!-- TOTALS -->
+                        <!-- ================================================= -->
+                        <div class="row justify-content-end mb-5">
+
+                            <div class="col-5">
+
+                                <table style="width: 100%;
+                                              border-collapse: collapse;
+                                              font-size: 12px;">
+
+                                    <tr>
+                                        <td style="padding: 5px 0;
+                                                   color: #6b7280;">
+                                            Total Charges
+                                        </td>
+
+                                        <td class="text-end"
+                                            style="padding: 5px 0;
+                                                   color: #1f2937;
+                                                   font-weight: 600;">
+                                            <span t-field="o.total_amount"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+
+                                    <tr t-if="o.paid_amount">
+                                        <td style="padding: 5px 0;
+                                                   color: #6b7280;">
+                                            Paid Amount
+                                        </td>
+
+                                        <td class="text-end"
+                                            style="padding: 5px 0;
+                                                   color: #198754;
+                                                   font-weight: 600;">
+                                            <span t-field="o.paid_amount"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="2"
+                                            style="height: 5px;
+                                                   border-bottom: 1px solid #d1d5db;">
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="padding: 10px 0 4px;
+                                                   font-size: 14px;
+                                                   font-weight: 700;
+                                                   color: #1f2937;">
+                                            Balance Due
+                                        </td>
+
+                                        <td class="text-end"
+                                            style="padding: 10px 0 4px;
+                                                   font-size: 15px;
+                                                   font-weight: 700;">
+
+                                            <strong t-attf-style="color: {{ '#dc3545' if o.balance_amount > 0 else '#198754' }};">
+                                                <span t-field="o.balance_amount"
+                                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </strong>
+
+                                        </td>
+                                    </tr>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- SIGNATURES -->
+                        <!-- ================================================= -->
+                        <div class="row mt-5 pt-4"
+                             style="border-top: 1px solid #e5e7eb;">
+
+                            <div class="col-6 text-center">
+
+                                <div style="width: 75%;
+                                            margin: 30px auto 0;
+                                            border-top: 1px solid #9ca3af;
+                                            padding-top: 7px;
+                                            color: #374151;
+                                            font-size: 11px;">
+                                    Guest Signature
+                                </div>
+
+                            </div>
+
+                            <div class="col-6 text-center">
+
+                                <div style="width: 75%;
+                                            margin: 30px auto 0;
+                                            border-top: 1px solid #9ca3af;
+                                            padding-top: 7px;
+                                            color: #374151;
+                                            font-size: 11px;">
+                                    Cashier / Front Desk Agent
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- CLOSING MESSAGE -->
+                        <!-- ================================================= -->
+                        <div class="text-center"
+                             style="margin-top: 25px;
+                                    padding-top: 10px;
+                                    color: #9ca3af;
+                                    font-size: 10px;">
+
+                            Thank you for choosing to stay with us.
+                            We hope to see you again soon.
+
+                        </div>
+
+                    </div>
+
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

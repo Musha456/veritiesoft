@@ -134,8 +134,11 @@ class HotelBuilding(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        auto = self.env["ir.config_parameter"].sudo().get_param(
+            "vs_hotel_management.auto_generate_building_code", default=True
+        )
         for vals in vals_list:
-            if vals.get("code", "/") == "/":
+            if auto and vals.get("code", "/") in ("/", False, ""):
                 vals["code"] = self.env["ir.sequence"].next_by_code(
                     "hotel.building"
                 ) or "/"

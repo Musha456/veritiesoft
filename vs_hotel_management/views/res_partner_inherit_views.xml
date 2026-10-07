@@ -59,7 +59,7 @@
 
             <xpath expr="//sheet/notebook" position="inside">
 
-                <page string="Hotel Guest"
+                <page string="Guest Info"
                       name="hotel_guest"
                       invisible="not is_hotel_guest">
 

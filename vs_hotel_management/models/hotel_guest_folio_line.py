@@ -29,8 +29,6 @@ class HotelGuestFolioLine(models.Model):
         [
             ("room", "Room"),
             ("service", "Service"),
-            ("restaurant", "Restaurant"),
-            ("laundry", "Laundry"),
             ("minibar", "Minibar"),
             ("extra", "Extra"),
             ("discount", "Discount"),

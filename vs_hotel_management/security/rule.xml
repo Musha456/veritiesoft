@@ -1,67 +1,124 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
 
+    <!-- ========================================================== -->
+    <!-- Multi-Company Rules (Global) -->
+    <!-- ========================================================== -->
+
+    <record id="rule_hotel_hotel_company" model="ir.rule">
+        <field name="name">Hotel: Multi-Company</field>
+        <field name="model_id" ref="model_hotel_hotel"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_hotel_building_company" model="ir.rule">
+        <field name="name">Hotel Building: Multi-Company</field>
+        <field name="model_id" ref="model_hotel_building"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_hotel_building_floor_company" model="ir.rule">
+        <field name="name">Hotel Floor: Multi-Company</field>
+        <field name="model_id" ref="model_hotel_building_floor"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_hotel_room_category_company" model="ir.rule">
+        <field name="name">Hotel Room Category: Multi-Company</field>
+        <field name="model_id" ref="model_hotel_room_category"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_hotel_room_company" model="ir.rule">
+        <field name="name">Hotel Room: Multi-Company</field>
+        <field name="model_id" ref="model_hotel_room"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
     <record id="rule_hotel_reservation_company" model="ir.rule">
-
-        <field name="name">
-            Hotel Reservation: Multi Company
-        </field>
-
-        <field name="model_id"
-               ref="model_hotel_reservation"/>
-
-        <field name="domain_force">
-            [('company_id', 'in', company_ids)]
-        </field>
-
-        <field name="groups"
-               eval="[
-               (4, ref('vs_hotel_management.group_hotel_room_user')),
-               (4, ref('vs_hotel_management.group_hotel_room_manager'))
-           ]"/>
-
+        <field name="name">Hotel Reservation: Multi-Company</field>
+        <field name="model_id" ref="model_hotel_reservation"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
     </record>
 
     <record id="rule_hotel_reservation_line_company" model="ir.rule">
-
-        <field name="name">
-            Hotel Reservation Line: Multi Company
-        </field>
-
-        <field name="model_id"
-               ref="model_hotel_reservation_line"/>
-
-        <field name="domain_force">
-            [('company_id', 'in', company_ids)]
-        </field>
-
-        <field name="groups"
-               eval="[
-               (4, ref('vs_hotel_management.group_hotel_room_user')),
-               (4, ref('vs_hotel_management.group_hotel_room_manager'))
-           ]"/>
-
+        <field name="name">Hotel Reservation Line: Multi-Company</field>
+        <field name="model_id" ref="model_hotel_reservation_line"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
     </record>
 
     <record id="rule_hotel_room_booking_company" model="ir.rule">
+        <field name="name">Hotel Room Booking: Multi-Company</field>
+        <field name="model_id" ref="model_hotel_room_booking"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
 
-        <field name="name">
-            Hotel Room Booking: Multi Company
-        </field>
+    <record id="rule_hotel_guest_folio_company" model="ir.rule">
+        <field name="name">Hotel Guest Folio: Multi-Company</field>
+        <field name="model_id" ref="model_hotel_guest_folio"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
 
-        <field name="model_id"
-               ref="model_hotel_room_booking"/>
+    <record id="rule_hotel_guest_folio_line_company" model="ir.rule">
+        <field name="name">Hotel Guest Folio Line: Multi-Company</field>
+        <field name="model_id" ref="model_hotel_guest_folio_line"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
 
-        <field name="domain_force">
-            [('company_id', 'in', company_ids)]
-        </field>
+    <record id="rule_hotel_housekeeping_company" model="ir.rule">
+        <field name="name">Hotel Housekeeping: Multi-Company</field>
+        <field name="model_id" ref="model_hotel_housekeeping"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
 
-        <field name="groups"
-               eval="[
-               (4, ref('vs_hotel_management.group_hotel_room_user')),
-               (4, ref('vs_hotel_management.group_hotel_room_manager'))
-           ]"/>
+    <record id="rule_hotel_maintenance_company" model="ir.rule">
+        <field name="name">Hotel Maintenance: Multi-Company</field>
+        <field name="model_id" ref="model_hotel_maintenance"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
 
+    <!-- ========================================================== -->
+    <!-- Task Assignment Rules (Housekeeping & Maintenance) -->
+    <!-- ========================================================== -->
+
+    <record id="rule_hotel_housekeeping_user" model="ir.rule">
+        <field name="name">Housekeeping: Assigned or Unassigned Tasks</field>
+        <field name="model_id" ref="model_hotel_housekeeping"/>
+        <field name="domain_force">['|', ('assigned_to', '=', False), ('assigned_to', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('vs_hotel_management.group_hotel_housekeeping_user'))]"/>
+    </record>
+
+    <record id="rule_hotel_housekeeping_manager" model="ir.rule">
+        <field name="name">Housekeeping: All Tasks</field>
+        <field name="model_id" ref="model_hotel_housekeeping"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('vs_hotel_management.group_hotel_housekeeping_manager'))]"/>
+    </record>
+
+    <record id="rule_hotel_maintenance_user" model="ir.rule">
+        <field name="name">Maintenance: Assigned or Unassigned Requests</field>
+        <field name="model_id" ref="model_hotel_maintenance"/>
+        <field name="domain_force">['|', ('assigned_to', '=', False), ('assigned_to', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('vs_hotel_management.group_hotel_maintenance_user'))]"/>
+    </record>
+
+    <record id="rule_hotel_maintenance_manager" model="ir.rule">
+        <field name="name">Maintenance: All Requests</field>
+        <field name="model_id" ref="model_hotel_maintenance"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('vs_hotel_management.group_hotel_maintenance_manager'))]"/>
     </record>
 
 </odoo>

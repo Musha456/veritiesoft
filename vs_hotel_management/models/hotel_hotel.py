@@ -45,7 +45,7 @@ class HotelHotel(models.Model):
     building_ids = fields.One2many(
         "hotel.building",
         "hotel_id",
-        "Gallery Images"
+        string="Buildings",
     )
 
     service_ids = fields.One2many(
@@ -221,10 +221,12 @@ class HotelHotel(models.Model):
     )
 
     auto_assign_room = fields.Boolean(
+        string="Assign Room Automatically",
         default=True,
     )
 
     allow_room_change = fields.Boolean(
+        string="Allow Room Change",
         default=True,
     )
 
@@ -280,15 +282,6 @@ class HotelHotel(models.Model):
             ("dirty", "Dirty"),
         ],
         default="clean",
-    )
-
-    auto_assign_room = fields.Boolean(
-        string="Assign Room Automatically",
-    )
-
-    allow_room_change = fields.Boolean(
-        string="Allow Room Change",
-        default=True,
     )
 
     # Later display these as HH:MM
@@ -505,12 +498,10 @@ class HotelHotel(models.Model):
             hotel.service_count = len(hotel.service_ids)
             hotel.gallery_count = len(hotel.image_ids)
 
-            # Will be implemented when reservation module is added
-            hotel.reservation_count = 0
-            hotel.guest_count = 0
-
-    #
-    # reservation_count
+            Reservation = self.env["hotel.reservation"]
+            reservations = Reservation.search([("hotel_id", "=", hotel.id)])
+            hotel.reservation_count = len(reservations)
+            hotel.guest_count = len(reservations.mapped("partner_id"))
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -593,16 +584,34 @@ class HotelHotel(models.Model):
             "domain": [("hotel_id", "=", self.id)],
         }
 
-    # def action_view_reservations(self):
-    #     self.ensure_one()
-    #
-    #     return {
-    #         "type": "ir.actions.act_window",
-    #         "name": "Reservations",
-    #         "res_model": "hotel.reservation",
-    #         "view_mode": "list,form",
-    #         "domain": [("hotel_id", "=", self.id)],
-    #     }
+    def action_view_reservations(self):
+        self.ensure_one()
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Reservations"),
+            "res_model": "hotel.reservation",
+            "view_mode": "list,form",
+            "domain": [("hotel_id", "=", self.id)],
+            "context": {
+                "default_hotel_id": self.id,
+            },
+        }
+
+    def action_view_guests(self):
+        self.ensure_one()
+
+        guest_ids = self.env["hotel.reservation"].search(
+            [("hotel_id", "=", self.id)]
+        ).mapped("partner_id").ids
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Guests"),
+            "res_model": "res.partner",
+            "view_mode": "kanban,list,form",
+            "domain": [("id", "in", guest_ids)],
+        }
 
     _sql_constraints = [
         (

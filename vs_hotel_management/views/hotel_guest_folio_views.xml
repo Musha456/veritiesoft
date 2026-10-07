@@ -58,6 +58,12 @@
                             class="btn-primary"
                             invisible="invoice_id or state in ('draft', 'cancelled')"/>
 
+                    <button name="action_send_folio_email"
+                            string="Send by Email"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state in ('draft', 'cancelled')"/>
+
                     <field name="state"
                            widget="statusbar"
                            statusbar_visible="draft,open,partially_paid,paid,closed"/>

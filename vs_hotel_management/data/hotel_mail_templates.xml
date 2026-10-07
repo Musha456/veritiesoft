@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ========================================================== -->
+        <!-- 1. Reservation Confirmation Email Template -->
+        <!-- ========================================================== -->
+        <record id="mail_template_hotel_reservation_confirmation" model="mail.template">
+            <field name="name">Hotel: Reservation Confirmation</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_reservation"/>
+            <field name="subject">{{ object.hotel_id.name }} - Reservation Confirmation {{ object.name }}</field>
+            <field name="email_from">{{ (object.hotel_id.email or object.company_id.email or user.email_formatted) }}
+            </field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="report_template_ids" eval="[(4, ref('vs_hotel_management.action_report_hotel_reservation'))]"/>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #454748;">
+                    <p>Dear<strong t-out="object.partner_id.name or 'Guest'"/>,
+                    </p>
+                    <p>
+                        Thank you for choosing to stay with us. We are pleased to confirm your reservation at
+                        <strong t-out="object.hotel_id.name"/>.
+                    </p>
+
+                    <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; margin: 20px 0;">
+                        <h4 style="margin-top: 0; color: #1a3a5f;">Reservation Summary</h4>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 6px 0; color: #666;">Reservation Code:</td>
+                                <td style="padding: 6px 0;">
+                                    <strong>
+                                        <span t-out="object.name"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0; color: #666;">Check-In:</td>
+                                <td style="padding: 6px 0;">
+                                    <strong>
+                                        <span t-out="object.check_in"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0; color: #666;">Check-Out:</td>
+                                <td style="padding: 6px 0;">
+                                    <strong>
+                                        <span t-out="object.check_out"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0; color: #666;">Length of Stay:</td>
+                                <td style="padding: 6px 0;">
+                                    <span t-out="object.night_count"/>
+                                    Night(s)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0; color: #666;">Guests:</td>
+                                <td style="padding: 6px 0;">
+                                    <span t-out="object.guest_count"/>
+                                    (
+                                    <span t-out="object.adult_count"/>
+                                    Adults,
+                                    <span t-out="object.child_count"/>
+                                    Children)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0; color: #666;">Total Amount:</td>
+                                <td style="padding: 6px 0;">
+                                    <strong style="color: #1a3a5f; font-size: 16px;">
+                                        <span t-out="format_amount(object.total_amount, object.currency_id)"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <p>
+                        A detailed confirmation document has been attached to this email for your convenience.
+                    </p>
+
+                    <div style="margin-top: 25px; border-top: 1px solid #dee2e6; padding-top: 15px; font-size: 12px; color: #777;">
+                        <p style="margin-bottom: 4px;">
+                            <strong>Hotel Address:</strong>
+                            <span t-out="object.hotel_id.street"/>,<span t-out="object.hotel_id.city"/>,
+                            <span t-out="object.hotel_id.country_id.name"/>
+                        </p>
+                        <p style="margin-bottom: 4px;" t-if="object.hotel_id.phone">
+                            <strong>Phone:</strong>
+                            <span t-out="object.hotel_id.phone"/>
+                        </p>
+                        <p style="margin-bottom: 4px;" t-if="object.hotel_id.email">
+                            <strong>Email:</strong>
+                            <span t-out="object.hotel_id.email"/>
+                        </p>
+                    </div>
+                </div>
+            </field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- 2. Reservation Welcome / Pre-Arrival Email Template -->
+        <!-- ========================================================== -->
+        <record id="mail_template_hotel_reservation_welcome" model="mail.template">
+            <field name="name">Hotel: Welcome &amp; Pre-Arrival</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_reservation"/>
+            <field name="subject">Welcome to {{ object.hotel_id.name }} - Pre-Arrival Information</field>
+            <field name="email_from">{{ (object.hotel_id.email or object.company_id.email or user.email_formatted) }}
+            </field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #454748;">
+                    <p>Dear<strong t-out="object.partner_id.name or 'Guest'"/>,
+                    </p>
+                    <p>
+                        We are thrilled to welcome you soon to<strong t-out="object.hotel_id.name"/>!
+                    </p>
+                    <p>
+                        Your arrival date is
+                        <strong>
+                            <span t-out="object.check_in"/>
+                        </strong>
+                        (Reservation Ref:
+                        <strong>
+                            <span t-out="object.name"/>
+                        </strong>
+                        ).
+                    </p>
+                    <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; margin: 20px 0;">
+                        <h4 style="margin-top: 0; color: #1a3a5f;">Important Check-In Information</h4>
+                        <ul style="padding-left: 20px; line-height: 1.6;">
+                            <li>Standard check-in begins at<strong t-out="object.hotel_id.checkin_time_default"/>.
+                            </li>
+                            <li>Please present a valid photo ID or passport upon check-in.</li>
+                            <li>Should you require airport transfer or early check-in, please feel free to reach out to
+                                us.
+                            </li>
+                        </ul>
+                    </div>
+                    <p>We wish you a safe and pleasant journey!</p>
+                    <p>Best regards,
+                        <br/>
+                        <strong>The Front Desk Team</strong>
+                        <br/>
+                        <span t-out="object.hotel_id.name"/>
+                    </p>
+                </div>
+            </field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- 3. Guest Folio / Bill Email Template -->
+        <!-- ========================================================== -->
+        <record id="mail_template_hotel_guest_folio" model="mail.template">
+            <field name="name">Hotel: Guest Folio Bill</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_guest_folio"/>
+            <field name="subject">{{ object.hotel_id.name }} - Guest Folio Statement {{ object.name }}</field>
+            <field name="email_from">{{ (object.hotel_id.email or object.company_id.email or user.email_formatted) }}
+            </field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="report_template_ids" eval="[(4, ref('vs_hotel_management.action_report_hotel_guest_folio'))]"/>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #454748;">
+                    <p>Dear<strong t-out="object.partner_id.name or 'Guest'"/>,
+                    </p>
+                    <p>
+                        Thank you for staying at<strong t-out="object.hotel_id.name"/>. Attached please find your final
+                        folio statement
+                        <strong>
+                            <span t-out="object.name"/>
+                        </strong>
+                        .
+                    </p>
+
+                    <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; margin: 20px 0;">
+                        <h4 style="margin-top: 0; color: #1a3a5f;">Folio Billing Summary</h4>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 6px 0; color: #666;">Folio Reference:</td>
+                                <td style="padding: 6px 0;">
+                                    <strong>
+                                        <span t-out="object.name"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                            <tr t-if="object.reservation_id">
+                                <td style="padding: 6px 0; color: #666;">Reservation:</td>
+                                <td style="padding: 6px 0;">
+                                    <span t-out="object.reservation_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0; color: #666;">Stay Dates:</td>
+                                <td style="padding: 6px 0;">
+                                    <span t-out="object.check_in"/>
+                                    to
+                                    <span t-out="object.check_out"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0; color: #666;">Total Charges:</td>
+                                <td style="padding: 6px 0;">
+                                    <span t-out="format_amount(object.total_amount, object.currency_id)"/>
+                                </td>
+                            </tr>
+                            <tr t-if="object.paid_amount">
+                                <td style="padding: 6px 0; color: #666;">Total Paid:</td>
+                                <td style="padding: 6px 0;">
+                                    <span t-out="format_amount(object.paid_amount, object.currency_id)"/>
+                                </td>
+                            </tr>
+                            <tr style="border-top: 1px solid #dee2e6;">
+                                <td style="padding: 8px 0; font-size: 15px;">
+                                    <strong>Balance:</strong>
+                                </td>
+                                <td style="padding: 8px 0; font-size: 15px;">
+                                    <strong>
+                                        <span t-out="format_amount(object.balance_amount, object.currency_id)"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <p>
+                        If you have any questions or require further assistance regarding this bill, please contact our
+                        front desk.
+                    </p>
+                    <p>We hope you had a comfortable stay and hope to welcome you back again!</p>
+                    <p>Warm regards,
+                        <br/>
+                        <strong>
+                            <span t-out="object.hotel_id.name"/>
+                        </strong>
+                    </p>
+                </div>
+            </field>
+        </record>
+
+    </data>
+</odoo>

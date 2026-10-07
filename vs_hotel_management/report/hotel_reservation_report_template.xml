@@ -1,0 +1,1208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========================================================== -->
+    <!-- 1. Reservation Confirmation Document -->
+    <!-- ========================================================== -->
+    <template id="report_hotel_reservation_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+
+                    <div class="page"
+                         style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                                font-size: 12px;
+                                color: #374151;
+                                line-height: 1.45;">
+
+                        <!-- ================================================= -->
+                        <!-- REPORT HEADER -->
+                        <!-- ================================================= -->
+                        <div class="row align-items-start mb-4">
+
+                            <div class="col-8">
+                                <div style="border-left: 4px solid #1a3a5f;
+                                            padding-left: 12px;">
+
+                                    <div style="font-size: 22px;
+                                                font-weight: 700;
+                                                color: #1a3a5f;
+                                                line-height: 1.2;">
+                                        RESERVATION CONFIRMATION
+                                    </div>
+
+                                    <div style="font-size: 12px;
+                                                color: #6b7280;
+                                                margin-top: 4px;">
+                                        Booking Reference:
+                                        <strong style="color: #1f2937;">
+                                            <span t-field="o.name"/>
+                                        </strong>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="col-4 text-end">
+
+                                <div style="font-size: 10px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.5px;">
+                                    Reservation Status
+                                </div>
+
+                                <div style="font-size: 13px;
+                                            font-weight: 700;
+                                            color: #1a3a5f;
+                                            text-transform: uppercase;
+                                            margin-top: 2px;">
+                                    <span t-field="o.state"/>
+                                </div>
+
+                                <div style="font-size: 11px;
+                                            color: #6b7280;
+                                            margin-top: 5px;">
+                                    Booking Date:
+                                    <span t-field="o.booking_date"
+                                          t-options='{"widget": "date"}'/>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- HOTEL & GUEST DETAILS -->
+                        <!-- ================================================= -->
+                        <div class="row mb-4">
+
+                            <!-- HOTEL DETAILS -->
+                            <div class="col-6">
+                                <div style="padding: 14px 16px;
+                                            border: 1px solid #e5e7eb;
+                                            background-color: #fafafa;
+                                            min-height: 130px;">
+
+                                    <div style="font-size: 10px;
+                                                font-weight: 700;
+                                                letter-spacing: 0.7px;
+                                                color: #1a3a5f;
+                                                text-transform: uppercase;
+                                                padding-bottom: 7px;
+                                                margin-bottom: 9px;
+                                                border-bottom: 1px solid #e5e7eb;">
+                                        Hotel Details
+                                    </div>
+
+                                    <div style="font-size: 14px;
+                                                font-weight: 700;
+                                                color: #1f2937;
+                                                margin-bottom: 4px;">
+                                        <span t-field="o.hotel_id.name"/>
+                                    </div>
+
+                                    <div t-if="o.hotel_id.street"
+                                         style="color: #4b5563;">
+                                        <span t-field="o.hotel_id.street"/>
+                                    </div>
+
+                                    <div t-if="o.hotel_id.city"
+                                         style="color: #4b5563;">
+                                        <span t-field="o.hotel_id.city"/>
+                                        <t t-if="o.hotel_id.country_id">
+                                            ,
+                                            <span t-field="o.hotel_id.country_id.name"/>
+                                        </t>
+                                    </div>
+
+                                    <div t-if="o.hotel_id.phone"
+                                         style="color: #4b5563;
+                                                margin-top: 4px;">
+                                        Phone:
+                                        <span t-field="o.hotel_id.phone"/>
+                                    </div>
+
+                                    <div t-if="o.hotel_id.email"
+                                         style="color: #4b5563;">
+                                        Email:
+                                        <span t-field="o.hotel_id.email"/>
+                                    </div>
+
+                                </div>
+                            </div>
+
+
+                            <!-- GUEST DETAILS -->
+                            <div class="col-6">
+                                <div style="padding: 14px 16px;
+                                            border: 1px solid #e5e7eb;
+                                            background-color: #fafafa;
+                                            min-height: 130px;">
+
+                                    <div style="font-size: 10px;
+                                                font-weight: 700;
+                                                letter-spacing: 0.7px;
+                                                color: #1a3a5f;
+                                                text-transform: uppercase;
+                                                padding-bottom: 7px;
+                                                margin-bottom: 9px;
+                                                border-bottom: 1px solid #e5e7eb;">
+                                        Guest Details
+                                    </div>
+
+                                    <div style="font-size: 14px;
+                                                font-weight: 700;
+                                                color: #1f2937;
+                                                margin-bottom: 4px;">
+                                        <span t-field="o.partner_id.name"/>
+                                    </div>
+
+                                    <div t-if="o.guest_phone"
+                                         style="color: #4b5563;">
+                                        Phone:
+                                        <span t-field="o.guest_phone"/>
+                                    </div>
+
+                                    <div t-if="o.guest_email"
+                                         style="color: #4b5563;">
+                                        Email:
+                                        <span t-field="o.guest_email"/>
+                                    </div>
+
+                                    <div t-if="o.partner_id.id_number"
+                                         style="color: #4b5563;">
+                                        ID / Passport:
+                                        <span t-field="o.partner_id.id_type"/>
+                                        -
+                                        <span t-field="o.partner_id.id_number"/>
+                                    </div>
+
+                                    <div t-if="o.partner_id.nationality"
+                                         style="color: #4b5563;">
+                                        Nationality:
+                                        <span t-field="o.partner_id.nationality.name"/>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- STAY OVERVIEW -->
+                        <!-- ================================================= -->
+                        <div style="font-size: 10px;
+                                    font-weight: 700;
+                                    letter-spacing: 0.7px;
+                                    color: #1a3a5f;
+                                    text-transform: uppercase;
+                                    margin-bottom: 8px;">
+                            Stay Overview
+                        </div>
+
+                        <div class="row mb-4"
+                             style="border-top: 1px solid #e5e7eb;
+                                    border-bottom: 1px solid #e5e7eb;
+                                    padding: 11px 0;">
+
+                            <div class="col-2">
+                                <div style="font-size: 10px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;">
+                                    Check-In
+                                </div>
+
+                                <div style="font-weight: 600;
+                                            color: #1f2937;
+                                            margin-top: 2px;">
+                                    <span t-field="o.check_in"/>
+                                </div>
+                            </div>
+
+                            <div class="col-2">
+                                <div style="font-size: 10px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;">
+                                    Check-Out
+                                </div>
+
+                                <div style="font-weight: 600;
+                                            color: #1f2937;
+                                            margin-top: 2px;">
+                                    <span t-field="o.check_out"/>
+                                </div>
+                            </div>
+
+                            <div class="col-2 text-center">
+                                <div style="font-size: 10px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;">
+                                    Nights
+                                </div>
+
+                                <div style="font-weight: 600;
+                                            color: #1f2937;
+                                            margin-top: 2px;">
+                                    <span t-field="o.night_count"/>
+                                </div>
+                            </div>
+
+                            <div class="col-3 text-center">
+                                <div style="font-size: 10px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;">
+                                    Guests
+                                </div>
+
+                                <div style="font-weight: 600;
+                                            color: #1f2937;
+                                            margin-top: 2px;">
+                                    <span t-field="o.guest_count"/>
+                                    <span style="font-weight: 400;
+                                                 color: #6b7280;">
+                                        (
+                                        <span t-field="o.adult_count"/>
+                                        Adults,
+                                        <span t-field="o.child_count"/>
+                                        Children)
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="col-3 text-center">
+                                <div style="font-size: 10px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;">
+                                    Rooms
+                                </div>
+
+                                <div style="font-weight: 600;
+                                            color: #1f2937;
+                                            margin-top: 2px;">
+                                    <span t-field="o.room_count"/>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- ROOM DETAILS -->
+                        <!-- ================================================= -->
+                        <div style="font-size: 10px;
+                                    font-weight: 700;
+                                    letter-spacing: 0.7px;
+                                    color: #1a3a5f;
+                                    text-transform: uppercase;
+                                    margin-bottom: 8px;">
+                            Room Details
+                        </div>
+
+                        <table class="table table-sm mb-4"
+                               style="width: 100%;
+                                      border-collapse: collapse;
+                                      border: none;
+                                      font-size: 11px;">
+
+                            <thead>
+                                <tr style="background-color: #f3f4f6;
+                                           color: #374151;
+                                           border-top: 1px solid #dfe3e8;
+                                           border-bottom: 1px solid #dfe3e8;">
+
+                                    <th style="padding: 8px 7px;
+                                               border: none;">
+                                        Room
+                                    </th>
+
+                                    <th style="padding: 8px 7px;
+                                               border: none;">
+                                        Category
+                                    </th>
+
+                                    <th style="padding: 8px 7px;
+                                               border: none;">
+                                        Location
+                                    </th>
+
+                                    <th class="text-center"
+                                        style="padding: 8px 7px;
+                                               border: none;">
+                                        Nights
+                                    </th>
+
+                                    <th class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;">
+                                        Room Rate
+                                    </th>
+
+                                    <th class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;">
+                                        Discount
+                                    </th>
+
+                                    <th class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;">
+                                        Taxes
+                                    </th>
+
+                                    <th class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;">
+                                        Total
+                                    </th>
+
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                <tr t-foreach="o.line_ids" t-as="line"
+                                    style="border-bottom: 1px solid #edf0f2;">
+
+                                    <td style="padding: 8px 7px;
+                                               border: none;
+                                               color: #1f2937;">
+                                        <strong>
+                                            <span t-field="line.room_id.display_name"/>
+                                        </strong>
+                                    </td>
+
+                                    <td style="padding: 8px 7px;
+                                               border: none;
+                                               color: #4b5563;">
+                                        <span t-field="line.room_category_id.name"/>
+                                    </td>
+
+                                    <td style="padding: 8px 7px;
+                                               border: none;
+                                               color: #6b7280;">
+                                        <span t-field="line.building_id.display_name"/>
+
+                                        <t t-if="line.floor_id">
+                                            /
+                                            <span t-field="line.floor_id.name"/>
+                                        </t>
+                                    </td>
+
+                                    <td class="text-center"
+                                        style="padding: 8px 7px;
+                                               border: none;">
+                                        <span t-field="line.night_count"/>
+                                    </td>
+
+                                    <td class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;
+                                               white-space: nowrap;">
+                                        <span t-field="line.room_amount"
+                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                    </td>
+
+                                    <td class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;
+                                               white-space: nowrap;">
+                                        <span t-field="line.discount_amount"
+                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                    </td>
+
+                                    <td class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;
+                                               white-space: nowrap;">
+                                        <span t-field="line.tax_amount"
+                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                    </td>
+
+                                    <td class="text-end"
+                                        style="padding: 8px 7px;
+                                               border: none;
+                                               white-space: nowrap;
+                                               color: #1f2937;">
+                                        <strong>
+                                            <span t-field="line.total"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </strong>
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+
+                        <!-- ================================================= -->
+                        <!-- ADDITIONAL SERVICES -->
+                        <!-- ================================================= -->
+                        <t t-set="all_services"
+                           t-value="o.line_ids.mapped('service_line_ids')"/>
+
+                        <t t-if="all_services">
+
+                            <div style="font-size: 10px;
+                                        font-weight: 700;
+                                        letter-spacing: 0.7px;
+                                        color: #1a3a5f;
+                                        text-transform: uppercase;
+                                        margin-bottom: 8px;">
+                                Additional Services
+                            </div>
+
+                            <table class="table table-sm mb-4"
+                                   style="width: 100%;
+                                          border-collapse: collapse;
+                                          border: none;
+                                          font-size: 11px;">
+
+                                <thead>
+                                    <tr style="background-color: #f3f4f6;
+                                               color: #374151;
+                                               border-top: 1px solid #dfe3e8;
+                                               border-bottom: 1px solid #dfe3e8;">
+
+                                        <th style="padding: 8px 7px;
+                                                   border: none;">
+                                            Service
+                                        </th>
+
+                                        <th class="text-center"
+                                            style="padding: 8px 7px;
+                                                   border: none;">
+                                            Date
+                                        </th>
+
+                                        <th class="text-center"
+                                            style="padding: 8px 7px;
+                                                   border: none;">
+                                            Qty
+                                        </th>
+
+                                        <th class="text-end"
+                                            style="padding: 8px 7px;
+                                                   border: none;">
+                                            Unit Price
+                                        </th>
+
+                                        <th class="text-end"
+                                            style="padding: 8px 7px;
+                                                   border: none;">
+                                            Total
+                                        </th>
+
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    <tr t-foreach="all_services" t-as="srv"
+                                        style="border-bottom: 1px solid #edf0f2;">
+
+                                        <td style="padding: 8px 7px;
+                                                   border: none;
+                                                   color: #1f2937;">
+                                            <span t-field="srv.product_id.name"/>
+                                        </td>
+
+                                        <td class="text-center"
+                                            style="padding: 8px 7px;
+                                                   border: none;">
+                                            <span t-field="srv.serve_date"
+                                                  t-options='{"widget": "date"}'/>
+                                        </td>
+
+                                        <td class="text-center"
+                                            style="padding: 8px 7px;
+                                                   border: none;">
+                                            <span t-field="srv.quantity"/>
+                                        </td>
+
+                                        <td class="text-end"
+                                            style="padding: 8px 7px;
+                                                   border: none;
+                                                   white-space: nowrap;">
+                                            <span t-field="srv.price_unit"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+
+                                        <td class="text-end"
+                                            style="padding: 8px 7px;
+                                                   border: none;
+                                                   white-space: nowrap;">
+                                            <strong>
+                                                <span t-field="srv.total"
+                                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </strong>
+                                        </td>
+
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </t>
+
+
+                        <!-- ================================================= -->
+                        <!-- TOTALS -->
+                        <!-- ================================================= -->
+                        <div class="row justify-content-end mb-5">
+
+                            <div class="col-5">
+
+                                <table style="width: 100%;
+                                              border-collapse: collapse;
+                                              font-size: 12px;">
+
+                                    <tr>
+                                        <td style="padding: 5px 0;
+                                                   color: #6b7280;">
+                                            Total Rooms
+                                        </td>
+
+                                        <td class="text-end"
+                                            style="padding: 5px 0;
+                                                   font-weight: 600;
+                                                   color: #1f2937;">
+                                            <span t-field="o.room_amount"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+
+                                    <tr t-if="o.service_amount">
+                                        <td style="padding: 5px 0;
+                                                   color: #6b7280;">
+                                            Total Services
+                                        </td>
+
+                                        <td class="text-end"
+                                            style="padding: 5px 0;
+                                                   font-weight: 600;
+                                                   color: #1f2937;">
+                                            <span t-field="o.service_amount"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+
+                                    <tr t-if="o.discount_amount">
+                                        <td style="padding: 5px 0;
+                                                   color: #6b7280;">
+                                            Total Discount
+                                        </td>
+
+                                        <td class="text-end"
+                                            style="padding: 5px 0;
+                                                   color: #dc3545;
+                                                   font-weight: 600;">
+                                            -
+                                            <span t-field="o.discount_amount"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="padding: 5px 0;
+                                                   color: #6b7280;">
+                                            Taxes
+                                        </td>
+
+                                        <td class="text-end"
+                                            style="padding: 5px 0;
+                                                   font-weight: 600;
+                                                   color: #1f2937;">
+                                            <span t-field="o.tax_amount"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="2"
+                                            style="height: 5px;
+                                                   border-bottom: 1px solid #d1d5db;">
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="padding: 10px 0 4px;
+                                                   font-size: 14px;
+                                                   font-weight: 700;
+                                                   color: #1f2937;">
+                                            Grand Total
+                                        </td>
+
+                                        <td class="text-end"
+                                            style="padding: 10px 0 4px;
+                                                   font-size: 15px;
+                                                   font-weight: 700;
+                                                   color: #1a3a5f;">
+                                            <span t-field="o.total_amount"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- TERMS & CONDITIONS -->
+                        <!-- ================================================= -->
+                        <div style="border-top: 1px solid #e5e7eb;
+                                    padding-top: 12px;
+                                    margin-top: 8px;
+                                    font-size: 10.5px;
+                                    color: #6b7280;">
+
+                            <div style="font-size: 10px;
+                                        font-weight: 700;
+                                        letter-spacing: 0.7px;
+                                        color: #1a3a5f;
+                                        text-transform: uppercase;
+                                        margin-bottom: 7px;">
+                                Terms &amp; Conditions
+                            </div>
+
+                            <ul style="margin: 0;
+                                       padding-left: 18px;">
+
+                                <li style="margin-bottom: 3px;">
+                                    Check-in time is from
+                                    <span t-field="o.hotel_id.checkin_time"/>
+                                    and check-out is until
+                                    <span t-field="o.hotel_id.checkout_time"/>.
+                                </li>
+
+                                <li style="margin-bottom: 3px;">
+                                    Early check-in and late check-out are subject
+                                    to room availability and additional charges.
+                                </li>
+
+                                <li>
+                                    Government-issued photo identification is
+                                    required upon check-in.
+                                </li>
+
+                            </ul>
+
+                            <div class="text-center"
+                                 style="margin-top: 16px;
+                                        color: #6b7280;
+                                        font-style: italic;">
+                                Thank you for choosing
+                                <span t-field="o.hotel_id.name"/>.
+                                We look forward to welcoming you!
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- ========================================================== -->
+    <!-- 2. Guest Registration Card Document -->
+    <!-- ========================================================== -->
+    <template id="report_hotel_registration_card_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+
+                    <div class="page"
+                         style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                            font-size: 12px;
+                            color: #374151;
+                            line-height: 1.45;
+                            width: 100%;
+                            box-sizing: border-box;">
+
+                        <!-- ================================================= -->
+                        <!-- DOCUMENT HEADER -->
+                        <!-- ================================================= -->
+                        <div style="width: 100%;
+                                margin-bottom: 24px;
+                                padding-bottom: 12px;
+                                border-bottom: 1px solid #dfe5eb;
+                                box-sizing: border-box;">
+
+                            <div class="row" style="width: 100%;">
+
+                                <div class="col-8">
+                                    <div style="font-size: 21px;
+                                            font-weight: 700;
+                                            color: #1a3a5f;
+                                            letter-spacing: 0.2px;">
+                                        GUEST REGISTRATION CARD
+                                    </div>
+
+                                    <div style="font-size: 10px;
+                                            color: #6b7280;
+                                            margin-top: 4px;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.5px;">
+                                        Guest Check-In &amp; Registration
+                                    </div>
+                                </div>
+
+                                <div class="col-4 text-end">
+
+                                    <div style="font-size: 9px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.6px;
+                                            margin-bottom: 2px;">
+                                        Reservation Reference
+                                    </div>
+
+                                    <div style="font-size: 13px;
+                                            font-weight: 700;
+                                            color: #1f2937;">
+                                        <span t-field="o.name"/>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- GUEST PROFILE -->
+                        <!-- ================================================= -->
+                        <div style="margin-bottom: 7px;">
+
+                            <span style="display: inline-block;
+                                     font-size: 10px;
+                                     font-weight: 700;
+                                     color: #1a3a5f;
+                                     text-transform: uppercase;
+                                     letter-spacing: 0.8px;
+                                     padding-bottom: 4px;
+                                     border-bottom: 2px solid #1a3a5f;">
+                                Guest Profile
+                            </span>
+
+                        </div>
+
+                        <div style="width: 100%;
+                                border-top: 1px solid #e5e7eb;
+                                border-bottom: 1px solid #e5e7eb;
+                                padding: 15px 0 5px;
+                                margin-bottom: 20px;
+                                box-sizing: border-box;">
+
+                            <div class="row" style="width: 100%;">
+
+                                <!-- Full Name -->
+                                <div class="col-4 mb-3">
+                                    <div style="font-size: 9px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.4px;
+                                            margin-bottom: 3px;">
+                                        Full Name
+                                    </div>
+
+                                    <div style="font-size: 12px;
+                                            font-weight: 600;
+                                            color: #111827;
+                                            word-wrap: break-word;">
+                                        <span t-field="o.partner_id.name"/>
+                                    </div>
+                                </div>
+
+                                <!-- Nationality -->
+                                <div class="col-4 mb-3">
+                                    <div style="font-size: 9px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.4px;
+                                            margin-bottom: 3px;">
+                                        Nationality
+                                    </div>
+
+                                    <div style="color: #1f2937;
+                                            word-wrap: break-word;">
+                                        <span t-field="o.partner_id.nationality.name"/>
+                                    </div>
+                                </div>
+
+                                <!-- ID -->
+                                <div class="col-4 mb-3">
+                                    <div style="font-size: 9px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.4px;
+                                            margin-bottom: 3px;">
+                                        ID Type / Number
+                                    </div>
+
+                                    <div style="color: #1f2937;
+                                            word-wrap: break-word;">
+
+                                        <span t-field="o.partner_id.id_type"/>
+
+                                        <span style="color: #9ca3af;
+                                                 margin: 0 4px;">
+                                            :
+                                        </span>
+
+                                        <strong>
+                                            <span t-field="o.partner_id.id_number"/>
+                                        </strong>
+
+                                    </div>
+                                </div>
+
+                                <!-- Date of Birth / Gender -->
+                                <div class="col-4 mb-3">
+                                    <div style="font-size: 9px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.4px;
+                                            margin-bottom: 3px;">
+                                        Date of Birth / Gender
+                                    </div>
+
+                                    <div style="color: #1f2937;
+                                            word-wrap: break-word;">
+
+                                        <span t-field="o.partner_id.date_of_birth"/>
+
+                                        <span style="color: #9ca3af;
+                                                 margin: 0 5px;">
+                                            /
+                                        </span>
+
+                                        <span t-field="o.partner_id.gender"/>
+
+                                    </div>
+                                </div>
+
+                                <!-- Phone -->
+                                <div class="col-4 mb-3">
+                                    <div style="font-size: 9px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.4px;
+                                            margin-bottom: 3px;">
+                                        Phone Number
+                                    </div>
+
+                                    <div style="color: #1f2937;
+                                            word-wrap: break-word;">
+                                        <span t-field="o.guest_phone"/>
+                                    </div>
+                                </div>
+
+                                <!-- Email -->
+                                <div class="col-4 mb-3">
+                                    <div style="font-size: 9px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.4px;
+                                            margin-bottom: 3px;">
+                                        Email Address
+                                    </div>
+
+                                    <div style="color: #1f2937;
+                                            word-wrap: break-word;">
+                                        <span t-field="o.guest_email"/>
+                                    </div>
+                                </div>
+
+                                <!-- Address -->
+                                <div class="col-12 mb-2">
+
+                                    <div style="font-size: 9px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.4px;
+                                            margin-bottom: 3px;">
+                                        Address
+                                    </div>
+
+                                    <div style="color: #1f2937;
+                                            word-wrap: break-word;">
+
+                                        <span t-field="o.partner_id.street"/>
+
+                                        <t t-if="o.partner_id.city">
+                                            <span style="color: #9ca3af;
+                                                     margin: 0 3px;">
+                                                ,
+                                            </span>
+                                            <span t-field="o.partner_id.city"/>
+                                        </t>
+
+                                        <t t-if="o.partner_id.country_id">
+                                            <span style="color: #9ca3af;
+                                                     margin: 0 3px;">
+                                                ,
+                                            </span>
+                                            <span t-field="o.partner_id.country_id.name"/>
+                                        </t>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- STAY INFORMATION -->
+                        <!-- ================================================= -->
+                        <div style="margin-bottom: 7px;">
+
+                            <span style="display: inline-block;
+                                     font-size: 10px;
+                                     font-weight: 700;
+                                     color: #1a3a5f;
+                                     text-transform: uppercase;
+                                     letter-spacing: 0.8px;
+                                     padding-bottom: 4px;
+                                     border-bottom: 2px solid #1a3a5f;">
+                                Stay Information
+                            </span>
+
+                        </div>
+
+                        <div style="width: 100%;
+                                border-top: 1px solid #e5e7eb;
+                                border-bottom: 1px solid #e5e7eb;
+                                padding: 15px 0 5px;
+                                margin-bottom: 20px;
+                                box-sizing: border-box;">
+
+                            <div class="row" style="width: 100%;">
+
+                                <!-- Arrival -->
+                                <div class="col-4 mb-3">
+
+                                    <div style="font-size: 9px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.4px;
+                                            margin-bottom: 3px;">
+                                        Arrival Date &amp; Time
+                                    </div>
+
+                                    <div style="font-weight: 600;
+                                            color: #111827;
+                                            word-wrap: break-word;">
+                                        <span t-field="o.check_in"/>
+                                    </div>
+
+                                </div>
+
+                                <!-- Departure -->
+                                <div class="col-4 mb-3">
+
+                                    <div style="font-size: 9px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.4px;
+                                            margin-bottom: 3px;">
+                                        Departure Date &amp; Time
+                                    </div>
+
+                                    <div style="font-weight: 600;
+                                            color: #111827;
+                                            word-wrap: break-word;">
+                                        <span t-field="o.check_out"/>
+                                    </div>
+
+                                </div>
+
+                                <!-- Nights -->
+                                <div class="col-4 mb-3">
+
+                                    <div style="font-size: 9px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.4px;
+                                            margin-bottom: 3px;">
+                                        Total Nights
+                                    </div>
+
+                                    <div style="font-weight: 600;
+                                            color: #111827;">
+                                        <span t-field="o.night_count"/>
+                                    </div>
+
+                                </div>
+
+                                <!-- Guests -->
+                                <div class="col-4 mb-3">
+
+                                    <div style="font-size: 9px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.4px;
+                                            margin-bottom: 3px;">
+                                        Number of Guests
+                                    </div>
+
+                                    <div style="color: #1f2937;
+                                            word-wrap: break-word;">
+
+                                        <strong>
+                                            <span t-field="o.guest_count"/>
+                                        </strong>
+
+                                        <span style="color: #6b7280;">
+                                            (
+                                            <span t-field="o.adult_count"/>
+                                            Adults,
+                                            <span t-field="o.child_count"/>
+                                            Children
+                                            )
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- Assigned Rooms -->
+                                <div class="col-8 mb-3">
+
+                                    <div style="font-size: 9px;
+                                            color: #6b7280;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.4px;
+                                            margin-bottom: 3px;">
+                                        Assigned Rooms
+                                    </div>
+
+                                    <div style="color: #1f2937;
+                                            word-wrap: break-word;">
+
+                                        <t t-foreach="o.line_ids" t-as="l">
+
+                                            <span style="font-weight: 600;">
+                                                Room
+                                                <span t-field="l.room_id.display_name"/>
+                                            </span>
+
+                                            <span style="color: #6b7280;">
+                                                (
+                                                <span t-field="l.room_category_id.name"/>
+                                                )
+                                            </span>
+
+                                            <t t-if="not l_last">
+                                                <span style="color: #c1c7ce;
+                                                         margin: 0 6px;">
+                                                    •
+                                                </span>
+                                            </t>
+
+                                        </t>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- DECLARATION -->
+                        <!-- ================================================= -->
+                        <div style="margin-bottom: 7px;">
+
+                            <span style="display: inline-block;
+                                     font-size: 10px;
+                                     font-weight: 700;
+                                     color: #1a3a5f;
+                                     text-transform: uppercase;
+                                     letter-spacing: 0.8px;
+                                     padding-bottom: 4px;
+                                     border-bottom: 2px solid #1a3a5f;">
+                                Declaration
+                            </span>
+
+                        </div>
+
+                        <div style="width: 100%;
+                                border-top: 1px solid #e5e7eb;
+                                border-bottom: 1px solid #e5e7eb;
+                                padding: 13px 4px;
+                                margin-bottom: 38px;
+                                font-size: 10.5px;
+                                color: #6b7280;
+                                text-align: justify;
+                                box-sizing: border-box;">
+
+                            <p style="margin: 0;">
+                                I hereby confirm that the information provided
+                                is correct. I agree to comply with the hotel
+                                policies, rules, and regulations during my stay.
+                                I understand that the hotel is not responsible
+                                for money, jewelry, or other valuables left in
+                                guest rooms.
+                            </p>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- SIGNATURES -->
+                        <!-- ================================================= -->
+                        <div class="row" style="width: 100%;">
+
+                            <div class="col-6 text-center">
+
+                                <div style="width: 72%;
+                                        margin: 22px auto 0;
+                                        border-top: 1px solid #9ca3af;
+                                        padding-top: 7px;
+                                        color: #374151;
+                                        font-size: 10.5px;">
+                                    <strong>Guest Signature</strong>
+                                </div>
+
+                            </div>
+
+                            <div class="col-6 text-center">
+
+                                <div style="width: 72%;
+                                        margin: 22px auto 0;
+                                        border-top: 1px solid #9ca3af;
+                                        padding-top: 7px;
+                                        color: #374151;
+                                        font-size: 10.5px;">
+                                    <strong>Receptionist Signature / Date</strong>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

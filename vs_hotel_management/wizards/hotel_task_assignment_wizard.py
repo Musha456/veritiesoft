@@ -41,10 +41,6 @@ class HotelTaskAssignmentWizard(models.TransientModel):
         required=True,
     )
 
-    @api.onchange("task_type")
-    def _onchange_task_type(self):
-        self.assigned_to = False
-
     def action_assign(self):
         self.ensure_one()
 

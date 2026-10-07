@@ -188,29 +188,29 @@
 
                         </button>
 
-                        <!--                        <button name="action_view_reservations"-->
-                        <!--                                type="object"-->
-                        <!--                                class="oe_stat_button"-->
-                        <!--                                icon="fa-calendar-check-o"-->
-                        <!--                                invisible="not reservation_count">-->
+                        <button name="action_view_reservations"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-calendar-check-o"
+                                invisible="not reservation_count">
 
-                        <!--                            <field name="reservation_count"-->
-                        <!--                                   widget="statinfo"-->
-                        <!--                                   string="Reservations"/>-->
+                            <field name="reservation_count"
+                                   widget="statinfo"
+                                   string="Reservations"/>
 
-                        <!--                        </button>-->
+                        </button>
 
-                        <!--                        <button name="action_view_guests"-->
-                        <!--                                type="object"-->
-                        <!--                                class="oe_stat_button"-->
-                        <!--                                icon="fa-calendar-check-o"-->
-                        <!--                                invisible="not guest_count">-->
+                        <button name="action_view_guests"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-user-o"
+                                invisible="not guest_count">
 
-                        <!--                            <field name="guest_count"-->
-                        <!--                                   widget="statinfo"-->
-                        <!--                                   string="Guests"/>-->
+                            <field name="guest_count"
+                                   widget="statinfo"
+                                   string="Guests"/>
 
-                        <!--                        </button>-->
+                        </button>
 
                         <!--                        Invoices-->
                         <!--                        Folios-->
