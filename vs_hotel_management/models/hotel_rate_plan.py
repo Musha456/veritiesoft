@@ -77,7 +77,7 @@ class HotelRatePlan(models.Model):
 
     room_category_ids = fields.Many2many(
         "hotel.room.category",
-        require=True,
+        required=True,
         string="Room Categories",
     )
 

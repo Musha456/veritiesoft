@@ -701,7 +701,7 @@
 
                                 <div class="d-flex align-items-center gap-2">
 
-                                    <i class="fa fa-ticket text-primary"/>
+                                    <i class="fa fa-ticket text-primary" title="Reservation"/>
 
                                     <strong class="text-truncate">
                                         <field name="name"/>
@@ -724,7 +724,7 @@
                                     <!-- GUEST -->
                                     <div class="hotel_reservation_guest d-flex align-items-center">
 
-                                        <i class="fa fa-user text-primary me-1"/>
+                                        <i class="fa fa-user text-primary me-1" title="Guest"/>
 
                                         <div class="text-truncate">
 
@@ -760,7 +760,7 @@
 
                                     <div class="hotel_reservation_date">
 
-                                        <i class="fa fa-sign-in"/>
+                                        <i class="fa fa-sign-in" title="Check-in"/>
 
                                         <div>
                                             <span class="hotel_reservation_label">
@@ -782,7 +782,7 @@
 
                                     <div class="hotel_reservation_date">
 
-                                        <i class="fa fa-sign-out"/>
+                                        <i class="fa fa-sign-out" title="Check-out"/>
 
                                         <div>
                                             <span class="hotel_reservation_label">
@@ -815,7 +815,7 @@
 
                                     <!-- Rooms -->
                                     <div class="hotel_reservation_stat d-flex align-items-center gap-1 flex-fill">
-                                        <i class="fa fa-bed text-primary"/>
+                                        <i class="fa fa-bed text-primary" title="Room"/>
                                         <span class="hotel_reservation_stat_label">
                                             Rooms
                                         </span>
@@ -826,7 +826,7 @@
 
                                     <!-- Adults -->
                                     <div class="hotel_reservation_stat d-flex align-items-center gap-1 flex-fill">
-                                        <i class="fa fa-user text-primary"/>
+                                        <i class="fa fa-user text-primary" title="Adults"/>
                                         <span class="hotel_reservation_stat_label">
                                             Adults
                                         </span>

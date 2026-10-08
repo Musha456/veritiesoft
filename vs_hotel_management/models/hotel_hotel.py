@@ -369,7 +369,7 @@ class HotelHotel(models.Model):
     # Statistics
 
     building_count = fields.Integer(
-        string="Buildings",
+        string="Buildings Count",
         compute="_compute_statistics",
     )
 

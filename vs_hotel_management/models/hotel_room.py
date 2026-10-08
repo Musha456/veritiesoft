@@ -101,7 +101,7 @@ class HotelRoom(models.Model):
 
     cover_image_id = fields.Many2one(
         "hotel.room.image",
-        string="Cover Image",
+        string="Cover Image Record",
         compute="_compute_cover_image_id",
         store=True,
         readonly=True,
@@ -109,6 +109,7 @@ class HotelRoom(models.Model):
 
     cover_image = fields.Image(
         compute="_compute_cover_image",
+        string="Cover Image",
         store=True,
     )
 

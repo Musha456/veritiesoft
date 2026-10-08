@@ -4,6 +4,7 @@
     'owner': 'Veritiesoft',
     'version': '1.0',
     'category': 'Hotel',
+    "license": "Other proprietary",
     'sequence': -100,
     'price': '399',
     'currency': 'USD',

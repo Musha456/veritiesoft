@@ -51,11 +51,11 @@ class HotelAmenityType(models.Model):
 
     amenity_count = fields.Integer(
         compute="_compute_amenity_count",
-        string="Amenities",
+        string="Amenity Count",
     )
 
 
-    icon = fields.Image()
+    icon = fields.Image(string="Amenity Icon",)
 
 
     @api.depends("amenity_ids")

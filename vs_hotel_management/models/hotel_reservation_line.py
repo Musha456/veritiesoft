@@ -115,6 +115,7 @@ class HotelReservationLine(models.Model):
 
     room_name = fields.Char(
         related="room_id.display_name",
+        string="Room Name",
         store=True,
     )
 

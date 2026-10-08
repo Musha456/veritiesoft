@@ -146,6 +146,7 @@ class HotelGuestFolio(models.Model):
 
     invoice_count = fields.Integer(
         string="Invoices",
+        store=True,
         compute="_compute_amounts",
     )
 

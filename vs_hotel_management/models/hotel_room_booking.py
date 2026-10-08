@@ -96,8 +96,6 @@ class HotelRoomBooking(models.Model):
         store=True,
     )
 
-
-
     state = fields.Selection(
         [
             ("reserved", "Reserved"),
@@ -154,8 +152,6 @@ class HotelRoomBooking(models.Model):
         store=True,
     )
 
-
-
     @api.depends("check_in", "check_out")
     def _compute_duration(self):
         for booking in self:
@@ -176,10 +172,10 @@ class HotelRoomBooking(models.Model):
 
             if vals.get("name", "/") == "/":
                 vals["name"] = (
-                    self.env["ir.sequence"].next_by_code(
-                        "hotel.room.booking"
-                    )
-                    or "/"
+                        self.env["ir.sequence"].next_by_code(
+                            "hotel.room.booking"
+                        )
+                        or "/"
                 )
 
         room_ids = [vals["room_id"] for vals in vals_list if vals.get("room_id")]
@@ -217,8 +213,8 @@ class HotelRoomBooking(models.Model):
         for booking in self:
 
             if booking.state not in (
-                "reserved",
-                "checked_in",
+                    "reserved",
+                    "checked_in",
             ):
                 continue
 
@@ -292,15 +288,14 @@ class HotelRoomBooking(models.Model):
                     % (booking.room_id.display_name, booking.room_id.status.title())
                 )
 
-            booking.write({"state":"checked_in"})
-            booking.room_id.write({"status":"occupied"})
+            booking.write({"state": "checked_in"})
+            booking.room_id.write({"status": "occupied"})
 
             if booking.reservation_id:
                 if booking.reservation_id.state != "checked_in":
-                    booking.reservation_id.write({"state":"checked_in"})
+                    booking.reservation_id.write({"state": "checked_in"})
 
         return True
-
 
     # ---------------------------------------------------------
     # CHECK OUT
@@ -313,14 +308,16 @@ class HotelRoomBooking(models.Model):
             if booking.state != "checked_in":
                 raise UserError(_("Only checked-in room bookings can be checked out."))
 
-            booking.write({"state":"checked_out"})
+            booking.write({"state": "checked_out"})
 
-            mark_room_dirty_on_checkout = self.env['ir.config_parameter'].sudo().get_param('vs_hotel_management.mark_room_dirty_on_checkout')
+            mark_room_dirty_on_checkout = self.env['ir.config_parameter'].sudo().get_param(
+                'vs_hotel_management.mark_room_dirty_on_checkout'
+            )
 
-            print("Mark room dirty on checkout",mark_room_dirty_on_checkout)
+            print("Mark room dirty on checkout", mark_room_dirty_on_checkout)
 
             if mark_room_dirty_on_checkout:
-                booking.room_id.write({"status":"dirty"})
+                booking.room_id.write({"status": "dirty"})
             else:
                 booking.room_id.write({"status": "available"})
 
@@ -334,10 +331,11 @@ class HotelRoomBooking(models.Model):
 
                 reservation = booking.reservation_id
 
-                active_bookings = reservation.line_ids.mapped("room_booking_id").filtered(lambda b: b.state == "checked_in")
+                active_bookings = reservation.line_ids.mapped("room_booking_id").filtered(
+                    lambda b: b.state == "checked_in")
 
                 if not active_bookings:
-                    reservation.write({"state":"checked_out"})
+                    reservation.write({"state": "checked_out"})
 
         return True
 
@@ -348,7 +346,7 @@ class HotelRoomBooking(models.Model):
             if booking.state != "checked_out":
                 raise UserError(_("Only checked-out room bookings can be complete."))
 
-            booking.write({"state":"completed"})
+            booking.write({"state": "completed"})
 
         return True
 
@@ -381,8 +379,6 @@ class HotelRoomBooking(models.Model):
             })
 
         return True
-
-
 
     # ---------------------------------------------------------
     # CANCEL

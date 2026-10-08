@@ -64,26 +64,26 @@
                             </div>
 
                             <div class="mb-2">
-                                <i class="fa fa-bed me-1"/>
+                                <i class="fa fa-bed me-1" title="Room"/>
                                 <strong>
                                     <field name="room_id"/>
                                 </strong>
                             </div>
 
                             <div class="text-muted mb-2">
-                                <i class="fa fa-tag me-1"/>
+                                <i class="fa fa-tag me-1" title="Service"/>
                                 <field name="housekeeping_type"/>
                             </div>
 
                             <div class="text-muted mb-2">
-                                <i class="fa fa-calendar me-1"/>
-                                <field name="scheduled_date"/>
+                                <i class="fa fa-calendar me-1" title="Date"/>
+                                <field name="scheduled_date" title="Date"/>
                             </div>
 
                             <div t-if="record.reservation_id.raw_value"
                                  class="text-muted mb-2">
 
-                                <i class="fa fa-bookmark me-1"/>
+                                <i class="fa fa-bookmark me-1" title="Status"/>
                                 <field name="reservation_id"/>
 
                             </div>
@@ -91,7 +91,7 @@
                             <div t-if="record.assigned_to.raw_value"
                                  class="text-muted">
 
-                                <i class="fa fa-user me-1"/>
+                                <i class="fa fa-user me-1" title="Assigned To"/>
                                 <field name="assigned_to"/>
 
                             </div>

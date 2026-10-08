@@ -34,7 +34,7 @@
 
                             <setting string="Mark Room Dirty on Check-out">
 
-                                <field name="mark_room_dirty_on_checkout" widget="boolean_toggle"/>
+                                <field name="mark_room_dirty_on_checkout"/>
 
                             </setting>
 
@@ -44,25 +44,25 @@
 
                             <setting string="Allow Overbooking">
 
-                                <field name="allow_overbooking" widget="boolean_toggle"/>
+                                <field name="allow_overbooking"/>
 
                             </setting>
 
                             <setting string="Require Guest Identification">
 
-                                <field name="require_guest_id" widget="boolean_toggle"/>
+                                <field name="require_guest_id"/>
 
                             </setting>
 
                             <setting string="Allow Early Check-in">
 
-                                <field name="allow_early_checkin" widget="boolean_toggle"/>
+                                <field name="allow_early_checkin"/>
 
                             </setting>
 
                             <setting string="Allow Late Check-out">
 
-                                <field name="allow_late_checkout" widget="boolean_toggle"/>
+                                <field name="allow_late_checkout"/>
 
                             </setting>
 

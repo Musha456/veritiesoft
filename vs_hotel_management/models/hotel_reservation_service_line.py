@@ -5,6 +5,7 @@ from odoo.exceptions import ValidationError
 class HotelReservationServiceLine(models.Model):
     _name = "hotel.reservation.service.line"
     _description = "Reservation Service Line"
+    _inherit = ["mail.thread"]
     _order = "sequence, id"
 
     sequence = fields.Integer(default=10)
@@ -14,6 +15,14 @@ class HotelReservationServiceLine(models.Model):
         string="Reservation Line",
         required=True,
         ondelete="cascade",
+        index=True,
+    )
+
+    company_id = fields.Many2one(
+        "res.company",
+        string="Company",
+        related="reservation_line_id.company_id",
+        store=True,
         index=True,
     )
 
@@ -51,7 +60,7 @@ class HotelReservationServiceLine(models.Model):
 
     discount_id = fields.Many2one(
         "hotel.discount",
-        string="Discount",
+        string="Service Discount",
     )
 
     discount_amount = fields.Monetary(

@@ -84,7 +84,7 @@ class HotelReservation(models.Model):
         tracking=True,
     )
 
-    guest_phone = fields.Char(related="partner_id.phone", sring="Guest Phone")
+    guest_phone = fields.Char(related="partner_id.phone", string="Guest Phone")
 
     guest_email = fields.Char(
         related="partner_id.email",
@@ -92,12 +92,12 @@ class HotelReservation(models.Model):
     )
 
     id_type = fields.Selection(
-        [
-            ("passport", "Passport"),
-            ("national_id", "National ID"),
-            ("driving_license", "Driving License"),
-            ("other", "Other"),
-        ],
+        # [
+        #     ("passport", "Passport"),
+        #     ("national_id", "National ID"),
+        #     ("driving_license", "Driving License"),
+        #     ("other", "Other"),
+        # ],
         related="partner_id.id_type",
         string="ID Type",
     )
@@ -119,11 +119,11 @@ class HotelReservation(models.Model):
     )
 
     gender = fields.Selection(
-        [
-            ("male", "Male"),
-            ("female", "Female"),
-            ("other", "Other"),
-        ],
+        # [
+        #     ("male", "Male"),
+        #     ("female", "Female"),
+        #     ("other", "Other"),
+        # ],
         related="partner_id.gender",
         string="Gender",
     )
@@ -210,12 +210,14 @@ class HotelReservation(models.Model):
     subtotal = fields.Monetary(
         string="Subtotal",
         compute="_compute_amounts",
+        store=True,
         currency_field="currency_id",
     )
 
     room_amount = fields.Monetary(
         string="Room Amount",
         compute="_compute_amounts",
+        store=True,
         currency_field="currency_id",
     )
 
@@ -242,6 +244,12 @@ class HotelReservation(models.Model):
     total_amount = fields.Monetary(
         compute="_compute_amounts",
         string="Total",
+        store=True,
+        currency_field="currency_id",
+    )
+
+    untaxed_amount = fields.Monetary(
+        compute="_compute_amounts",
         store=True,
         currency_field="currency_id",
     )
@@ -325,11 +333,7 @@ class HotelReservation(models.Model):
         string="Preferred Payment Method",
     )
 
-    untaxed_amount = fields.Monetary(
-        compute="_compute_amounts",
-        store=True,
-        currency_field="currency_id",
-    )
+
 
     line_ids = fields.One2many(
         "hotel.reservation.line",
@@ -352,8 +356,8 @@ class HotelReservation(models.Model):
     # ---------------------------------------------------------
     # Statistics
     # ---------------------------------------------------------
-    room_booking_count = fields.Integer(string="Room Bookings", compute="_compute_statistics", )
-    room_count = fields.Integer(string="Rooms", compute="_compute_statistics", )
+    room_booking_count = fields.Integer(string="Room Booking Count", compute="_compute_statistics", )
+    room_count = fields.Integer(string="Room Booking Count", compute="_compute_statistics", )
 
     service_count = fields.Integer(
         compute="_compute_statistics",

@@ -15,7 +15,9 @@
             <field name="report_template_ids" eval="[(4, ref('vs_hotel_management.action_report_hotel_reservation'))]"/>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #454748;">
-                    <p>Dear<strong t-out="object.partner_id.name or 'Guest'"/>,
+                    <p>
+                        <span style="margin-right: 2px;">Dear</span>
+                        <strong t-out="object.partner_id.name or 'Guest'"/>,
                     </p>
                     <p>
                         Thank you for choosing to stay with us. We are pleased to confirm your reservation at
@@ -113,7 +115,9 @@
             <field name="partner_to">{{ object.partner_id.id }}</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #454748;">
-                    <p>Dear<strong t-out="object.partner_id.name or 'Guest'"/>,
+                    <p>
+                        <span style="margin-right: 2px;">Dear</span>
+                        <strong t-out="object.partner_id.name or 'Guest'"/>,
                     </p>
                     <p>
                         We are thrilled to welcome you soon to<strong t-out="object.hotel_id.name"/>!
