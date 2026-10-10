@@ -38,6 +38,11 @@
 
                             </setting>
 
+                            <setting id="hotel_auto_available_room"
+                                     string="Make Room Available After Cleaning">
+                                <field name="hotel_auto_available_room"/>
+                            </setting>
+
                         </block>
 
                         <block title="Reservations">
@@ -45,12 +50,6 @@
                             <setting string="Allow Overbooking">
 
                                 <field name="allow_overbooking"/>
-
-                            </setting>
-
-                            <setting string="Require Guest Identification">
-
-                                <field name="require_guest_id"/>
 
                             </setting>
 
@@ -66,34 +65,45 @@
 
                             </setting>
 
-                        </block>
 
-                        <block title="Automation">
-
-                            <setting string="Generate Building Codes Automatically">
-
-                                <field name="auto_generate_building_code"/>
-
+                            <setting id="hotel_auto_confirm_reservation"
+                                     string="Auto-confirm Reservations"
+                                     help="Automatically confirm new hotel reservations.">
+                                <field name="hotel_auto_confirm_reservation"/>
                             </setting>
 
-                            <setting string="Generate Floor Codes Automatically">
-
-                                <field name="auto_generate_floor_code"/>
-
+                            <setting id="hotel_auto_create_invoice"
+                                     string="Auto-create Invoice"
+                                     help="Automatically create the customer invoice from the guest folio.">
+                                <field name="hotel_auto_create_invoice"/>
                             </setting>
 
-                            <setting string="Generate Room Numbers Automatically">
-
-                                <field name="auto_generate_room_number"/>
-
+                            <setting id="hotel_require_payment_before_checkout"
+                                     string="Require Payment Before Checkout">
+                                <field name="hotel_require_payment_before_checkout"/>
                             </setting>
 
-                            <setting string="Generate Room Category Codes Automatically">
-
-                                <field name="auto_generate_room_category_code"/>
-
+                            <setting id="hotel_auto_close_folio_after_payment"
+                                     string="Auto-close Folio After Payment">
+                                <field name="hotel_auto_close_folio_after_payment"/>
                             </setting>
 
+                            <setting id="hotel_require_guest"
+                                     string="Require Guest">
+                                <field name="hotel_require_guest"/>
+                            </setting>
+
+                            <setting id="hotel_minimum_stay"
+                                     string="Minimum Stay"
+                                     help="Minimum number of nights allowed for a reservation.">
+                                <field name="hotel_minimum_stay"/>
+                            </setting>
+
+                            <setting id="hotel_maximum_stay"
+                                     string="Maximum Stay"
+                                     help="Maximum number of nights allowed for a reservation.">
+                                <field name="hotel_maximum_stay"/>
+                            </setting>
                         </block>
 
                     </app>

@@ -23,11 +23,6 @@ class ResConfigSettings(models.TransientModel):
         config_parameter="vs_hotel_management.allow_overbooking",
     )
 
-    require_guest_id = fields.Boolean(
-        string="Require Guest Identification",
-        config_parameter="vs_hotel_management.require_guest_id",
-    )
-
     allow_early_checkin = fields.Boolean(
         string="Allow Early Check-in",
         config_parameter="vs_hotel_management.allow_early_checkin",
@@ -38,48 +33,78 @@ class ResConfigSettings(models.TransientModel):
         config_parameter="vs_hotel_management.allow_late_checkout",
     )
 
-    auto_generate_room_number = fields.Boolean(
-        string="Generate Room Numbers Automatically",
-        config_parameter="vs_hotel_management.auto_generate_room_number",
-    )
 
-    auto_generate_building_code = fields.Boolean(
-        string="Generate Building Codes Automatically",
-        config_parameter="vs_hotel_management.auto_generate_building_code",
-    )
-
-    auto_generate_floor_code = fields.Boolean(
-        string="Generate Floor Codes Automatically",
-        config_parameter="vs_hotel_management.auto_generate_floor_code",
-    )
-
-    auto_generate_room_category_code = fields.Boolean(
-        string="Generate Room Category Codes Automatically",
-        config_parameter="vs_hotel_management.auto_generate_room_category_code",
-    )
 
     mark_room_dirty_on_checkout = fields.Boolean(
         string="Mark Room Dirty on Checkout",
         config_parameter="vs_hotel_management.mark_room_dirty_on_checkout",
     )
 
-    def set_values(self):
-        _logger.warning(
-            "MARK ROOM DIRTY BEFORE SAVE: value=%r, type=%s",
-            self.mark_room_dirty_on_checkout,
-            type(self.mark_room_dirty_on_checkout).__name__,
-        )
+    # ---------------------------------------------------------
+    # Reservation Automation
+    # ---------------------------------------------------------
 
-        res = super().set_values()
+    hotel_auto_confirm_reservation = fields.Boolean(
+        string="Auto-confirm Reservations",
+        default=False,
+        config_parameter="vs_hotel_management.auto_confirm_reservation",
+    )
 
-        value = self.env['ir.config_parameter'].sudo().get_param(
-            'vs_hotel_management.mark_room_dirty_on_checkout'
-        )
 
-        _logger.warning(
-            "MARK ROOM DIRTY AFTER SAVE: value=%r, type=%s",
-            value,
-            type(value).__name__,
-        )
+    hotel_auto_create_invoice = fields.Boolean(
+        string="Auto-create Invoice",
+        default=False,
+        config_parameter="vs_hotel_management.auto_create_invoice",
+    )
 
-        return res
+
+    hotel_require_payment_before_checkout = fields.Boolean(
+        string="Require Payment Before Checkout",
+        default=False,
+        config_parameter="vs_hotel_management.require_payment_before_checkout",
+    )
+
+    hotel_auto_close_folio_after_payment = fields.Boolean(
+        string="Auto-close Folio After Payment",
+        default=True,
+        config_parameter="vs_hotel_management.auto_close_folio_after_payment",
+    )
+
+    # ---------------------------------------------------------
+    # Room Automation
+    # ---------------------------------------------------------
+
+
+    hotel_auto_available_room = fields.Boolean(
+        string="Mark Room Available After Cleaning",
+        default=True,
+        config_parameter="vs_hotel_management.auto_available_room",
+    )
+
+    # ---------------------------------------------------------
+    # Reservation Rules
+    # ---------------------------------------------------------
+
+    hotel_require_guest = fields.Boolean(
+        string="Require Guest",
+        default=True,
+        config_parameter="vs_hotel_management.require_guest",
+    )
+
+    hotel_require_rate_plan = fields.Boolean(
+        string="Require Rate Plan",
+        default=True,
+        config_parameter="vs_hotel_management.require_rate_plan",
+    )
+
+    hotel_minimum_stay = fields.Integer(
+        string="Minimum Stay (Nights)",
+        default=1,
+        config_parameter="vs_hotel_management.minimum_stay",
+    )
+
+    hotel_maximum_stay = fields.Integer(
+        string="Maximum Stay (Nights)",
+        default=365,
+        config_parameter="vs_hotel_management.maximum_stay",
+    )

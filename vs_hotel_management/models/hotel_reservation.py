@@ -3,7 +3,10 @@ from dateutil.relativedelta import relativedelta
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError, UserError, AccessError
 from odoo import Command
-from psycopg2 import IntegrityError
+import pytz
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class HotelReservation(models.Model):
@@ -184,14 +187,12 @@ class HotelReservation(models.Model):
         currency_field="currency_id",
     )
 
-
     service_discount_amount = fields.Monetary(
         compute="_compute_amounts",
         string="Service Discount",
         store=True,
         currency_field="currency_id",
     )
-
 
     discount_amount = fields.Monetary(
         compute="_compute_amounts",
@@ -333,8 +334,6 @@ class HotelReservation(models.Model):
         string="Preferred Payment Method",
     )
 
-
-
     line_ids = fields.One2many(
         "hotel.reservation.line",
         "reservation_id",
@@ -357,17 +356,13 @@ class HotelReservation(models.Model):
     # Statistics
     # ---------------------------------------------------------
     room_booking_count = fields.Integer(string="Room Booking Count", compute="_compute_statistics", )
-    room_count = fields.Integer(string="Room Booking Count", compute="_compute_statistics", )
+    room_count = fields.Integer(string="Room Count", compute="_compute_statistics", )
 
     service_count = fields.Integer(
         compute="_compute_statistics",
     )
 
     payment_count = fields.Integer(
-        compute="_compute_statistics",
-    )
-
-    invoice_count = fields.Integer(
         compute="_compute_statistics",
     )
 
@@ -401,6 +396,12 @@ class HotelReservation(models.Model):
         currency_field="currency_id",
     )
 
+    invoice_amount = fields.Monetary(
+        string="Folio Invoice",
+        compute="_compute_folio_invoice",
+        currency_field="currency_id",
+    )
+
     def _compute_folio_balance(self):
         for reservation in self:
             folios = reservation.folio_ids
@@ -409,8 +410,61 @@ class HotelReservation(models.Model):
                 folios.mapped("balance_amount")
             )
 
+    def _compute_folio_invoice(self):
+        for reservation in self:
+            invoices = reservation.folio_ids.mapped("invoice_id").filtered(
+                lambda invoice: invoice.move_type == "out_invoice"
+            )
+            reservation.invoice_amount = sum(
+                invoices.mapped("amount_total")
+            )
+
+    def _get_stay_limits(self):
+        """Return minimum and maximum stay limits for the reservation."""
+        self.ensure_one()
+
+        config = self.env["ir.config_parameter"].sudo()
+        hotel = self.hotel_id
+
+        minimum_stay = hotel.minimum_stay if hotel else False
+        maximum_stay = hotel.maximum_stay if hotel else False
+
+        if not minimum_stay:
+            minimum_stay = int(
+                config.get_param(
+                    "vs_hotel_management.minimum_stay",
+                    default="1",
+                )
+            )
+
+        if not maximum_stay:
+            maximum_stay = int(
+                config.get_param(
+                    "vs_hotel_management.maximum_stay",
+                    default="365",
+                )
+            )
+
+        minimum_stay = int(minimum_stay)
+        maximum_stay = int(maximum_stay)
+
+        if minimum_stay < 1 or maximum_stay < minimum_stay:
+            raise ValidationError(
+                _(
+                    "Invalid stay configuration. The minimum stay "
+                    "must be at least 1 night, and the maximum stay "
+                    "must not be less than the minimum stay."
+                )
+            )
+
+        return minimum_stay, maximum_stay
+
     # ---------------------------------------------------------
     # Compute
+    # ---------------------------------------------------------
+
+    # ---------------------------------------------------------
+    # Onchange
     # ---------------------------------------------------------
 
     @api.onchange("check_in", "check_out")
@@ -419,15 +473,135 @@ class HotelReservation(models.Model):
             for line in record.line_ids:
                 if record.check_in:
                     line.check_in = record.check_in
+
                 if record.check_out:
                     line.check_out = record.check_out
 
+        self._onchange_hotel_id()
+
     @api.onchange("hotel_id")
     def _onchange_hotel_id(self):
+        config = self.env["ir.config_parameter"].sudo()
+
+        global_checkin_time = float(
+            config.get_param(
+                "vs_hotel_management.checkin_time_default",
+                default="14.0",
+            )
+        )
+        global_checkout_time = float(
+            config.get_param(
+                "vs_hotel_management.checkout_time_default",
+                default="12.0",
+            )
+        )
+
         for record in self:
             for line in record.line_ids:
-                if record.hotel_id:
-                    line.hotel_id = record.hotel_id
+                line.hotel_id = record.hotel_id
+
+            hotel = record.hotel_id
+
+            # Do not validate stay limits before a hotel is selected.
+            if not hotel:
+                continue
+
+            checkin_time = (
+                hotel.checkin_time
+                if hotel.checkin_time > 00
+                else global_checkin_time
+            )
+            checkout_time = (
+                hotel.checkout_time
+                if hotel.checkout_time > 00
+                else global_checkout_time
+            )
+
+            minimum_stay, maximum_stay = record._get_stay_limits()
+
+            # Read the existing night_count without modifying it.
+            nights = record.night_count or minimum_stay
+
+            if nights < minimum_stay or nights > maximum_stay:
+                raise ValidationError(
+                    _(
+                        "The stay must be between %(minimum)s and "
+                        "%(maximum)s night(s) for this hotel."
+                    ) % {
+                        "minimum": minimum_stay,
+                        "maximum": maximum_stay,
+                    }
+                )
+
+            timezone_name = hotel.timezone or "UTC"
+
+            try:
+                hotel_timezone = pytz.timezone(timezone_name)
+            except pytz.UnknownTimeZoneError:
+                raise ValidationError(
+                    _("Invalid hotel timezone: %s") % timezone_name
+                )
+
+            def to_time(value, label):
+                if not 0 <= value < 24:
+                    raise ValidationError(
+                        _("%s must be between 00:00 and 23:59.") % label
+                    )
+
+                total_minutes = round(value * 60)
+
+                if total_minutes >= 1440:
+                    raise ValidationError(
+                        _("%s must be earlier than 24:00.") % label
+                    )
+
+                hours, minutes = divmod(total_minutes, 60)
+                return datetime.time(hours, minutes)
+
+            def to_utc(local_date, local_time):
+                local_datetime = datetime.datetime.combine(
+                    local_date,
+                    local_time,
+                )
+
+                try:
+                    localized = hotel_timezone.localize(
+                        local_datetime,
+                        is_dst=None,
+                    )
+                except (
+                        pytz.AmbiguousTimeError,
+                        pytz.NonExistentTimeError,
+                ):
+                    raise ValidationError(
+                        _(
+                            "The configured date and time are ambiguous "
+                            "or invalid in hotel timezone %s."
+                        ) % timezone_name
+                    )
+
+                return localized.astimezone(
+                    pytz.UTC
+                ).replace(tzinfo=None)
+
+            today = datetime.datetime.now(
+                pytz.UTC
+            ).astimezone(hotel_timezone).date()
+
+            record.check_in = to_utc(
+                today,
+                to_time(
+                    checkin_time,
+                    _("Default Check-in Time"),
+                ),
+            )
+            record.check_out = to_utc(
+                today + relativedelta(days=nights),
+                to_time(
+                    checkout_time,
+                    _("Default Check-out Time"),
+                ),
+            )
 
     @api.depends("check_in", "check_out")
     def _compute_nights(self):
@@ -438,7 +612,9 @@ class HotelReservation(models.Model):
                 delta = record.check_out.date() - record.check_in.date()
                 record.night_count = max(delta.days, 1)
 
-    @api.depends("line_ids", "line_ids.room_amount", "line_ids.service_amount", "line_ids.service_tax_amount", "line_ids.discount_amount","line_ids.service_line_discounts","line_ids.total_discount_amount", "line_ids.tax_amount", "line_ids.subtotal", "line_ids.total")
+    @api.depends("line_ids", "line_ids.room_amount", "line_ids.service_amount", "line_ids.service_tax_amount",
+                 "line_ids.discount_amount", "line_ids.service_line_discounts", "line_ids.total_discount_amount",
+                 "line_ids.tax_amount", "line_ids.subtotal", "line_ids.total")
     def _compute_amounts(self):
         for reservation in self:
             lines = reservation.line_ids
@@ -453,7 +629,8 @@ class HotelReservation(models.Model):
             reservation.subtotal = sum(lines.mapped("subtotal"))
             reservation.total_amount = sum(lines.mapped("total"))
 
-    @api.depends("line_ids", "line_ids.room_booking_id" ,"line_ids.room_id", "line_ids.adults", "line_ids.infants", "line_ids.children")
+    @api.depends("line_ids", "line_ids.room_booking_id", "line_ids.room_id", "line_ids.adults", "line_ids.infants",
+                 "line_ids.children")
     def _compute_statistics(self):
         for reservation in self:
             lines = reservation.line_ids
@@ -493,6 +670,33 @@ class HotelReservation(models.Model):
                 "default_reservation_id": self.id,
             },
         }
+
+    def action_view_invoices(self):
+        self.ensure_one()
+
+        invoices = self.folio_ids.mapped("invoice_id").filtered(
+            lambda invoice: invoice.move_type == "out_invoice"
+        )
+
+        action = {
+            "type": "ir.actions.act_window",
+            "name": _("Invoices"),
+            "res_model": "account.move",
+            "view_mode": "list,form",
+            "domain": [("id", "in", invoices.ids)],
+            "context": {
+                "default_move_type": "out_invoice",
+                "create": False,
+            },
+        }
+
+        if len(invoices) == 1:
+            action.update({
+                "view_mode": "form",
+                "res_id": invoices.id,
+            })
+
+        return action
 
     # ---------------------------------------------------------
     # Constraints
@@ -545,24 +749,116 @@ class HotelReservation(models.Model):
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
 
-        checkin_time = float(self.env["ir.config_parameter"].sudo().get_param("vs_hotel_management.checkin_time_default"))
-        checkout_time = float(self.env["ir.config_parameter"].sudo().get_param("vs_hotel_management.checkout_time_default"))
+        config = self.env["ir.config_parameter"].sudo()
 
-        print("Checkin Time",checkin_time)
-        print("Checkout Time",checkout_time)
+        hotel_id = (
+                res.get("hotel_id")
+                or self.env.context.get("default_hotel_id")
+        )
 
-        today = fields.Date.context_today(self)
+        hotel = (
+            self.env["hotel.hotel"].browse(hotel_id).exists()
+            if hotel_id
+            else self.env["hotel.hotel"]
+        )
+
+        checkin_time = (
+            hotel.checkin_time
+            if hotel and hotel.checkin_time > 00
+            else float(
+                config.get_param(
+                    "vs_hotel_management.checkin_time_default",
+                    default="14.0",
+                )
+            )
+        )
+
+        checkout_time = (
+            hotel.checkout_time
+            if hotel and hotel.checkout_time > 00
+            else float(
+                config.get_param(
+                    "vs_hotel_management.checkout_time_default",
+                    default="12.0",
+                )
+            )
+        )
+
+        timezone_name = (
+            hotel.timezone
+            if hotel and hotel.timezone
+            else "UTC"
+        )
+
+        try:
+            hotel_timezone = pytz.timezone(timezone_name)
+        except pytz.UnknownTimeZoneError:
+            raise ValidationError(
+                _("Invalid hotel timezone: %s") % timezone_name
+            )
+
+        def to_time(value, label):
+            if not 0 <= value < 24:
+                raise ValidationError(
+                    _("%s must be between 00:00 and 23:59.") % label
+                )
+
+            total_minutes = round(value * 60)
+
+            if total_minutes >= 1440:
+                raise ValidationError(
+                    _("%s must be earlier than 24:00.") % label
+                )
+
+            hours, minutes = divmod(total_minutes, 60)
+            return datetime.time(hours, minutes)
+
+        checkin_clock = to_time(
+            checkin_time,
+            _("Default Check-in Time"),
+        )
+        checkout_clock = to_time(
+            checkout_time,
+            _("Default Check-out Time"),
+        )
+
+        today = datetime.datetime.now(
+            pytz.UTC
+        ).astimezone(hotel_timezone).date()
+
         tomorrow = today + relativedelta(days=1)
 
-        ci_hours = int(checkin_time)
-        ci_minutes = int((checkin_time - ci_hours) * 60)
-        co_hours = int(checkout_time)
-        co_minutes = int((checkout_time - co_hours) * 60)
+        def to_utc(local_date, local_time):
+            local_datetime = datetime.datetime.combine(
+                local_date,
+                local_time,
+            )
+
+            try:
+                localized = hotel_timezone.localize(
+                    local_datetime,
+                    is_dst=None,
+                )
+            except (
+                    pytz.AmbiguousTimeError,
+                    pytz.NonExistentTimeError,
+            ):
+                raise ValidationError(
+                    _(
+                        "The configured date and time are ambiguous "
+                        "or invalid in hotel timezone %s."
+                    ) % timezone_name
+                )
+
+            return localized.astimezone(
+                pytz.UTC
+            ).replace(tzinfo=None)
 
         if "check_in" in fields_list and not res.get("check_in"):
-            res["check_in"] = datetime.datetime.combine(today, datetime.time(ci_hours, ci_minutes))
+            res["check_in"] = to_utc(today, checkin_clock)
+
         if "check_out" in fields_list and not res.get("check_out"):
-            res["check_out"] = datetime.datetime.combine(tomorrow, datetime.time(co_hours, co_minutes))
+            res["check_out"] = to_utc(tomorrow, checkout_clock)
 
         return res
 
@@ -690,7 +986,8 @@ class HotelReservation(models.Model):
 
             operation = command[0]
 
-            if operation in (Command.CREATE, Command.UPDATE, Command.DELETE, Command.UNLINK, Command.CLEAR, Command.SET):
+            if operation in (Command.CREATE, Command.UPDATE, Command.DELETE, Command.UNLINK, Command.CLEAR,
+                             Command.SET):
                 return True
 
         return False
@@ -784,29 +1081,65 @@ class HotelReservation(models.Model):
     # =========================================================
 
     def action_check_in(self):
-        """
-        Check in all reserved room bookings belonging
-        to the reservation and create/open the guest folio.
-        """
+        """Check in all reserved room bookings and create/open the guest folio."""
+        config = self.env["ir.config_parameter"].sudo()
+
+        global_allow_early_checkin = (
+                config.get_param(
+                    "vs_hotel_management.allow_early_checkin",
+                    default="False",
+                ) == "True"
+        )
 
         for reservation in self:
-
             if reservation.state != "reserved":
                 raise UserError(
-                    _(
-                        "Only reserved reservations can be checked in."
-                    )
+                    _("Only reserved reservations can be checked in.")
                 )
 
-            # Lock room rows to prevent concurrent booking race conditions
+            hotel = reservation.hotel_id
+
+            allow_early_checkin = (
+                hotel.allow_early_checkin
+                if hotel
+                else global_allow_early_checkin
+            )
+
+            if not allow_early_checkin and reservation.check_in:
+                hotel_timezone = pytz.timezone(
+                    hotel.tz or self.env.user.tz or "UTC"
+                )
+
+                current_datetime = fields.Datetime.now()
+                current_local_time = pytz.UTC.localize(
+                    current_datetime
+                ).astimezone(hotel_timezone)
+
+                scheduled_checkin = fields.Datetime.to_datetime(
+                    reservation.check_in
+                )
+                scheduled_local_time = pytz.UTC.localize(
+                    scheduled_checkin
+                ).astimezone(hotel_timezone)
+
+                if current_local_time < scheduled_local_time:
+                    raise UserError(
+                        _(
+                            "Early check-in is not allowed for this hotel. "
+                            "The scheduled check-in time is %s."
+                        )
+                        % scheduled_local_time.strftime("%Y-%m-%d %H:%M:%S")
+                    )
+
+            # Lock room rows to prevent concurrent booking conflicts.
             room_ids = reservation.line_ids.mapped("room_id").ids
             if room_ids:
                 self.env.cr.execute(
                     "SELECT id FROM hotel_room WHERE id IN %s FOR UPDATE",
-                    (tuple(room_ids),)
+                    (tuple(room_ids),),
                 )
 
-            # Final availability and operational status consistency check before check-in (Section 13)
+            # Validate room availability and operational status.
             reservation._validate_reservation(for_check_in=True)
 
             bookings = reservation.line_ids.mapped(
@@ -820,20 +1153,110 @@ class HotelReservation(models.Model):
                     _("There are no reserved room bookings to check in.")
                 )
 
-            # -------------------------------------------------
-            # 1. Check in room bookings
-            # -------------------------------------------------
+            # 1. Check in room bookings.
             bookings.action_check_in()
 
-            # -------------------------------------------------
-            # 2. Create / open guest folio
-            # -------------------------------------------------
+            # 2. Create or open the guest folio.
             reservation._create_guest_folio()
 
-            # -------------------------------------------------
-            # 3. Update reservation state
-            # -------------------------------------------------
+            # 3. Update reservation state.
             reservation.state = "checked_in"
+
+        return True
+
+    # =========================================================
+    # CHECK OUT
+    # =========================================================
+
+    def action_check_out(self):
+        """Check out all rooms belonging to the reservation."""
+        config = self.env["ir.config_parameter"].sudo()
+
+        global_allow_late_checkout = (
+                config.get_param(
+                    "vs_hotel_management.allow_late_checkout",
+                    default="False",
+                ) == "True"
+        )
+
+        auto_create_invoice = (
+                config.get_param(
+                    "vs_hotel_management.auto_create_invoice",
+                    default="False",
+                ) == "True"
+        )
+
+        for reservation in self:
+            if reservation.state != "checked_in":
+                raise UserError(
+                    _("Only checked-in reservations can be checked out.")
+                )
+
+            hotel = reservation.hotel_id
+
+            allow_late_checkout = (
+                hotel.allow_late_checkout
+                if hotel
+                else global_allow_late_checkout
+            )
+
+            if not allow_late_checkout and reservation.check_out:
+                hotel_timezone = pytz.timezone(
+                    (hotel.tz if hotel else False)
+                    or self.env.user.tz
+                    or "UTC"
+                )
+
+                current_datetime = fields.Datetime.now()
+                current_local_time = pytz.UTC.localize(
+                    current_datetime
+                ).astimezone(hotel_timezone)
+
+                scheduled_checkout = fields.Datetime.to_datetime(
+                    reservation.check_out
+                )
+                scheduled_local_time = pytz.UTC.localize(
+                    scheduled_checkout
+                ).astimezone(hotel_timezone)
+
+                if current_local_time > scheduled_local_time:
+                    raise UserError(
+                        _(
+                            "Late check-out is not allowed for this hotel. "
+                            "The scheduled check-out time is %s."
+                        )
+                        % scheduled_local_time.strftime("%Y-%m-%d %H:%M:%S")
+                    )
+
+            bookings = reservation.line_ids.mapped(
+                "room_booking_id"
+            ).filtered(
+                lambda booking: booking.state == "checked_in"
+            )
+
+            if not bookings:
+                raise UserError(
+                    _("There are no checked-in rooms to check out.")
+                )
+
+            # 1. Check out room bookings.
+            bookings.action_check_out()
+
+            # 2. Find the active guest folio.
+            folio = reservation.folio_ids.filtered(
+                lambda item: item.state in ("open", "partially_paid")
+            )[:1]
+
+            if folio:
+                # 3. Add final service charges.
+                reservation._create_folio_service_charges(folio)
+
+                # 4. Create the invoice when automatic invoicing is enabled.
+                if auto_create_invoice and not folio.invoice_id:
+                    folio.action_create_invoice()
+
+            # 5. Update reservation state.
+            reservation.state = "checked_out"
 
         return True
 
@@ -1000,54 +1423,23 @@ class HotelReservation(models.Model):
                         reservation_line.room_booking_id
                     ),
                 )
-    # =========================================================
-    # CHECK OUT
-    # =========================================================
-
-    def action_check_out(self):
-        """
-        Check out all rooms belonging to the reservation.
-        """
-
-        for reservation in self:
-
-            if reservation.state != "checked_in":
-                raise UserError(
-                    _(
-                        "Only checked-in reservations "
-                        "can be checked out."
-                    )
-                )
-
-            bookings = reservation.line_ids.mapped("room_booking_id").filtered(lambda booking: booking.state == "checked_in")
-
-            if not bookings:
-                raise UserError(_("There are no checked-in rooms to check out."))
-
-            bookings.action_check_out()
-
-            folio = reservation.folio_ids.filtered(
-                lambda f: f.state in ("open", "partially_paid")
-            )[:1]
-
-            if folio:
-                reservation._create_folio_service_charges(folio)
-
-            reservation.state = "checked_out"
-
-        return True
 
     # =========================================================
     # COMPLETE
     # =========================================================
 
     def action_complete(self):
-        """
-        Mark the reservation as completed after checkout.
-        """
+        """Complete the reservation after checkout and payment validation."""
+        config = self.env["ir.config_parameter"].sudo()
+
+        require_payment = (
+                config.get_param(
+                    "vs_hotel_management.require_payment_before_checkout",
+                    default="False",
+                ) == "True"
+        )
 
         for reservation in self:
-
             if reservation.state != "checked_out":
                 raise UserError(
                     _(
@@ -1056,15 +1448,52 @@ class HotelReservation(models.Model):
                     )
                 )
 
-            bookings = reservation.line_ids.mapped("room_booking_id").filtered(
-                lambda booking: booking.state == "checked_out")
+            bookings = reservation.line_ids.mapped(
+                "room_booking_id"
+            ).filtered(
+                lambda booking: booking.state == "checked_out"
+            )
 
             if not bookings:
-                raise UserError(_("There are no checked-out rooms to complete."))
+                raise UserError(
+                    _("There are no checked-out rooms to complete.")
+                )
 
+            # Require payment before completing the reservation.
+            if require_payment:
+                folios = reservation.folio_ids.filtered(
+                    lambda f: f.state != "cancelled"
+                )
+
+                if not folios:
+                    raise UserError(
+                        _(
+                            "The reservation cannot be completed "
+                            "because no guest folio exists."
+                        )
+                    )
+
+                unpaid_folios = folios.filtered(
+                    lambda f: f.state != "paid"
+                )
+
+                if unpaid_folios:
+                    raise UserError(
+                        _(
+                            "The reservation cannot be completed "
+                            "because the guest folio is not fully paid. "
+                            "Please settle the outstanding balance "
+                            "before completing the reservation."
+                        )
+                    )
+
+            # Complete room bookings only after validation passes.
             bookings.action_complete()
 
+            # Update reservation state.
             reservation.state = "completed"
+
+        return True
 
     # =========================================================
     # CANCEL
@@ -1157,72 +1586,102 @@ class HotelReservation(models.Model):
     # =========================================================
     # VALIDATION
     # =========================================================
-
     def _validate_reservation(self, for_check_in=False):
+        """Validate reservation and its lines before confirmation,
+        reservation, or check-in.
         """
-        Validate the reservation and all its lines before
-        confirmation/reservation/check-in.
-        """
-
         self.ensure_one()
 
-        if not self.partner_id:
-            raise ValidationError(
-                _("A guest is required.")
+        config = self.env["ir.config_parameter"].sudo()
+
+        def get_bool(key, default=False):
+            value = config.get_param(
+                "vs_hotel_management.%s" % key,
+                default=str(default),
             )
+            return str(value).lower() in ("true", "1", "yes")
+
+        if not self.partner_id:
+            raise ValidationError(_("A guest is required."))
 
         if not self.hotel_id:
-            raise ValidationError(
-                _("A hotel is required.")
-            )
+            raise ValidationError(_("A hotel is required."))
 
         if not self.check_in:
-            raise ValidationError(
-                _("Check-in is required.")
-            )
+            raise ValidationError(_("Check-in is required."))
 
         if not self.check_out:
-            raise ValidationError(
-                _("Check-out is required.")
-            )
+            raise ValidationError(_("Check-out is required."))
 
         if self.check_out <= self.check_in:
             raise ValidationError(
-                _(
-                    "Check-out must be later than check-in."
-                )
+                _("Check-out must be later than check-in.")
             )
 
-        req_id = (
-            self.hotel_id.require_guest_identification
-            or self.env["ir.config_parameter"].sudo().get_param("vs_hotel_management.require_guest_id")
+        # -------------------------------------------------
+        # Guest Identification
+        # -------------------------------------------------
+        require_guest_id = (
+                self.hotel_id.require_guest_identification
+                or get_bool("require_guest_id")
         )
-        if req_id and not self.partner_id.id_number:
+
+        if require_guest_id and not self.partner_id.id_number:
             raise ValidationError(
-                _("Guest identification (ID Number) is required for reservations at %s.")
-                % self.hotel_id.name
+                _(
+                    "Guest identification (ID Number) is required "
+                    "for reservations at %s."
+                ) % self.hotel_id.name
             )
 
         if not self.line_ids:
             raise ValidationError(
-                _(
-                    "At least one reservation line is required."
-                )
+                _("At least one reservation line is required.")
             )
 
+        # -------------------------------------------------
+        # Minimum and Maximum Stay
+        # -------------------------------------------------
+        minimum_stay, maximum_stay = self._get_stay_limits()
+
+        if self.night_count < minimum_stay:
+            raise ValidationError(
+                _(
+                    "The reservation must be at least %s night(s)."
+                ) % minimum_stay
+            )
+
+        if self.night_count > maximum_stay:
+            raise ValidationError(
+                _(
+                    "The reservation cannot exceed %s night(s)."
+                ) % maximum_stay
+            )
+
+        # -------------------------------------------------
+        # Duplicate Rooms
+        # -------------------------------------------------
         self._check_duplicate_rooms()
 
-        allow_overbooking = False
-        if self.hotel_id:
-            allow_overbooking = self.hotel_id.allow_overbooking
-        if not allow_overbooking:
-            param = self.env["ir.config_parameter"].sudo().get_param(
-                "vs_hotel_management.allow_overbooking", default="False"
-            )
-            allow_overbooking = param in (True, "True", "1")
+        # -------------------------------------------------
+        # Overbooking
+        # -------------------------------------------------
+        global_allow_overbooking = get_bool("allow_overbooking")
 
+        hotel_allow_overbooking = self.hotel_id.allow_overbooking
+
+        allow_overbooking = (
+                global_allow_overbooking or hotel_allow_overbooking
+        )
+
+        # -------------------------------------------------
+        # Validate Reservation Lines
+        # -------------------------------------------------
         for line in self.line_ids:
-            line._validate_reservation_line(for_check_in=for_check_in, allow_overbooking=allow_overbooking)
+            line._validate_reservation_line(
+                for_check_in=for_check_in,
+                allow_overbooking=allow_overbooking,
+            )
 
     # =========================================================
     # ACTIONS / EMAILS

@@ -81,7 +81,8 @@
                         <button name="action_open_room_bookings"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-bed">
+                                icon="fa-bed"
+                                invisible="room_booking_count == 0">
 
                             <field name="room_booking_count"
                                    widget="statinfo"
@@ -92,16 +93,30 @@
                         <button name="action_view_guest_folios"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-money">
+                                icon="fa-money"
+                                invisible="folio_balance == 0">
                             <div class="o_stat_info">
                                 <span class="o_stat_value">
                                     <field name="folio_balance"
                                            widget="monetary"
                                            options="{'currency_field': 'currency_id'}"/>
                                 </span>
-                                <span class="o_stat_text">
-                                    Folios (<field name="folio_count" class="oe_inline"/>)
+                                <span class="o_stat_text">Folios</span>
+                            </div>
+                        </button>
+
+                        <button name="action_view_invoices"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                invisible="invoice_amount == 0">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="invoice_amount"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
                                 </span>
+                                <span class="o_stat_text">Invoices</span>
                             </div>
                         </button>
 
@@ -196,15 +211,15 @@
 
                                     <field name="available_room_ids" column_invisible="1"/>
                                     <field name="hotel_id" column_invisible="1"/>
-<!--                                    <field name="building_id" optional="show"/>-->
-<!--                                    <field name="floor_id" optional="show"/>-->
-<!--                                    <field name="room_category_id" optional="show"/>-->
+                                    <!--                                    <field name="building_id" optional="show"/>-->
+                                    <!--                                    <field name="floor_id" optional="show"/>-->
+                                    <!--                                    <field name="room_category_id" optional="show"/>-->
                                     <field name="room_id"
                                            domain="[('id', 'in', available_room_ids)]"
                                            required="1"/>
 
-<!--                                    <field name="check_in"/>-->
-<!--                                    <field name="check_out"/>-->
+                                    <!--                                    <field name="check_in"/>-->
+                                    <!--                                    <field name="check_out"/>-->
 
                                     <field name="guest_count"
                                            sum="Total Guests"/>
@@ -384,7 +399,7 @@
 
                         <page string="Guest Info"
                               name="hotel_guest_info"
-                              >
+                        >
 
                             <group>
 

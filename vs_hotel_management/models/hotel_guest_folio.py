@@ -144,10 +144,11 @@ class HotelGuestFolio(models.Model):
         currency_field="currency_id",
     )
 
-    invoice_count = fields.Integer(
-        string="Invoices",
-        store=True,
+    invoice_amount = fields.Monetary(
+        string="Invoice Amount",
         compute="_compute_amounts",
+        currency_field="currency_id",
+        store=True,
     )
 
     invoice_state = fields.Selection(
@@ -190,6 +191,8 @@ class HotelGuestFolio(models.Model):
         "line_ids.discount_amount",
         "line_ids.total_amount",
         "line_ids.paid_amount",
+        "invoice_id",
+        "invoice_id.amount_total",
     )
     def _compute_amounts(self):
         for folio in self:
@@ -219,7 +222,11 @@ class HotelGuestFolio(models.Model):
                 folio.total_amount - folio.paid_amount
             )
 
-            folio.invoice_count = 1 if folio.invoice_id else 0
+            folio.invoice_amount = (
+                folio.invoice_id.amount_total
+                if folio.invoice_id
+                else 0.0
+            )
 
     def _populate_from_reservation(self):
         for folio in self:

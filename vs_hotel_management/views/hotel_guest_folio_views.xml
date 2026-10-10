@@ -56,7 +56,7 @@
                             string="Create Invoice"
                             type="object"
                             class="btn-primary"
-                            invisible="invoice_id or state in ('draft', 'cancelled')"/>
+                            invisible="invoice_id"/>
 
                     <button name="action_send_folio_email"
                             string="Send by Email"
@@ -78,10 +78,15 @@
                                 type="object"
                                 class="oe_stat_button"
                                 icon="fa-file-text-o"
-                                invisible="not invoice_id">
-                            <field name="invoice_count"
-                                   widget="statinfo"
-                                   string="Invoice"/>
+                                invisible="invoice_amount == 0">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="invoice_amount"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                </span>
+                                <span class="o_stat_text">Invoice</span>
+                            </div>
                         </button>
 
                     </div>
