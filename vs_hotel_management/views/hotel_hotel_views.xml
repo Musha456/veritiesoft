@@ -439,7 +439,7 @@
                                     <field name="allow_early_checkin"
                                            widget="boolean_toggle"/>
 
-                                    <field name="allow_late_checkout"
+                                    <field name="allow_early_checkout"
                                            widget="boolean_toggle"/>
 
                                     <field name="allow_overbooking"

@@ -314,8 +314,6 @@ class HotelRoomBooking(models.Model):
                 'vs_hotel_management.mark_room_dirty_on_checkout'
             )
 
-            print("Mark room dirty on checkout", mark_room_dirty_on_checkout)
-
             if mark_room_dirty_on_checkout:
                 booking.room_id.write({"status": "dirty"})
             else:

@@ -209,11 +209,15 @@ class HotelHotel(models.Model):
     # ---------------------------------------------------------
 
     allow_early_checkin = fields.Boolean(
+        string="Allow Early Checkin",
         default=False,
+        help="Allow guests to check in before their scheduled checkin time.",
     )
 
-    allow_late_checkout = fields.Boolean(
+    allow_early_checkout = fields.Boolean(
+        string="Allow Early Checkout",
         default=False,
+        help="Allow guests to check out before their scheduled checkout time.",
     )
 
     allow_overbooking = fields.Boolean(

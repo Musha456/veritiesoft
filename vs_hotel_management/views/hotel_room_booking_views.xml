@@ -48,43 +48,63 @@
 
                 <header>
 
-                    <button name="action_check_in"
-                            string="Check In"
-                            type="object"
-                            class="btn-primary"
-                            invisible="state != 'reserved'"/>
+                    <!--                    <button name="action_check_in"-->
+                    <!--                            string="Check In"-->
+                    <!--                            type="object"-->
+                    <!--                            class="btn-primary"-->
+                    <!--                            invisible="state != 'reserved'"/>-->
 
-                    <button name="action_check_out"
-                            string="Check Out"
-                            type="object"
-                            class="btn-primary"
-                            invisible="state != 'checked_in'"/>
+                    <!--                    <button name="action_check_out"-->
+                    <!--                            string="Check Out"-->
+                    <!--                            type="object"-->
+                    <!--                            class="btn-primary"-->
+                    <!--                            invisible="state != 'checked_in'"/>-->
 
-                    <button name="action_release"
-                            string="Release"
-                            type="object"
-                            class="btn-secondary"
-                            invisible="state not in ('reserved', 'checked_in')"/>
+                    <!--                    <button name="action_release"-->
+                    <!--                            string="Release"-->
+                    <!--                            type="object"-->
+                    <!--                            class="btn-secondary"-->
+                    <!--                            invisible="state not in ('reserved', 'checked_in')"/>-->
 
-                    <button name="action_cancel"
-                            string="Cancel"
-                            type="object"
-                            class="btn-secondary"
-                            invisible="state != 'reserved'"/>
-
-                    <field name="state"
-                           widget="statusbar"
-                           statusbar_visible="
-                           reserved,
-                           checked_in,
-                           checked_out,
-                           released,
-                           completed,
-                           cancelled"/>
+                    <!--                    <button name="action_cancel"-->
+                    <!--                            string="Cancel"-->
+                    <!--                            type="object"-->
+                    <!--                            class="btn-secondary"-->
+                    <!--                            invisible="state != 'reserved'"/>-->
 
                 </header>
 
                 <sheet>
+
+                    <widget name="web_ribbon"
+                            title="Reserved"
+                            bg_color="text-bg-primary"
+                            invisible="state != 'reserved'"/>
+
+                    <widget name="web_ribbon"
+                            title="Checked In"
+                            bg_color="text-bg-success"
+                            invisible="state != 'checked_in'"/>
+
+                    <widget name="web_ribbon"
+                            title="Checked Out"
+                            bg_color="text-bg-info"
+                            invisible="state != 'checked_out'"/>
+
+                    <widget name="web_ribbon"
+                            title="Released"
+                            bg_color="text-bg-warning"
+                            invisible="state != 'released'"/>
+
+                    <widget name="web_ribbon"
+                            title="Completed"
+                            bg_color="text-bg-success"
+                            invisible="state != 'completed'"/>
+
+                    <widget name="web_ribbon"
+                            title="Cancelled"
+                            bg_color="text-bg-danger"
+                            invisible="state != 'cancelled'"/>
 
                     <div class="oe_title">
 
@@ -178,7 +198,7 @@
                         string="Draft Bookings"
                         domain="[('state', '=', 'draft')]"/>
 
-                 <filter name="active_bookings"
+                <filter name="active_bookings"
                         string="Active Bookings"
                         domain="[('state', 'in', ('reserved', 'checked_in'))]"/>
 

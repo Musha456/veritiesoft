@@ -52,7 +52,7 @@
 
             <field name="allow_early_checkin">1</field>
 
-            <field name="allow_late_checkout">1</field>
+            <field name="allow_early_checkout">1</field>
 
             <field name="require_guest_identification">1</field>
 

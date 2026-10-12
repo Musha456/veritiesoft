@@ -337,19 +337,52 @@ class HotelRoom(models.Model):
             },
         }
 
+    # ---------------------------------------------------------
+    # ROOM OPERATION VALIDATION
+    # ---------------------------------------------------------
+
+    def _check_active_reservation_booking(self):
+        RoomBooking = self.env["hotel.room.booking"]
+
+        for room in self:
+            booking = RoomBooking.search(
+                [
+                    ("room_id", "=", room.id),
+                    (
+                        "reservation_id.state",
+                        "in",
+                        ["reserved", "checked_in"],
+                    ),
+                ],
+                limit=1,
+            )
+
+            if booking:
+                reservation = booking.reservation_id
+
+                raise UserError(
+                    _(
+                        "The status of room %(room)s cannot be changed "
+                        "because it is linked to reservation %(reservation)s "
+                        "in the '%(state)s' state."
+                    )
+                    % {
+                        "room": room.display_name,
+                        "reservation": reservation.display_name,
+                        "state": reservation.state,
+                    }
+                )
+
+    # ---------------------------------------------------------
+    # MARK AVAILABLE
+    # ---------------------------------------------------------
+
     def action_mark_available(self):
         Housekeeping = self.env["hotel.housekeeping"]
 
-        for room in self:
-            # if room.status != "cleaning":
-            #     raise UserError(
-            #         _(
-            #             "Room %s can only be marked available "
-            #             "after cleaning."
-            #         )
-            #         % room.display_name
-            #     )
+        self._check_active_reservation_booking()
 
+        for room in self:
             if room.status == "cleaning":
                 task = Housekeeping.search(
                     [
@@ -365,10 +398,24 @@ class HotelRoom(models.Model):
 
             room.status = "available"
 
+            if room.status == "dirty":
+                raise UserError(
+                    _(
+                        "Room %s cannot be marked available because its current status is Dirty."
+                    )
+                    % room.display_name
+                )
+
         return True
+
+    # ---------------------------------------------------------
+    # START MAINTENANCE
+    # ---------------------------------------------------------
 
     def action_start_maintenance(self):
         self.ensure_one()
+
+        self._check_active_reservation_booking()
 
         if self.status in ("cleaning", "maintenance"):
             raise UserError(
@@ -409,8 +456,18 @@ class HotelRoom(models.Model):
             },
         }
 
+    # ---------------------------------------------------------
+    # MARK OUT OF ORDER
+    # ---------------------------------------------------------
+
     def action_mark_out_of_order(self):
-        self.write({"status": "out_of_order"})
+        self._check_active_reservation_booking()
+
+        self.write({
+            "status": "out_of_order",
+        })
+
+        return True
 
     def action_finish_maintenance(self):
         Maintenance = self.env["hotel.maintenance"]

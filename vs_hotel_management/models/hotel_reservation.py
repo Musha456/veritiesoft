@@ -460,10 +460,6 @@ class HotelReservation(models.Model):
         return minimum_stay, maximum_stay
 
     # ---------------------------------------------------------
-    # Compute
-    # ---------------------------------------------------------
-
-    # ---------------------------------------------------------
     # Onchange
     # ---------------------------------------------------------
 
@@ -477,7 +473,7 @@ class HotelReservation(models.Model):
                 if record.check_out:
                     line.check_out = record.check_out
 
-        self._onchange_hotel_id()
+        # self._onchange_hotel_id()
 
     @api.onchange("hotel_id")
     def _onchange_hotel_id(self):
@@ -629,17 +625,34 @@ class HotelReservation(models.Model):
             reservation.subtotal = sum(lines.mapped("subtotal"))
             reservation.total_amount = sum(lines.mapped("total"))
 
-    @api.depends("line_ids", "line_ids.room_booking_id", "line_ids.room_id", "line_ids.adults", "line_ids.infants",
-                 "line_ids.children")
+    @api.depends(
+        "line_ids",
+        "line_ids.room_booking_id",
+        "line_ids.room_id",
+        "line_ids.adults",
+        "line_ids.infants",
+        "line_ids.children",
+    )
     def _compute_statistics(self):
         for reservation in self:
             lines = reservation.line_ids
-            reservation.room_booking_count = len(lines.mapped("room_id"))
-            reservation.room_count = len(lines.mapped("room_id"))
+
+            reservation.room_booking_count = len(
+                lines.mapped("room_booking_id")
+            )
+            reservation.room_count = len(
+                lines.mapped("room_id")
+            )
+
             reservation.adult_count = sum(lines.mapped("adults"))
             reservation.child_count = sum(lines.mapped("children"))
             reservation.infant_count = sum(lines.mapped("infants"))
-            reservation.guest_count = (reservation.adult_count + reservation.child_count + reservation.infant_count)
+
+            reservation.guest_count = (
+                    reservation.adult_count
+                    + reservation.child_count
+                    + reservation.infant_count
+            )
 
     def action_open_room_bookings(self):
         self.ensure_one()
@@ -751,10 +764,31 @@ class HotelReservation(models.Model):
 
         config = self.env["ir.config_parameter"].sudo()
 
+        # ---------------------------------------------------------
+        # DEFAULT HOTEL
+        # ---------------------------------------------------------
+
         hotel_id = (
                 res.get("hotel_id")
                 or self.env.context.get("default_hotel_id")
         )
+
+        if not hotel_id and "hotel_id" in fields_list:
+            use_default_hotel = (
+                    config.get_param(
+                        "vs_hotel_management.use_default_hotel",
+                        default="False",
+                    ) == "True"
+            )
+
+            if use_default_hotel:
+                configured_hotel_id = config.get_param(
+                    "vs_hotel_management.default_hotel_id"
+                )
+
+                if configured_hotel_id:
+                    hotel_id = int(configured_hotel_id)
+                    res["hotel_id"] = hotel_id
 
         hotel = (
             self.env["hotel.hotel"].browse(hotel_id).exists()
@@ -762,9 +796,13 @@ class HotelReservation(models.Model):
             else self.env["hotel.hotel"]
         )
 
+        # ---------------------------------------------------------
+        # CHECK-IN AND CHECK-OUT TIMES
+        # ---------------------------------------------------------
+
         checkin_time = (
             hotel.checkin_time
-            if hotel and hotel.checkin_time > 00
+            if hotel and hotel.checkin_time > 0
             else float(
                 config.get_param(
                     "vs_hotel_management.checkin_time_default",
@@ -775,7 +813,7 @@ class HotelReservation(models.Model):
 
         checkout_time = (
             hotel.checkout_time
-            if hotel and hotel.checkout_time > 00
+            if hotel and hotel.checkout_time > 0
             else float(
                 config.get_param(
                     "vs_hotel_management.checkout_time_default",
@@ -783,6 +821,10 @@ class HotelReservation(models.Model):
                 )
             )
         )
+
+        # ---------------------------------------------------------
+        # HOTEL TIMEZONE
+        # ---------------------------------------------------------
 
         timezone_name = (
             hotel.timezone
@@ -796,6 +838,10 @@ class HotelReservation(models.Model):
             raise ValidationError(
                 _("Invalid hotel timezone: %s") % timezone_name
             )
+
+        # ---------------------------------------------------------
+        # CONVERT DECIMAL HOURS TO TIME
+        # ---------------------------------------------------------
 
         def to_time(value, label):
             if not 0 <= value < 24:
@@ -822,11 +868,19 @@ class HotelReservation(models.Model):
             _("Default Check-out Time"),
         )
 
+        # ---------------------------------------------------------
+        # DEFAULT DATES
+        # ---------------------------------------------------------
+
         today = datetime.datetime.now(
             pytz.UTC
         ).astimezone(hotel_timezone).date()
 
         tomorrow = today + relativedelta(days=1)
+
+        # ---------------------------------------------------------
+        # CONVERT HOTEL LOCAL TIME TO UTC
+        # ---------------------------------------------------------
 
         def to_utc(local_date, local_time):
             local_datetime = datetime.datetime.combine(
@@ -899,10 +953,11 @@ class HotelReservation(models.Model):
             "check_in",
             "check_out",
             "partner_id",
+            "booking_date",
         }
-
+        
         for reservation in self:
-
+            
             # ---------------------------------------------------------
             # Reservation-level fields
             # ---------------------------------------------------------
@@ -997,27 +1052,23 @@ class HotelReservation(models.Model):
     # =========================================================
 
     def action_confirm(self):
-        """
-        Confirm the reservation.
-
-        Confirmation validates the reservation but does not
-        occupy or reserve physical rooms yet.
-        """
-
+        """Confirm the reservation without creating room bookings."""
         for reservation in self:
-
             if reservation.state != "draft":
-                raise UserError(_("Only draft reservations can be confirmed."))
+                raise UserError(
+                    _("Only draft reservations can be confirmed.")
+                )
 
             if not reservation.line_ids:
-                raise ValidationError(_("A reservation must contain at least one room before it can be confirmed."))
+                raise ValidationError(
+                    _("A reservation must contain at least one room before it can be confirmed.")
+                )
 
-            # Lock room rows to prevent concurrent booking race conditions
             room_ids = reservation.line_ids.mapped("room_id").ids
             if room_ids:
                 self.env.cr.execute(
                     "SELECT id FROM hotel_room WHERE id IN %s FOR UPDATE",
-                    (tuple(room_ids),)
+                    (tuple(room_ids),),
                 )
 
             reservation._validate_reservation()
@@ -1028,8 +1079,6 @@ class HotelReservation(models.Model):
                         _("Each reservation line must have a room.")
                     )
 
-                booking = line._create_room_booking()
-
             reservation.state = "confirmed"
 
         return True
@@ -1039,49 +1088,122 @@ class HotelReservation(models.Model):
     # =========================================================
 
     def action_reserve(self):
-        """
-        Reserve all rooms belonging to the reservation.
+        """Validate room availability and reserve the selected rooms."""
 
-        Each reservation line creates its own room booking.
-        """
+        RoomBooking = self.env["hotel.room.booking"]
 
         for reservation in self:
-
             if reservation.state not in ("confirmed", "draft"):
-                raise UserError(_("Only draft or confirmed reservations can be reserved."))
-
-            if not reservation.line_ids:
-                raise UserError(_("At least one reservation line is required before reserving the reservation."))
-
-            # Lock room rows to prevent concurrent booking race conditions
-            room_ids = reservation.line_ids.mapped("room_id").ids
-            if room_ids:
-                self.env.cr.execute(
-                    "SELECT id FROM hotel_room WHERE id IN %s FOR UPDATE",
-                    (tuple(room_ids),)
+                raise UserError(
+                    _("Only draft or confirmed reservations can be reserved.")
                 )
 
+            if not reservation.line_ids:
+                raise UserError(
+                    _(
+                        "At least one reservation line is required "
+                        "before reserving the reservation."
+                    )
+                )
+
+            # Ensure every line has a room and valid dates.
+            for line in reservation.line_ids:
+                if not line.room_id:
+                    raise ValidationError(
+                        _("Each reservation line must have a room.")
+                    )
+
+                if not line.check_in or not line.check_out:
+                    raise ValidationError(
+                        _("Check-in and check-out dates are required.")
+                    )
+
+                if line.check_out <= line.check_in:
+                    raise ValidationError(
+                        _("Check-out must be later than check-in.")
+                    )
+
+            # Lock selected rooms to reduce concurrent booking conflicts.
+            room_ids = reservation.line_ids.mapped("room_id").ids
+
+            if room_ids:
+                self.env.cr.execute(
+                    """
+                    SELECT id
+                    FROM hotel_room
+                    WHERE id IN %s
+                    ORDER BY id
+                        FOR UPDATE
+                    """,
+                    (tuple(room_ids),),
+                )
+
+                # Refresh status after acquiring the database locks.
+                rooms = reservation.line_ids.mapped("room_id")
+                rooms.invalidate_recordset(["status"])
+
+            # Validate reservation dates, capacity, and other existing rules.
             reservation._validate_reservation()
 
-            created_bookings = self.env["hotel.room.booking"]
-
+            # Validate ALL rooms before creating any bookings.
             for line in reservation.line_ids:
-                booking = line._create_room_booking()
+                room = line.room_id
 
-                created_bookings |= booking
+                if room.status != "available":
+                    raise UserError(
+                        _(
+                            "Room %(room)s is not available. "
+                            "Its current status is '%(status)s'. "
+                            "Please select an available room."
+                        )
+                        % {
+                            "room": room.display_name,
+                            "status": room.status,
+                        }
+                    )
 
-                line.room_id.write({
-                    "status": "reserved",
-                })
+                # Find active bookings for this room that overlap
+                # the requested stay in another reservation.
+                overlapping_booking = RoomBooking.search(
+                    [
+                        ("room_id", "=", room.id),
+                        ("reservation_id", "!=", reservation.id),
+                        ("state", "in", ["reserved", "checked_in"]),
+                        ("check_in", "<", line.check_out),
+                        ("check_out", ">", line.check_in),
+                    ],
+                    limit=1,
+                )
+
+                if overlapping_booking:
+                    raise UserError(
+                        _(
+                            "Room %(room)s is already allocated to another "
+                            "reservation during the requested dates."
+                        )
+                        % {
+                            "room": room.display_name,
+                        }
+                    )
+
+            # All rooms have passed validation. Create missing bookings.
+            reservation.line_ids._create_room_booking()
+
+            # Change room statuses only after validation and booking creation.
+            reservation.line_ids.mapped("room_id").write({
+                "status": "reserved",
+            })
 
             reservation.state = "reserved"
+
+        return True
 
     # =========================================================
     # CHECK IN
     # =========================================================
 
     def action_check_in(self):
-        """Check in all reserved room bookings and create/open the guest folio."""
+        """Check in reserved room bookings and create the guest folio."""
         config = self.env["ir.config_parameter"].sudo()
 
         global_allow_early_checkin = (
@@ -1099,25 +1221,42 @@ class HotelReservation(models.Model):
 
             hotel = reservation.hotel_id
 
+            # Early check-in is allowed if enabled at either level.
+            hotel_allow_early_checkin = (
+                hotel.allow_early_checkin if hotel else False
+            )
             allow_early_checkin = (
-                hotel.allow_early_checkin
-                if hotel
-                else global_allow_early_checkin
+                    hotel_allow_early_checkin or global_allow_early_checkin
             )
 
+            # -------------------------------------------------
+            # Validate Scheduled Check-in Time
+            # -------------------------------------------------
             if not allow_early_checkin and reservation.check_in:
-                hotel_timezone = pytz.timezone(
-                    hotel.tz or self.env.user.tz or "UTC"
+                timezone_name = (
+                    hotel.timezone
+                    if hotel and hotel.timezone
+                    else "UTC"
                 )
 
-                current_datetime = fields.Datetime.now()
+                try:
+                    hotel_timezone = pytz.timezone(timezone_name)
+                except pytz.UnknownTimeZoneError:
+                    raise UserError(
+                        _("Invalid hotel timezone: %s") % timezone_name
+                    )
+
+                current_datetime = fields.Datetime.to_datetime(
+                    fields.Datetime.now()
+                )
+                scheduled_checkin = fields.Datetime.to_datetime(
+                    reservation.check_in
+                )
+
                 current_local_time = pytz.UTC.localize(
                     current_datetime
                 ).astimezone(hotel_timezone)
 
-                scheduled_checkin = fields.Datetime.to_datetime(
-                    reservation.check_in
-                )
                 scheduled_local_time = pytz.UTC.localize(
                     scheduled_checkin
                 ).astimezone(hotel_timezone)
@@ -1125,21 +1264,30 @@ class HotelReservation(models.Model):
                 if current_local_time < scheduled_local_time:
                     raise UserError(
                         _(
-                            "Early check-in is not allowed for this hotel. "
-                            "The scheduled check-in time is %s."
-                        )
-                        % scheduled_local_time.strftime("%Y-%m-%d %H:%M:%S")
+                            "Early check-in is not allowed. "
+                            "The scheduled check-in time is %(checkin)s "
+                            "(hotel local time)."
+                        ) % {
+                            "checkin": scheduled_local_time.strftime(
+                                "%Y-%m-%d %H:%M:%S"
+                            ),
+                        }
                     )
 
-            # Lock room rows to prevent concurrent booking conflicts.
+            # -------------------------------------------------
+            # Lock Room Rows
+            # -------------------------------------------------
             room_ids = reservation.line_ids.mapped("room_id").ids
+
             if room_ids:
                 self.env.cr.execute(
                     "SELECT id FROM hotel_room WHERE id IN %s FOR UPDATE",
                     (tuple(room_ids),),
                 )
 
-            # Validate room availability and operational status.
+            # -------------------------------------------------
+            # Validate Reservation
+            # -------------------------------------------------
             reservation._validate_reservation(for_check_in=True)
 
             bookings = reservation.line_ids.mapped(
@@ -1153,13 +1301,19 @@ class HotelReservation(models.Model):
                     _("There are no reserved room bookings to check in.")
                 )
 
-            # 1. Check in room bookings.
+            # -------------------------------------------------
+            # Check In Room Bookings
+            # -------------------------------------------------
             bookings.action_check_in()
 
-            # 2. Create or open the guest folio.
+            # -------------------------------------------------
+            # Create or Open Guest Folio
+            # -------------------------------------------------
             reservation._create_guest_folio()
 
-            # 3. Update reservation state.
+            # -------------------------------------------------
+            # Update Reservation State
+            # -------------------------------------------------
             reservation.state = "checked_in"
 
         return True
@@ -1172,9 +1326,9 @@ class HotelReservation(models.Model):
         """Check out all rooms belonging to the reservation."""
         config = self.env["ir.config_parameter"].sudo()
 
-        global_allow_late_checkout = (
+        global_allow_early_checkout = (
                 config.get_param(
-                    "vs_hotel_management.allow_late_checkout",
+                    "vs_hotel_management.allow_early_checkout",
                     default="False",
                 ) == "True"
         )
@@ -1194,40 +1348,65 @@ class HotelReservation(models.Model):
 
             hotel = reservation.hotel_id
 
-            allow_late_checkout = (
-                hotel.allow_late_checkout
-                if hotel
-                else global_allow_late_checkout
+            # -------------------------------------------------
+            # Early Checkout Configuration
+            # -------------------------------------------------
+            hotel_allow_early_checkout = (
+                hotel.allow_early_checkout if hotel else False
             )
 
-            if not allow_late_checkout and reservation.check_out:
-                hotel_timezone = pytz.timezone(
-                    (hotel.tz if hotel else False)
-                    or self.env.user.tz
-                    or "UTC"
+            allow_early_checkout = (
+                    hotel_allow_early_checkout or global_allow_early_checkout
+            )
+
+            # -------------------------------------------------
+            # Validate Scheduled Checkout Time
+            # -------------------------------------------------
+            if not allow_early_checkout and reservation.check_out:
+                timezone_name = (
+                    hotel.timezone
+                    if hotel and hotel.timezone
+                    else "UTC"
                 )
 
-                current_datetime = fields.Datetime.now()
+                try:
+                    hotel_timezone = pytz.timezone(timezone_name)
+                except pytz.UnknownTimeZoneError:
+                    raise UserError(
+                        _("Invalid hotel timezone: %s") % timezone_name
+                    )
+
+                current_datetime = fields.Datetime.to_datetime(
+                    fields.Datetime.now()
+                )
+                scheduled_checkout = fields.Datetime.to_datetime(
+                    reservation.check_out
+                )
+
                 current_local_time = pytz.UTC.localize(
                     current_datetime
                 ).astimezone(hotel_timezone)
 
-                scheduled_checkout = fields.Datetime.to_datetime(
-                    reservation.check_out
-                )
                 scheduled_local_time = pytz.UTC.localize(
                     scheduled_checkout
                 ).astimezone(hotel_timezone)
 
-                if current_local_time > scheduled_local_time:
+                if current_local_time < scheduled_local_time:
                     raise UserError(
                         _(
-                            "Late check-out is not allowed for this hotel. "
-                            "The scheduled check-out time is %s."
-                        )
-                        % scheduled_local_time.strftime("%Y-%m-%d %H:%M:%S")
+                            "Early checkout is not allowed. "
+                            "Checkout is available from %(checkout)s "
+                            "(hotel local time)."
+                        ) % {
+                            "checkout": scheduled_local_time.strftime(
+                                "%Y-%m-%d %H:%M:%S"
+                            ),
+                        }
                     )
 
+            # -------------------------------------------------
+            # Check Out Room Bookings
+            # -------------------------------------------------
             bookings = reservation.line_ids.mapped(
                 "room_booking_id"
             ).filtered(
@@ -1239,23 +1418,24 @@ class HotelReservation(models.Model):
                     _("There are no checked-in rooms to check out.")
                 )
 
-            # 1. Check out room bookings.
             bookings.action_check_out()
 
-            # 2. Find the active guest folio.
+            # -------------------------------------------------
+            # Finalize Guest Folio
+            # -------------------------------------------------
             folio = reservation.folio_ids.filtered(
                 lambda item: item.state in ("open", "partially_paid")
             )[:1]
 
             if folio:
-                # 3. Add final service charges.
                 reservation._create_folio_service_charges(folio)
 
-                # 4. Create the invoice when automatic invoicing is enabled.
                 if auto_create_invoice and not folio.invoice_id:
                     folio.action_create_invoice()
 
-            # 5. Update reservation state.
+            # -------------------------------------------------
+            # Update Reservation State
+            # -------------------------------------------------
             reservation.state = "checked_out"
 
         return True

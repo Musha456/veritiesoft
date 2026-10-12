@@ -51,30 +51,16 @@
             <form string="Rooms">
                 <header>
 
-                    <div groups="vs_hotel_management.group_hotel_room_manager">
-                        <button name="action_mark_reserved"
-                                type="object"
-                                string="Reserve"
-                                class="btn-primary"
-                                invisible="status != 'available'"/>
-
-<!--                        <button name="action_check_in"-->
-<!--                                type="object"-->
-<!--                                string="Check In"-->
-<!--                                class="btn-primary"-->
-<!--                                invisible="status != 'reserved'"/>-->
-
-<!--                        <button name="action_mark_dirty"-->
-<!--                                type="object"-->
-<!--                                string="Check Out"-->
-<!--                                class="btn-primary"-->
-<!--                                invisible="status != 'occupied'"/>-->
+                    <div groups="vs_hotel_management.group_hotel_room_manager" class="d-flex flex-wrap gap-2">
 
                         <button name="action_start_cleaning" string="Start Cleaning" type="object" class="btn-primary"
                                 invisible="status != 'dirty'"/>
 
-                        <button name="action_mark_available" string="Mark Available" type="object" class="btn-primary"
-                                invisible="status != 'cleaning'"/>
+                        <button name="action_mark_available"
+                                string="Mark Available"
+                                type="object"
+                                class="btn-primary"
+                                invisible="status in ['available','maintenance','dirty']"/>
 
                         <button name="action_start_maintenance"
                                 type="object"
@@ -90,9 +76,9 @@
 
                         <button name="action_finish_maintenance"
                                 type="object"
-                                string="Finish"
+                                string="Finish Maintenance"
                                 class="btn-success"
-                                invisible="status not in ['maintenance','out_of_order']"/>
+                                invisible="status != 'maintenance'"/>
 
                     </div>
                     <field name="status" widget="statusbar"/>
@@ -524,9 +510,9 @@
                                 <hr class="my-2"/>
 
                                 <!-- Amenities -->
-<!--                                <div class="hotel_room_amenities">-->
-<!--                                    <field name="amenity_groups_html" widget="html" readonly="1" nolabel="1"/>-->
-<!--                                </div>-->
+                                <!--                                <div class="hotel_room_amenities">-->
+                                <!--                                    <field name="amenity_groups_html" widget="html" readonly="1" nolabel="1"/>-->
+                                <!--                                </div>-->
                             </div>
 
                         </div>

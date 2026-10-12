@@ -59,9 +59,10 @@
 
                             </setting>
 
-                            <setting string="Allow Late Check-out">
+                            <setting string="Allow Early Checkout"
+                                     help="Allow checkout before the scheduled checkout time by default.">
 
-                                <field name="allow_late_checkout"/>
+                                <field name="allow_early_checkout"/>
 
                             </setting>
 
@@ -104,6 +105,51 @@
                                      help="Maximum number of nights allowed for a reservation.">
                                 <field name="hotel_maximum_stay"/>
                             </setting>
+
+                            <setting id="setting_default_hotel" string="Default Hotel">
+                                <field name="use_default_hotel"/>
+
+                                <div class="content-group" invisible="not use_default_hotel">
+                                    <field name="configured_hotel_id"
+                                           required="use_default_hotel"/>
+                                </div>
+                            </setting>
+
+                            <setting id="setting_default_building"
+                                     string="Default Building"
+                                     invisible="not use_default_hotel">
+                                <field name="use_default_building"
+                                       invisible="not use_default_hotel"/>
+
+                                <div class="content-group"
+                                     invisible="not use_default_hotel or not use_default_building">
+                                    <field name="configured_building_id"
+                                           required="use_default_building"
+                                           domain="[('hotel_id', '=', configured_hotel_id)]"/>
+                                </div>
+                            </setting>
+
+                            <setting id="setting_default_floor"
+                                     string="Default Floor"
+                                     invisible="not use_default_hotel or not use_default_building">
+                                <field name="use_default_floor"
+                                       invisible="not use_default_hotel or not use_default_building"/>
+
+                                <div class="content-group"
+                                     invisible="not use_default_hotel or not use_default_building or not use_default_floor">
+                                    <field name="configured_floor_id"
+                                           required="use_default_floor"/>
+                                </div>
+                            </setting>
+
+                            <setting
+                                    id="allow_room_add_reserved_setting"
+                                    string="Allow Adding Rooms to Reserved Reservations"
+                                    help="Allow users to add room lines to reservations in the Reserved state. Newly added lines will receive room bookings."
+                            >
+                                <field name="allow_room_add_reserved"/>
+                            </setting>
+
                         </block>
 
                     </app>
