@@ -328,12 +328,6 @@
                                         Location
                                     </th>
 
-                                    <th class="text-center"
-                                        style="padding: 8px 7px;
-                                               border: none;">
-                                        Nights
-                                    </th>
-
                                     <th class="text-end"
                                         style="padding: 8px 7px;
                                                border: none;">
@@ -370,7 +364,7 @@
                                                border: none;
                                                color: #1f2937;">
                                         <strong>
-                                            <span t-field="line.room_id.display_name"/>
+                                            <span t-field="line.room_id.name"/>
                                         </strong>
                                     </td>
 
@@ -390,13 +384,6 @@
                                             <span t-field="line.floor_id.name"/>
                                         </t>
                                     </td>
-
-                                    <td class="text-center"
-                                        style="padding: 8px 7px;
-                                               border: none;">
-                                        <span t-field="line.night_count"/>
-                                    </td>
-
                                     <td class="text-end"
                                         style="padding: 8px 7px;
                                                border: none;
@@ -678,9 +665,9 @@
 
                                 <li style="margin-bottom: 3px;">
                                     Check-in time is from
-                                    <span t-field="o.hotel_id.checkin_time"/>
+                                    <span t-field="o.checkin_time_default"/>
                                     and check-out is until
-                                    <span t-field="o.hotel_id.checkout_time"/>.
+                                    <span t-field="o.checkout_time_default"/>.
                                 </li>
 
                                 <li style="margin-bottom: 3px;">

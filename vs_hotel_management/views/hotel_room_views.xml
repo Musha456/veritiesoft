@@ -60,13 +60,19 @@
                                 string="Mark Available"
                                 type="object"
                                 class="btn-primary"
-                                invisible="status in ['available','maintenance','dirty']"/>
+                                invisible="status in ['available','maintenance', 'cleaning', 'dirty']"/>
+
+                        <button name="action_mark_available"
+                                string="Finish Cleaning"
+                                type="object"
+                                class="btn-success"
+                                invisible="status != 'cleaning'"/>
 
                         <button name="action_start_maintenance"
                                 type="object"
                                 string="Maintenance"
                                 class="btn-secondary"
-                                invisible="status in ['maintenance','occupied','out_of_order','cleaning']"/>
+                                invisible="status in ['maintenance','occupied','cleaning']"/>
 
                         <button name="action_mark_out_of_order"
                                 type="object"
@@ -80,17 +86,25 @@
                                 class="btn-success"
                                 invisible="status != 'maintenance'"/>
 
+                        <button name="action_mark_dirty"
+                                type="object"
+                                string="Mark Dirty"
+                                class="btn-warning"
+                                invisible="status in ['dirty','reserved','occupied','maintenance','cleaning']"/>
+
                     </div>
                     <field name="status" widget="statusbar"/>
 
                 </header>
+
                 <sheet>
                     <div class="oe_button_box" name="button_box">
 
                         <button name="action_view_reservations"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-calendar-check-o">
+                                icon="fa-calendar-check-o"
+                                invisible="reservation_count == 0">
 
                             <field name="reservation_count"
                                    widget="statinfo"
@@ -101,7 +115,8 @@
                         <button name="action_view_housekeeping"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-broom">
+                                icon="fa-tasks"
+                                invisible="housekeeping_count == 0">
 
                             <field name="housekeeping_count"
                                    widget="statinfo"
@@ -112,7 +127,8 @@
                         <button name="action_view_maintenance"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-wrench">
+                                icon="fa-wrench"
+                                invisible="maintenance_count == 0">
 
                             <field name="maintenance_count"
                                    widget="statinfo"

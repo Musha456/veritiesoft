@@ -142,15 +142,72 @@
                                 </div>
                             </setting>
 
-                            <setting
-                                    id="allow_room_add_reserved_setting"
-                                    string="Allow Adding Rooms to Reserved Reservations"
-                                    help="Allow users to add room lines to reservations in the Reserved state. Newly added lines will receive room bookings."
-                            >
-                                <field name="allow_room_add_reserved"/>
+                            <!--                            <setting-->
+                            <!--                                    id="allow_room_add_reserved_setting"-->
+                            <!--                                    string="Allow Adding Rooms to Reserved Reservations"-->
+                            <!--                                    help="Allow users to add room lines to reservations in the Reserved state. Newly added lines will receive room bookings."-->
+                            <!--                            >-->
+                            <!--                                <field name="allow_room_add_reserved"/>-->
+                            <!--                            </setting>-->
+
+                        </block>
+
+                        <block title="Housekeeping and Maintenance">
+                            <setting id="auto_start_housekeeping"
+                                     string="Automatically Start Housekeeping"
+                                     help="Automatically start scheduled housekeeping tasks when their scheduled time is reached.">
+                                <field name="auto_start_housekeeping"/>
+                            </setting>
+
+                            <setting id="auto_start_maintenance"
+                                     string="Automatically Start Maintenance"
+                                     help="Automatically start scheduled maintenance tasks when their scheduled time is reached.">
+                                <field name="auto_start_maintenance"/>
+                            </setting>
+                        </block>
+
+                        <block title="Notifications">
+
+                            <setting string="Email Notifications"
+                                     help="Control email notifications for housekeeping and maintenance tasks.">
+                                <div class="content-group">
+                                    <field name="email_housekeeping_assigned"/>
+                                    <field name="email_housekeeping_cancelled"/>
+                                    <field name="email_maintenance_assigned"/>
+                                    <field name="email_maintenance_cancelled"/>
+                                </div>
+                            </setting>
+
+                            <setting string="WhatsApp Notifications"
+                                     help="Send task notifications through Meta WhatsApp Business Cloud API.">
+                                <field name="whatsapp_notifications_enabled"/>
+                                <div class="content-group"
+                                     invisible="not whatsapp_notifications_enabled">
+                                    <group>
+                                        <field name="whatsapp_housekeeping_assigned"/>
+                                        <field name="whatsapp_housekeeping_cancelled"/>
+                                        <field name="whatsapp_maintenance_assigned"/>
+                                        <field name="whatsapp_maintenance_cancelled"/>
+                                    </group>
+                                    <group string="Meta API Configuration">
+                                        <field name="whatsapp_access_token" password="True"/>
+                                        <field name="whatsapp_phone_number_id"/>
+                                        <field name="whatsapp_business_account_id"/>
+                                        <field name="whatsapp_api_version"/>
+                                        <field name="whatsapp_template_name"/>
+                                        <field name="whatsapp_template_language"/>
+                                    </group>
+
+                                    <button name="action_test_whatsapp_connection"
+                                            type="object"
+                                            string="Test Connection"
+                                            class="btn-primary"
+                                            icon="fa-plug"/>
+                                </div>
                             </setting>
 
                         </block>
+
 
                     </app>
 

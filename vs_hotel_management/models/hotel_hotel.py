@@ -186,39 +186,39 @@ class HotelHotel(models.Model):
     # Reservation
     # ---------------------------------------------------------
 
-    checkin_time = fields.Float(
-        string="Check-in Time",
-        default=14.0,
-    )
-
-    checkout_time = fields.Float(
-        string="Check-out Time",
-        default=12.0,
-    )
-
-    minimum_stay = fields.Integer(
-        default=1, string="Min Stay(Day)"
-    )
-
-    maximum_stay = fields.Integer(
-        default=30, string="Max Stay(Day)"
-    )
+    # checkin_time = fields.Float(
+    #     string="Check-in Time",
+    #     default=14.0,
+    # )
+    #
+    # checkout_time = fields.Float(
+    #     string="Check-out Time",
+    #     default=12.0,
+    # )
+    #
+    # minimum_stay = fields.Integer(
+    #     default=1, string="Min Stay(Day)"
+    # )
+    #
+    # maximum_stay = fields.Integer(
+    #     default=30, string="Max Stay(Day)"
+    # )
 
     # ---------------------------------------------------------
     # Booking Rules
     # ---------------------------------------------------------
 
-    allow_early_checkin = fields.Boolean(
-        string="Allow Early Checkin",
-        default=False,
-        help="Allow guests to check in before their scheduled checkin time.",
-    )
-
-    allow_early_checkout = fields.Boolean(
-        string="Allow Early Checkout",
-        default=False,
-        help="Allow guests to check out before their scheduled checkout time.",
-    )
+    # allow_early_checkin = fields.Boolean(
+    #     string="Allow Early Checkin",
+    #     default=False,
+    #     help="Allow guests to check in before their scheduled checkin time.",
+    # )
+    #
+    # allow_early_checkout = fields.Boolean(
+    #     string="Allow Early Checkout",
+    #     default=False,
+    #     help="Allow guests to check out before their scheduled checkout time.",
+    # )
 
     allow_overbooking = fields.Boolean(
         default=False,

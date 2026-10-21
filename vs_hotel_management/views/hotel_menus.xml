@@ -208,5 +208,19 @@
               action="action_hotel_discount"
               sequence="3"/>
 
+    <menuitem id="menu_hotel_whatsapp_log"
+              name="WhatsApp Notifications"
+              parent="vs_hotel_management.menu_hotel_pricing"
+              action="action_hotel_whatsapp_log"
+              sequence="90"
+              groups="base.group_system"/>
+
+     <menuitem id="menu_hotel_whatsapp_template"
+              name="WhatsApp Templates"
+              parent="vs_hotel_management.menu_hotel_pricing"
+              action="action_hotel_whatsapp_template"
+              sequence="91"
+              groups="base.group_system"/>
+
 
 </odoo>

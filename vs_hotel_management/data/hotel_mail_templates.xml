@@ -133,17 +133,24 @@
                         </strong>
                         ).
                     </p>
+
                     <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; margin: 20px 0;">
-                        <h4 style="margin-top: 0; color: #1a3a5f;">Important Check-In Information</h4>
+                        <h4 style="margin-top: 0; color: #1a3a5f;">
+                            Important Check-In Information
+                        </h4>
                         <ul style="padding-left: 20px; line-height: 1.6;">
-                            <li>Standard check-in begins at<strong t-out="object.hotel_id.checkin_time_default"/>.
+                            <li>
+                                Standard check-in begins at
+                                <strong t-out="object.checkin_time_default"/>.
                             </li>
                             <li>Please present a valid photo ID or passport upon check-in.</li>
-                            <li>Should you require airport transfer or early check-in, please feel free to reach out to
-                                us.
+                            <li>
+                                Should you require airport transfer or early check-in,
+                                please feel free to reach out to us.
                             </li>
                         </ul>
                     </div>
+
                     <p>We wish you a safe and pleasant journey!</p>
                     <p>Best regards,
                         <br/>

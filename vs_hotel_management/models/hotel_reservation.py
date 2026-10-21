@@ -258,6 +258,7 @@ class HotelReservation(models.Model):
     booking_date = fields.Datetime(
         string="Booking Date",
         default=fields.Datetime.now,
+        readonly=True,
         tracking=True,
     )
 
@@ -402,6 +403,45 @@ class HotelReservation(models.Model):
         currency_field="currency_id",
     )
 
+    checkin_time_default = fields.Char(
+        string="Default Check-in Time",
+        compute="_compute_check_time_default",
+    )
+
+    checkout_time_default = fields.Char(
+        string="Default Check-in Time",
+        compute="_compute_check_time_default",
+    )
+
+    @api.depends()
+    def _compute_check_time_default(self):
+        config = self.env["ir.config_parameter"].sudo()
+        checkin_value = float(
+            config.get_param(
+                "vs_hotel_management.checkin_time_default",
+                default="14.0",
+            )
+        )
+
+        checkout_value = float(
+            config.get_param(
+                "vs_hotel_management.checkout_time_default",
+                default="14.0",
+            )
+        )
+
+        checkin_total_minutes = round(checkin_value * 60)
+        checkin_hours, checkin_minutes = divmod(checkin_total_minutes, 60)
+        checkin_formatted_time = "%02d:%02d" % (checkin_hours, checkin_minutes)
+
+        checkout_total_minutes = round(checkout_value * 60)
+        checkout_hours, checkout_minutes = divmod(checkout_total_minutes, 60)
+        checkout_formatted_time = "%02d:%02d" % (checkout_hours, checkout_minutes)
+
+        for record in self:
+            record.checkin_time_default = checkin_formatted_time
+            record.checkout_time_default = checkout_formatted_time
+
     def _compute_folio_balance(self):
         for reservation in self:
             folios = reservation.folio_ids
@@ -420,33 +460,24 @@ class HotelReservation(models.Model):
             )
 
     def _get_stay_limits(self):
-        """Return minimum and maximum stay limits for the reservation."""
+        """Return minimum and maximum stay limits from configuration settings."""
         self.ensure_one()
 
         config = self.env["ir.config_parameter"].sudo()
-        hotel = self.hotel_id
 
-        minimum_stay = hotel.minimum_stay if hotel else False
-        maximum_stay = hotel.maximum_stay if hotel else False
-
-        if not minimum_stay:
-            minimum_stay = int(
-                config.get_param(
-                    "vs_hotel_management.minimum_stay",
-                    default="1",
-                )
+        minimum_stay = int(
+            config.get_param(
+                "vs_hotel_management.minimum_stay",
+                default="1",
             )
+        )
 
-        if not maximum_stay:
-            maximum_stay = int(
-                config.get_param(
-                    "vs_hotel_management.maximum_stay",
-                    default="365",
-                )
+        maximum_stay = int(
+            config.get_param(
+                "vs_hotel_management.maximum_stay",
+                default="365",
             )
-
-        minimum_stay = int(minimum_stay)
-        maximum_stay = int(maximum_stay)
+        )
 
         if minimum_stay < 1 or maximum_stay < minimum_stay:
             raise ValidationError(
@@ -479,13 +510,13 @@ class HotelReservation(models.Model):
     def _onchange_hotel_id(self):
         config = self.env["ir.config_parameter"].sudo()
 
-        global_checkin_time = float(
+        checkin_time = float(
             config.get_param(
                 "vs_hotel_management.checkin_time_default",
                 default="14.0",
             )
         )
-        global_checkout_time = float(
+        checkout_time = float(
             config.get_param(
                 "vs_hotel_management.checkout_time_default",
                 default="12.0",
@@ -498,31 +529,18 @@ class HotelReservation(models.Model):
 
             hotel = record.hotel_id
 
-            # Do not validate stay limits before a hotel is selected.
             if not hotel:
                 continue
 
-            checkin_time = (
-                hotel.checkin_time
-                if hotel.checkin_time > 00
-                else global_checkin_time
-            )
-            checkout_time = (
-                hotel.checkout_time
-                if hotel.checkout_time > 00
-                else global_checkout_time
-            )
-
             minimum_stay, maximum_stay = record._get_stay_limits()
-
-            # Read the existing night_count without modifying it.
             nights = record.night_count or minimum_stay
 
             if nights < minimum_stay or nights > maximum_stay:
                 raise ValidationError(
                     _(
                         "The stay must be between %(minimum)s and "
-                        "%(maximum)s night(s) for this hotel."
+                        "%(maximum)s night(s), according to the "
+                        "configured stay limits."
                     ) % {
                         "minimum": minimum_stay,
                         "maximum": maximum_stay,
@@ -571,7 +589,7 @@ class HotelReservation(models.Model):
                 ):
                     raise ValidationError(
                         _(
-                            "The configured date and time are ambiguous "
+                            "The configured time are ambiguous "
                             "or invalid in hotel timezone %s."
                         ) % timezone_name
                     )
@@ -591,6 +609,7 @@ class HotelReservation(models.Model):
                     _("Default Check-in Time"),
                 ),
             )
+
             record.check_out = to_utc(
                 today + relativedelta(days=nights),
                 to_time(
@@ -797,28 +816,20 @@ class HotelReservation(models.Model):
         )
 
         # ---------------------------------------------------------
-        # CHECK-IN AND CHECK-OUT TIMES
+        # CONFIGURED CHECK-IN AND CHECK-OUT TIMES
         # ---------------------------------------------------------
 
-        checkin_time = (
-            hotel.checkin_time
-            if hotel and hotel.checkin_time > 0
-            else float(
-                config.get_param(
-                    "vs_hotel_management.checkin_time_default",
-                    default="14.0",
-                )
+        checkin_time = float(
+            config.get_param(
+                "vs_hotel_management.checkin_time_default",
+                default="14.0",
             )
         )
 
-        checkout_time = (
-            hotel.checkout_time
-            if hotel and hotel.checkout_time > 0
-            else float(
-                config.get_param(
-                    "vs_hotel_management.checkout_time_default",
-                    default="12.0",
-                )
+        checkout_time = float(
+            config.get_param(
+                "vs_hotel_management.checkout_time_default",
+                default="12.0",
             )
         )
 
@@ -863,6 +874,7 @@ class HotelReservation(models.Model):
             checkin_time,
             _("Default Check-in Time"),
         )
+
         checkout_clock = to_time(
             checkout_time,
             _("Default Check-out Time"),
@@ -899,7 +911,7 @@ class HotelReservation(models.Model):
             ):
                 raise ValidationError(
                     _(
-                        "The configured date and time are ambiguous "
+                        "The configured time are ambiguous "
                         "or invalid in hotel timezone %s."
                     ) % timezone_name
                 )
@@ -1169,6 +1181,7 @@ class HotelReservation(models.Model):
                         ("room_id", "=", room.id),
                         ("reservation_id", "!=", reservation.id),
                         ("state", "in", ["reserved", "checked_in"]),
+                        ("reservation_id.state", "in", ["reserved", "checked_in"]),
                         ("check_in", "<", line.check_out),
                         ("check_out", ">", line.check_in),
                     ],
@@ -1206,7 +1219,7 @@ class HotelReservation(models.Model):
         """Check in reserved room bookings and create the guest folio."""
         config = self.env["ir.config_parameter"].sudo()
 
-        global_allow_early_checkin = (
+        allow_early_checkin = (
                 config.get_param(
                     "vs_hotel_management.allow_early_checkin",
                     default="False",
@@ -1220,14 +1233,6 @@ class HotelReservation(models.Model):
                 )
 
             hotel = reservation.hotel_id
-
-            # Early check-in is allowed if enabled at either level.
-            hotel_allow_early_checkin = (
-                hotel.allow_early_checkin if hotel else False
-            )
-            allow_early_checkin = (
-                    hotel_allow_early_checkin or global_allow_early_checkin
-            )
 
             # -------------------------------------------------
             # Validate Scheduled Check-in Time
@@ -1281,9 +1286,19 @@ class HotelReservation(models.Model):
 
             if room_ids:
                 self.env.cr.execute(
-                    "SELECT id FROM hotel_room WHERE id IN %s FOR UPDATE",
-                    (tuple(room_ids),),
+                    """
+                    SELECT id
+                    FROM hotel_room
+                    WHERE id IN %s
+                    ORDER BY id
+                        FOR UPDATE
+                    """,
+                    (tuple(sorted(room_ids)),),
                 )
+
+                self.env["hotel.room"].browse(
+                    room_ids
+                ).invalidate_recordset(["status"])
 
             # -------------------------------------------------
             # Validate Reservation
@@ -1326,7 +1341,7 @@ class HotelReservation(models.Model):
         """Check out all rooms belonging to the reservation."""
         config = self.env["ir.config_parameter"].sudo()
 
-        global_allow_early_checkout = (
+        allow_early_checkout = (
                 config.get_param(
                     "vs_hotel_management.allow_early_checkout",
                     default="False",
@@ -1347,17 +1362,6 @@ class HotelReservation(models.Model):
                 )
 
             hotel = reservation.hotel_id
-
-            # -------------------------------------------------
-            # Early Checkout Configuration
-            # -------------------------------------------------
-            hotel_allow_early_checkout = (
-                hotel.allow_early_checkout if hotel else False
-            )
-
-            allow_early_checkout = (
-                    hotel_allow_early_checkout or global_allow_early_checkout
-            )
 
             # -------------------------------------------------
             # Validate Scheduled Checkout Time
@@ -1702,10 +1706,6 @@ class HotelReservation(models.Model):
             for line in reservation.line_ids:
                 line._cancel_room_booking()
 
-                line.room_id.write({
-                    "status": "available"
-                })
-
             reservation.state = "cancelled"
 
     # =========================================================
@@ -1732,7 +1732,7 @@ class HotelReservation(models.Model):
 
             reservation.state = "no_show"
 
-        return True
+        return
 
     # =========================================================
     # RESET TO DRAFT
@@ -1740,10 +1740,11 @@ class HotelReservation(models.Model):
 
     def action_reset_to_draft(self):
         for reservation in self:
-
             if reservation.state not in (
                     "confirmed",
+                    "reserved",
                     "cancelled",
+                    "no_show",
             ):
                 raise UserError(
                     _(
@@ -1752,17 +1753,28 @@ class HotelReservation(models.Model):
                     )
                 )
 
-            # Reset related cancelled room bookings.
-            cancelled_bookings = reservation.room_booking_ids.filtered(
-                lambda booking: booking.state == "cancelled"
+            # Reset related room bookings.
+            bookings_to_reset = reservation.room_booking_ids.filtered(
+                lambda booking: booking.state in (
+                    "reserved",
+                    "cancelled",
+                    "released",
+                )
             )
 
-            cancelled_bookings.write({
+            bookings_to_reset.write({
                 "state": "reserved",
             })
 
+            if reservation.state != "confirmed":
+                bookings_to_reset.room_id.write({
+                    "status": "available",
+                })
+
             reservation.state = "draft"
 
+        return True
+    
     # =========================================================
     # VALIDATION
     # =========================================================

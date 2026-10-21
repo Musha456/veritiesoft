@@ -1248,181 +1248,38 @@ class HotelReservationLine(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        config = self.env["ir.config_parameter"].sudo()
-
-        allow_room_add_reserved = (
-                config.get_param(
-                    "vs_hotel_management.allow_room_add_reserved",
-                    "False",
-                ) == "True"
-        )
-
         Reservation = self.env["hotel.reservation"]
-        RoomBooking = self.env["hotel.room.booking"]
 
-        # Validate reservation states before creating room lines.
+        # Validate reservation states before creating any lines.
         for vals in vals_list:
             reservation_id = vals.get("reservation_id")
+
             if not reservation_id:
                 continue
 
-            reservation = Reservation.browse(reservation_id)
+            reservation = Reservation.browse(
+                reservation_id
+            ).exists()
 
-            if reservation.state in (
-                    "checked_in",
-                    "checked_out",
-                    "completed",
-                    "cancelled",
-                    "no_show",
-            ):
+            if not reservation:
+                raise ValidationError(
+                    _("The selected reservation does not exist.")
+                )
+
+            if reservation.state not in ("draft", "confirmed"):
                 raise UserError(
                     _(
-                        "Room lines cannot be added to a reservation "
-                        "in its current state."
+                        "Reservation lines can only be added when "
+                        "the reservation is in Draft or Confirmed state."
                     )
                 )
 
-            if (
-                    reservation.state == "reserved"
-                    and not allow_room_add_reserved
-            ):
-                raise UserError(
-                    _(
-                        "Adding rooms to reserved reservations is disabled "
-                        "in the configuration settings."
-                    )
-                )
-
-        # Lock selected rooms before checking availability.
-        room_ids = {
-            vals["room_id"]
-            for vals in vals_list
-            if vals.get("room_id")
-               and vals.get("reservation_id")
-               and Reservation.browse(
-                vals["reservation_id"]
-            ).state == "reserved"
-        }
-
-        if room_ids:
-            self.env.cr.execute(
-                """
-                SELECT id
-                FROM hotel_room
-                WHERE id IN %s
-                ORDER BY id
-                    FOR UPDATE
-                """,
-                (tuple(sorted(room_ids)),),
-            )
-
-            self.env["hotel.room"].browse(
-                list(room_ids)
-            ).invalidate_recordset(["status"])
-
+        # Create lines only after all reservations pass the state check.
         records = super().create(vals_list)
 
         # Preserve existing reservation-line validation.
         for line in records:
-            if line.reservation_id.state != "draft":
-                line._validate_reservation_line()
-
-        # Process lines added to reservations already in Reserved state.
-        reserved_reservations = records.mapped(
-            "reservation_id"
-        ).filtered(
-            lambda reservation: reservation.state == "reserved"
-        )
-
-        # Validate all new lines before creating any room bookings.
-        for reservation in reserved_reservations:
-            new_lines = records.filtered(
-                lambda line: (
-                        line.reservation_id == reservation
-                        and not line.room_booking_id
-                )
-            )
-
-            if not new_lines:
-                continue
-
-            reservation._validate_reservation()
-
-            for line in new_lines:
-                if not line.room_id:
-                    raise ValidationError(
-                        _("Each reservation line must have a room.")
-                    )
-
-                if not line.check_in or not line.check_out:
-                    raise ValidationError(
-                        _(
-                            "Check-in and check-out dates are required "
-                            "before adding a room to a reserved reservation."
-                        )
-                    )
-
-                if line.check_out <= line.check_in:
-                    raise ValidationError(
-                        _("Check-out must be later than check-in.")
-                    )
-
-                room = line.room_id
-
-                # Never overwrite the status of an occupied or allocated room.
-                if room.status != "available":
-                    raise UserError(
-                        _(
-                            "Room %(room)s cannot be added because its "
-                            "current status is '%(status)s'. Only available "
-                            "rooms can be added to a reserved reservation."
-                        )
-                        % {
-                            "room": room.display_name,
-                            "status": room.status,
-                        }
-                    )
-
-                # Check for overlapping active bookings in other reservations.
-                overlapping_booking = RoomBooking.search(
-                    [
-                        ("room_id", "=", room.id),
-                        ("reservation_id", "!=", reservation.id),
-                        ("state", "in", ["reserved", "checked_in"]),
-                        ("check_in", "<", line.check_out),
-                        ("check_out", ">", line.check_in),
-                    ],
-                    limit=1,
-                )
-
-                if overlapping_booking:
-                    raise UserError(
-                        _(
-                            "Room %(room)s is already allocated to another "
-                            "reservation during the requested dates."
-                        )
-                        % {
-                            "room": room.display_name,
-                        }
-                    )
-
-        # Create bookings only after all new lines pass validation.
-        for reservation in reserved_reservations:
-            new_lines = records.filtered(
-                lambda line: (
-                        line.reservation_id == reservation
-                        and not line.room_booking_id
-                )
-            )
-
-            if not new_lines:
-                continue
-
-            new_lines._create_room_booking()
-
-            new_lines.mapped("room_id").write({
-                "status": "reserved",
-            })
+            line._validate_reservation_line()
 
         return records
 
@@ -1567,22 +1424,16 @@ class HotelReservationLine(models.Model):
                     ) % capacity,
                 }
             }
-
+        
     # ---------------------------------------------------------
     # ROOM BOOKING
     # ---------------------------------------------------------
 
     def _create_room_booking(self):
         RoomBooking = self.env["hotel.room.booking"]
-
-        bookings = self.env["hotel.room.booking"]
+        bookings = RoomBooking
 
         for line in self:
-
-            if line.room_booking_id:
-                bookings |= line.room_booking_id
-                continue
-
             if not line.room_id:
                 raise ValidationError(
                     _(
@@ -1607,7 +1458,7 @@ class HotelReservationLine(models.Model):
             line._validate_capacity()
             line._validate_rate_plan()
 
-            booking = RoomBooking.create({
+            booking_values = {
                 "reservation_id": line.reservation_id.id,
                 "reservation_line_id": line.id,
                 "guest_id": line.reservation_id.partner_id.id,
@@ -1617,9 +1468,20 @@ class HotelReservationLine(models.Model):
                 "check_in": line.check_in,
                 "check_out": line.check_out,
                 "company_id": line.company_id.id,
-            })
+            }
 
-            line.room_booking_id = booking.id
+            if line.room_booking_id:
+                booking = line.room_booking_id
+
+                booking.write(booking_values)
+
+                # if booking.state in ("cancelled", "no_show"):
+                booking.write({
+                    "state": "reserved",
+                })
+            else:
+                booking = RoomBooking.create(booking_values)
+                line.room_booking_id = booking.id
 
             bookings |= booking
 

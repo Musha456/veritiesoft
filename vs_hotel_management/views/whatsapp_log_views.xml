@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_hotel_whatsapp_log_list" model="ir.ui.view">
+        <field name="name">hotel.whatsapp.log.list</field>
+        <field name="model">hotel.whatsapp.log</field>
+        <field name="arch" type="xml">
+            <list string="WhatsApp Notifications"
+                  create="0" edit="0" delete="0"
+                  decoration-success="status in ('sent', 'delivered', 'read')"
+                  decoration-danger="status == 'failed'"
+                  decoration-warning="status == 'queued'">
+                <field name="name"/>
+                <field name="create_date" string="Created"/>
+                <field name="recipient_id"/>
+                <field name="phone_number"/>
+                <field name="task_type"/>
+                <field name="event"/>
+                <field name="task_reference"/>
+                <field name="status" widget="badge"/>
+                <field name="meta_message_id" optional="hide"/>
+                <field name="sent_at" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_whatsapp_log_form" model="ir.ui.view">
+        <field name="name">hotel.whatsapp.log.form</field>
+        <field name="model">hotel.whatsapp.log</field>
+        <field name="arch" type="xml">
+            <form string="WhatsApp Notification" create="0" edit="0">
+                <header>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="queued,sent,delivered,read,failed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="recipient_id"/>
+                            <field name="phone_number"/>
+                            <field name="task_reference"/>
+                            <field name="task_type"/>
+                            <field name="event"/>
+                        </group>
+                        <group>
+                            <field name="meta_message_id"/>
+                            <field name="create_date"/>
+                            <field name="sent_at"/>
+                            <field name="delivered_at"/>
+                            <field name="read_at"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="message"/>
+                        <field name="error_details"
+                               invisible="not error_details"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hotel_whatsapp_log" model="ir.actions.act_window">
+        <field name="name">WhatsApp Notifications</field>
+        <field name="res_model">hotel.whatsapp.log</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

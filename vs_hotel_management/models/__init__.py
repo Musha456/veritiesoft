@@ -13,6 +13,9 @@ from . import hotel_reservation_line
 from . import hotel_reservation
 from . import hotel_room_booking
 from . import hotel_reservation_service_line
+from . import whatsapp_template
+from . import whatsapp_log
+from . import task_notification
 from . import hotel_housekeeping
 from . import hotel_maintenance
 from . import res_user_inherit

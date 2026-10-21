@@ -376,6 +376,11 @@ class HotelRoomBooking(models.Model):
                 "state": "released",
             })
 
+            if reservation.state != "confirmed":
+                booking.room_id.write({
+                    "status": "available"
+                })
+
         return True
 
     # ---------------------------------------------------------

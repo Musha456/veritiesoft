@@ -184,7 +184,7 @@ class HotelRoom(models.Model):
         for room in self:
             room.housekeeping_count = Housekeeping.search_count([
                 ("room_id", "=", room.id),
-                # ("state", "in", ("pending", "in_progress")),
+                ("state", "in", ("pending", "in_progress")),
             ])
 
     def _compute_maintenance_count(self):
@@ -287,14 +287,38 @@ class HotelRoom(models.Model):
     def _onchange_building_id(self):
         self.floor_id = False
 
-    def action_mark_reserved(self):
-        self.write({"status": "reserved"})
-
-    def action_check_in(self):
-        self.write({"status": "occupied"})
+    # ---------------------------------------------------------
+    # MARK DIRTY
+    # ---------------------------------------------------------
 
     def action_mark_dirty(self):
+        for room in self:
+            room._check_active_reservation_booking()
+
+            if room.status == "dirty":
+                raise UserError(
+                    _("Room %s is already marked as Dirty.")
+                    % room.display_name
+                )
+
+            if room.status in (
+                    "reserved",
+                    "occupied",
+                    "cleaning",
+                    "maintenance",
+            ):
+                raise UserError(
+                    _(
+                        "Room %s is currently %s and cannot be marked "
+                        "Dirty. Resolve its current booking or "
+                        "operational status first."
+                    )
+                    % (room.display_name, room.status)
+                )
+
         self.write({"status": "dirty"})
+
+        return True
 
     def action_start_cleaning(self):
         self.ensure_one()
@@ -304,25 +328,10 @@ class HotelRoom(models.Model):
                 _(
                     "Room %s can only be sent for cleaning "
                     "when its status is Dirty."
-                )
-                % self.display_name
+                ) % self.display_name
             )
 
-        Housekeeping = self.env["hotel.housekeeping"]
-
-        task = Housekeeping.search(
-            [
-                ("room_id", "=", self.id),
-                ("state", "in", ("pending", "in_progress")),
-            ],
-            order="id desc",
-            limit=1,
-        )
-
-        if not task:
-            task = Housekeeping.create_checkout_task(
-                room=self,
-            )
+        self._check_active_reservation_booking()
 
         return {
             "type": "ir.actions.act_window",
@@ -333,10 +342,8 @@ class HotelRoom(models.Model):
             "context": {
                 "default_task_type": "housekeeping",
                 "default_room_id": self.id,
-                "default_housekeeping_id": task.id,
             },
         }
-
     # ---------------------------------------------------------
     # ROOM OPERATION VALIDATION
     # ---------------------------------------------------------
@@ -380,9 +387,30 @@ class HotelRoom(models.Model):
     def action_mark_available(self):
         Housekeeping = self.env["hotel.housekeeping"]
 
-        self._check_active_reservation_booking()
-
         for room in self:
+
+            self._check_active_reservation_booking()
+
+            if room.status == "available":
+                raise UserError(
+                    _("Room %s is already available.")
+                    % room.display_name
+                )
+
+            if room.status in (
+                    "reserved",
+                    "occupied",
+                    "maintenance",
+                    "dirty",
+            ):
+                raise UserError(
+                    _(
+                        "Room %s is currently %s and cannot be marked "
+                        "available. Resolve its current status first."
+                    )
+                    % (room.display_name, room.status)
+                )
+
             if room.status == "cleaning":
                 task = Housekeeping.search(
                     [
@@ -393,8 +421,16 @@ class HotelRoom(models.Model):
                     limit=1,
                 )
 
-                if task:
-                    task.action_done()
+                if not task:
+                    raise UserError(
+                        _(
+                            "No housekeeping task in progress was found "
+                            "for room %s."
+                        ) % room.display_name
+                    )
+
+                # Return the wizard action to the client.
+                return task.action_done()
 
             room.status = "available"
 
@@ -417,6 +453,15 @@ class HotelRoom(models.Model):
 
         self._check_active_reservation_booking()
 
+        if self.status in ("reserved", "occupied"):
+            raise UserError(
+                _(
+                    "Room %s is currently %s and cannot start "
+                    "maintenance while %s."
+                )
+                % (self.display_name, self.status, self.status)
+            )
+
         if self.status in ("cleaning", "maintenance"):
             raise UserError(
                 _(
@@ -424,23 +469,6 @@ class HotelRoom(models.Model):
                     "another maintenance task."
                 )
                 % (self.display_name, self.status)
-            )
-
-        Maintenance = self.env["hotel.maintenance"]
-
-        task = Maintenance.search(
-            [
-                ("room_id", "=", self.id),
-                ("state", "in", ("pending", "in_progress")),
-            ],
-            order="id desc",
-            limit=1,
-        )
-
-        if not task:
-            task = Maintenance.create_room_maintenance(
-                room=self,
-                maintenance_type="corrective",
             )
 
         return {
@@ -452,7 +480,6 @@ class HotelRoom(models.Model):
             "context": {
                 "default_task_type": "maintenance",
                 "default_room_id": self.id,
-                "default_maintenance_id": task.id,
             },
         }
 
@@ -461,7 +488,29 @@ class HotelRoom(models.Model):
     # ---------------------------------------------------------
 
     def action_mark_out_of_order(self):
-        self._check_active_reservation_booking()
+        for room in self:
+            room._check_active_reservation_booking()
+
+            if room.status == "out_of_order":
+                raise UserError(
+                    _("Room %s is already out of order.")
+                    % room.display_name
+                )
+
+            if room.status in (
+                    "reserved",
+                    "occupied",
+                    "cleaning",
+                    "maintenance",
+            ):
+                raise UserError(
+                    _(
+                        "Room %s is currently %s and cannot be marked "
+                        "out of order. Resolve its current booking or "
+                        "operational task first."
+                    )
+                    % (room.display_name, room.status)
+                )
 
         self.write({
             "status": "out_of_order",
@@ -469,35 +518,40 @@ class HotelRoom(models.Model):
 
         return True
 
+    # ---------------------------------------------------------
+    # FINISH MAINTENANCE
+    # ---------------------------------------------------------
+
     def action_finish_maintenance(self):
         Maintenance = self.env["hotel.maintenance"]
 
         for room in self:
-            # if room.status != "maintenance":
-            #     raise UserError(
-            #         _(
-            #             "Room %s is not currently under maintenance."
-            #         )
-            #         % room.display_name
-            #     )
-
-            if room.status == "maintenance":
-                maintenance = Maintenance.search(
-                    [
-                        ("room_id", "=", room.id),
-                        ("state", "=", "in_progress"),
-                    ],
-                    order="id desc",
-                    limit=1,
+            if room.status != "maintenance":
+                raise UserError(
+                    _(
+                        "Room %s is not currently under maintenance."
+                    ) % room.display_name
                 )
 
-                if maintenance:
-                    maintenance.write({
-                        "state": "done",
-                        "completed_at": fields.Datetime.now(),
-                    })
+            maintenance = Maintenance.search(
+                [
+                    ("room_id", "=", room.id),
+                    ("state", "=", "in_progress"),
+                ],
+                order="id desc",
+                limit=1,
+            )
 
-            room.status = "available"
+            if not maintenance:
+                raise UserError(
+                    _(
+                        "No maintenance task in progress was found "
+                        "for room %s."
+                    ) % room.display_name
+                )
+
+            # Return the completion wizard action to the client.
+            return maintenance.action_done()
 
         return True
 
@@ -508,7 +562,7 @@ class HotelRoom(models.Model):
             "type": "ir.actions.act_window",
             "name": _("Reservations"),
             "res_model": "hotel.reservation.line",
-            "view_mode": "list,form",
+            "view_mode": "kanban,list,form",
             "domain": [
                 ("room_id", "=", self.id),
             ],
@@ -527,6 +581,7 @@ class HotelRoom(models.Model):
             "view_mode": "kanban,list,form",
             "domain": [
                 ("room_id", "=", self.id),
+                ("state", "in", ("pending", "in_progress")),
             ],
             "context": {
                 "default_room_id": self.id,
@@ -543,12 +598,12 @@ class HotelRoom(models.Model):
             "view_mode": "kanban,list,form",
             "domain": [
                 ("room_id", "=", self.id),
+                ("state", "in", ("pending", "in_progress")),
             ],
             "context": {
                 "default_room_id": self.id,
             },
         }
-
 
     _sql_constraints = [
         (

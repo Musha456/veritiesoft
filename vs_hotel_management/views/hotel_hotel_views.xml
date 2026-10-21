@@ -413,17 +413,17 @@
 
                             <group string="Reservation">
 
-                                <group>
-                                    <field name="checkin_time"
-                                           widget="float_time"/>
+<!--                                <group>-->
+<!--                                    <field name="checkin_time"-->
+<!--                                           widget="float_time"/>-->
 
-                                    <field name="checkout_time"
-                                           widget="float_time"/>
+<!--                                    <field name="checkout_time"-->
+<!--                                           widget="float_time"/>-->
 
-                                    <field name="minimum_stay"/>
+<!--                                    <field name="minimum_stay"/>-->
 
-                                    <field name="maximum_stay"/>
-                                </group>
+<!--                                    <field name="maximum_stay"/>-->
+<!--                                </group>-->
 
                                 <group>
                                     <field name="reservation_expiry_hours" string="Expiry Hours"/>
@@ -436,11 +436,11 @@
                             <group string="Booking Rules">
 
                                 <group>
-                                    <field name="allow_early_checkin"
-                                           widget="boolean_toggle"/>
+<!--                                    <field name="allow_early_checkin"-->
+<!--                                           widget="boolean_toggle"/>-->
 
-                                    <field name="allow_early_checkout"
-                                           widget="boolean_toggle"/>
+<!--                                    <field name="allow_early_checkout"-->
+<!--                                           widget="boolean_toggle"/>-->
 
                                     <field name="allow_overbooking"
                                            widget="boolean_toggle"/>

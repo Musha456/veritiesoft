@@ -12,59 +12,61 @@
 
                     <div class="d-flex flex-wrap gap-2">
 
-                    <button name="action_confirm"
-                            string="Confirm"
-                            type="object"
-                            class="btn-primary"
-                            invisible="state != 'draft'"/>
+                        <button name="action_confirm"
+                                string="Confirm"
+                                type="object"
+                                class="btn-primary"
+                                invisible="state != 'draft'"/>
 
-                    <button name="action_reserve"
-                            string="Reserve"
-                            type="object"
-                            class="btn-primary"
-                            invisible="state != 'confirmed'"/>
+                        <button name="action_reserve"
+                                string="Reserve"
+                                type="object"
+                                class="btn-primary"
+                                invisible="state != 'confirmed'"/>
 
-                    <button name="action_check_in"
-                            string="Check In"
-                            type="object"
-                            class="btn-primary"
-                            invisible="state != 'reserved'"/>
+                        <button name="action_check_in"
+                                string="Check In"
+                                type="object"
+                                class="btn-success"
+                                invisible="state != 'reserved'"/>
 
-                    <button name="action_check_out"
-                            string="Check Out"
-                            type="object"
-                            class="btn-primary"
-                            invisible="state != 'checked_in'"/>
+                        <button name="action_check_out"
+                                string="Check Out"
+                                type="object"
+                                class="btn-danger"
+                                invisible="state != 'checked_in'"/>
 
-                    <button name="action_complete"
-                            string="Complete"
-                            type="object"
-                            class="btn-primary"
-                            invisible="state != 'checked_out'"/>
+                        <button name="action_complete"
+                                string="Complete"
+                                type="object"
+                                class="btn-primary"
+                                invisible="state != 'checked_out'"/>
 
-                    <button name="action_no_show"
-                            string="No Show"
-                            type="object"
-                            class="btn-secondary"
-                            invisible="state not in ('confirmed', 'reserved')"/>
+                        <button name="action_no_show"
+                                string="No Show"
+                                type="object"
+                                class="btn-secondary"
+                                invisible="state not in ('confirmed', 'reserved')"/>
 
-                    <button name="action_cancel"
-                            string="Cancel"
-                            type="object"
-                            class="btn-secondary"
-                            groups="vs_hotel_management.group_hotel_room_manager"
-                            invisible="state in ('draft', 'cancelled', 'completed', 'checked_in', 'checked_out')"/>
+                        <button name="action_cancel"
+                                string="Cancel"
+                                type="object"
+                                class="btn-secondary"
+                                groups="vs_hotel_management.group_hotel_room_manager"
+                                invisible="state in ('draft', 'cancelled', 'completed', 'checked_in', 'checked_out', 'no_show')"/>
 
-                    <button name="action_send_reservation_email"
-                            string="Send by Email"
-                            type="object"
-                            class="btn-secondary"/>
+                         <button name="action_reset_to_draft"
+                                string="Reset to Draft"
+                                type="object"
+                                class="btn-secondary"
+                                invisible="state not in ('confirmed', 'cancelled', 'reserved', 'no_show')"/>
 
-                    <button name="action_reset_to_draft"
-                            string="Reset to Draft"
-                            type="object"
-                            class="btn-secondary"
-                            invisible="state not in ('confirmed', 'cancelled')"/>
+                        <button name="action_send_reservation_email"
+                                string="Send by Email"
+                                type="object"
+                                class="btn-secondary"
+                                invisible="state == 'draft'"/>
+
                     </div>
 
 
@@ -145,7 +147,7 @@
 
                     <group string="Guest Information" col="3">
                         <group colspan="1">
-                            <field name="partner_id" required="1"/>
+                            <field name="partner_id" readonly="state not in ['draft','confirmed']" required="1"/>
                         </group>
                         <group colspan="1">
                             <field name="guest_phone"/>
@@ -159,13 +161,13 @@
 
                     <group string="Reservation Information" col="3">
                         <group colspan="1">
-                            <field name="hotel_id" required="1"/>
+                            <field name="hotel_id" readonly="state not in ['draft','confirmed']" required="1"/>
                         </group>
                         <group colspan="1">
-                            <field name="booking_date"/>
+                            <field name="booking_date" readonly="state not in ['draft','confirmed']"/>
                         </group>
                         <group colspan="1">
-                            <field name="company_id"/>
+                            <field name="company_id" readonly="state not in ['draft','confirmed']"/>
                         </group>
                         <field name="currency_id" invisible="1"/>
                     </group>
@@ -176,7 +178,7 @@
 
                     <group string="Stay" col="2">
                         <group colspan="1">
-                            <field name="check_in" widget="daterange" options="{'end_date_field':'check_out'}"
+                            <field name="check_in" widget="daterange" options="{'end_date_field':'check_out'}" readonly="state not in ['draft','confirmed']"
                                    required="1"/>
                         </group>
                         <group colspan="1">
@@ -268,44 +270,45 @@
 
                                         <group string="Room Information" col="3">
                                             <group colspan="1">
+                                                <field name="reservation_id" invisible="True"/>
                                                 <field name="room_booking_id" readonly="1"
                                                        invisible="not room_booking_id"/>
                                                 <field name="hotel_id" required="1"/>
-                                                <field name="building_id"/>
-                                                <field name="floor_id"/>
+                                                <field name="building_id" readonly="reservation_id.state in ['confirmed']"/>
+                                                <field name="floor_id" readonly="reservation_id.state in ['draft','confirmed']"/>
                                             </group>
                                             <group colspan="1">
-                                                <field name="room_category_id"/>
+                                                <field name="room_category_id" readonly="reservation_id.state in ['draft','confirmed']"/>
                                                 <field name="room_id"
                                                        domain="[('id', 'in', available_room_ids)]"
-                                                       required="1"/>
+                                                       required="1" readonly="reservation_id.state in ['draft','confirmed']"/>
                                             </group>
                                             <group colspan="1">
                                                 <field name="rate_plan_id"
-                                                       domain="[('room_category_ids', 'in', [room_category_id])]"/>
+                                                       domain="[('room_category_ids', 'in', [room_category_id])]" readonly="reservation_id.state in ['draft','confirmed']"/>
                                                 <field name="room_price" readonly="1" invisible="not rate_plan_id"/>
                                             </group>
                                         </group>
 
-<!--                                        <group string="Stay Information" col="3">-->
-<!--                                            <group colspan="1">-->
-<!--                                                <field name="check_in" readonly="1"/>-->
-<!--                                            </group>-->
-<!--                                            <group colspan="2">-->
-<!--                                                <field name="check_out" readonly="1"/>-->
-<!--                                            </group>-->
-<!--                                        </group>-->
-<!--                                        <group string="Guest Information" col="3">-->
-<!--                                            <group colspan="1">-->
-<!--                                                <field name="night_count" readonly="1"/>-->
-<!--                                            </group>-->
-<!--                                            <group colspan="1">-->
-<!--                                                <field name="adults"/>-->
-<!--                                            </group>-->
-<!--                                            <group colspan="1">-->
-<!--                                                <field name="children"/>-->
-<!--                                            </group>-->
-<!--                                        </group>-->
+                                        <!--                                        <group string="Stay Information" col="3">-->
+                                        <!--                                            <group colspan="1">-->
+                                        <!--                                                <field name="check_in" readonly="1"/>-->
+                                        <!--                                            </group>-->
+                                        <!--                                            <group colspan="2">-->
+                                        <!--                                                <field name="check_out" readonly="1"/>-->
+                                        <!--                                            </group>-->
+                                        <!--                                        </group>-->
+                                                                                <group string="Guest Information" col="3">
+                                                                                    <group colspan="1">
+                                                                                        <field name="night_count" readonly="1"/>
+                                                                                    </group>
+                                                                                    <group colspan="1">
+                                                                                        <field name="adults"/>
+                                                                                    </group>
+                                                                                    <group colspan="1">
+                                                                                        <field name="children"/>
+                                                                                    </group>
+                                                                                </group>
                                         <notebook>
 
                                             <page string="Services">
@@ -629,6 +632,10 @@
                         string="No Show"
                         domain="[('state', '=', 'no_show')]"/>
 
+                <filter name="not_completed"
+                        string="In-progress Reservations"
+                        domain="[('state', '!=', 'completed')]"/>
+
                 <separator/>
 
                 <!-- Date Filters -->
@@ -910,6 +917,8 @@
         <field name="name">Reservations</field>
 
         <field name="res_model">hotel.reservation</field>
+
+        <field name="context">{'search_default_not_completed':1}</field>
 
         <field name="view_mode">kanban,list,calendar,form</field>
 

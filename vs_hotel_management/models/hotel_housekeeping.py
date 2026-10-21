@@ -1,11 +1,12 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
-
+import logging
+_logger = logging.getLogger(__name__)
 
 class HotelHousekeeping(models.Model):
     _name = "hotel.housekeeping"
     _description = "Hotel Housekeeping"
-    _inherit = ["mail.thread", "mail.activity.mixin"]
+    _inherit = ["mail.thread", "mail.activity.mixin", "hotel.task.notification.mixin"]
     _order = "priority desc, scheduled_date asc, id desc"
 
     name = fields.Char(
@@ -25,25 +26,30 @@ class HotelHousekeeping(models.Model):
         tracking=True,
     )
 
+    hotel_id = fields.Many2one(
+        "hotel.hotel",
+        string="Hotel",
+        related="room_id.hotel_id",
+        readonly=True,
+    )
+
+    building_id = fields.Many2one(
+        related="room_id.building_id",
+        string="Building",
+        readonly=True,
+    )
+
+    floor_id = fields.Many2one(
+        related="room_id.floor_id",
+        string="Floor",
+        readonly=True,
+    )
+
     room_category_id = fields.Many2one(
         related="room_id.room_category_id",
         string="Room Category",
         store=True,
         readonly=True,
-    )
-
-    reservation_id = fields.Many2one(
-    "hotel.reservation",
-    string="Reservation",
-    ondelete="restrict",
-    index=True,
-    )
-
-    room_booking_id = fields.Many2one(
-        "hotel.room.booking",
-        string="Room Booking",
-        ondelete="restrict",
-        index=True,
     )
 
     housekeeping_type = fields.Selection(
@@ -53,7 +59,7 @@ class HotelHousekeeping(models.Model):
             ("deep", "Deep Cleaning"),
             ("maintenance", "Maintenance"),
         ],
-        string="Type",
+        string="Housekeeping Type",
         required=True,
         default="checkout",
         tracking=True,
@@ -76,11 +82,13 @@ class HotelHousekeeping(models.Model):
     priority = fields.Selection(
         [
             ("0", "Normal"),
-            ("1", "High"),
+            ("1", "Low"),
+            ("2", "High"),
+            ("3", "Urgent"),
         ],
         string="Priority",
         default="0",
-        index=True,
+        required=True,
     )
 
     scheduled_date = fields.Datetime(
@@ -106,8 +114,8 @@ class HotelHousekeeping(models.Model):
         tracking=True,
     )
 
-    notes = fields.Text(
-        string="Notes",
+    instruction_notes = fields.Text(
+        string="Instruction Notes",
     )
 
     company_id = fields.Many2one(
@@ -122,6 +130,33 @@ class HotelHousekeeping(models.Model):
         "res.users",
         compute="_compute_assigned_to_domain",
     )
+
+    duration_seconds = fields.Integer(
+        string="Elapsed Time (Seconds)",
+        compute="_compute_duration_seconds",
+    )
+
+    @api.depends("started_at", "completed_at", "state")
+    def _compute_duration_seconds(self):
+        now = fields.Datetime.now()
+
+        for task in self:
+            if not task.started_at:
+                task.duration_seconds = 0
+                continue
+
+            end_time = (
+                task.completed_at
+                if task.state == "done" and task.completed_at
+                else now
+                if task.state == "in_progress"
+                else task.started_at
+            )
+
+            task.duration_seconds = max(
+                0,
+                int((end_time - task.started_at).total_seconds()),
+            )
 
     @api.depends()
     def _compute_assigned_to_domain(self):
@@ -201,58 +236,112 @@ class HotelHousekeeping(models.Model):
         return True
 
     def action_done(self):
-        for task in self:
-
-            if task.state != "in_progress":
-                raise UserError(
-                    _(
-                        "Only housekeeping tasks in progress "
-                        "can be completed."
-                    )
-                )
-
-            task.write({
-                "state": "done",
-                "completed_at": fields.Datetime.now(),
-            })
-
-            if task.room_id.status == "cleaning":
-                task.room_id.status = "available"
-
-    def action_cancel(self):
-        for task in self:
-
-            if task.state == "done":
-                raise UserError(
-                    _(
-                        "Completed housekeeping tasks "
-                        "cannot be cancelled."
-                    )
-                )
-
-            task.state = "cancelled"
-
-            task.room_id.write({
-                "status": "dirty",
-            })
-
-    def action_assign_task(self):
         self.ensure_one()
 
-        if self.state not in ("pending", "in_progress"):
+        if self.state != "in_progress":
             raise UserError(
-                _("Only pending or in-progress tasks can be assigned.")
+                _("Only housekeeping tasks in progress can be completed.")
             )
 
         return {
             "type": "ir.actions.act_window",
-            "name": _("Assign Housekeeping"),
-            "res_model": "hotel.task.assignment.wizard",
+            "name": _("Complete Housekeeping"),
+            "res_model": "hotel.task.completion.wizard",
             "view_mode": "form",
             "target": "new",
             "context": {
                 "default_task_type": "housekeeping",
-                "default_room_id": self.room_id.id,
                 "default_housekeeping_id": self.id,
+                "default_completed_at": fields.Datetime.now(),
             },
         }
+
+    def action_cancel(self):
+        for task in self:
+            if task.state in ("done", "in_progress"):
+                raise UserError(
+                    _(
+                        "Housekeeping tasks that are completed or in progress "
+                        "cannot be cancelled."
+                    )
+                )
+
+            if task.room_id.status in (
+                    "reserved",
+                    "occupied",
+                    "dirty",
+                    "maintenance",
+            ):
+                raise UserError(
+                    _(
+                        "This housekeeping task cannot be cancelled "
+                        "because room %s has status '%s'."
+                    ) % (task.room_id.display_name, task.room_id.status)
+                )
+
+            task.state = "cancelled"
+            task.room_id.write({"status": "dirty"})
+
+            task._notify_assigned_user(event="cancelled")
+            self._notify_whatsapp_task(event="cancelled")
+
+        return True
+
+   
+    @api.model
+    def cron_start_scheduled_tasks(self):
+        parameters = self.env["ir.config_parameter"].sudo()
+
+        now = fields.Datetime.now()
+
+        if parameters.get_param(
+                "vs_hotel_management.auto_start_housekeeping",
+                "False",
+        ).lower() in ("true", "1"):
+            housekeeping_tasks = self.sudo().search([
+                ("state", "=", "pending"),
+                ("scheduled_date", "!=", False),
+                ("scheduled_date", "<=", now),
+            ])
+
+            for task in housekeeping_tasks:
+                try:
+                    task.action_start()
+                except Exception:
+                    _logger.exception(
+                        "Failed to automatically start housekeeping task %s",
+                        task.id,
+                    )
+
+        if parameters.get_param(
+                "vs_hotel_management.auto_start_maintenance",
+                "False",
+        ).lower() in ("true", "1"):
+            maintenance_tasks = self.env[
+                "hotel.maintenance"
+            ].sudo().search([
+                ("state", "=", "pending"),
+                ("scheduled_date", "!=", False),
+                ("scheduled_date", "<=", now),
+            ])
+
+            for task in maintenance_tasks:
+                try:
+                    task.action_start()
+                except Exception:
+                    _logger.exception(
+                        "Failed to automatically start maintenance task %s",
+                        task.id,
+                    )
+
+    def unlink(self):
+        for task in self:
+            if task.state not in ("pending", "cancelled"):
+                raise UserError(
+                    _(
+                        "Only pending or cancelled housekeeping tasks "
+                        "can be deleted. Task %s is currently %s."
+                    ) % (task.display_name, task.state)
+                )
+
+        return super().unlink()

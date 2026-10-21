@@ -61,3 +61,6 @@ access_hotel_maintenance_maint_user,hotel.maintenance.maint.user,model_hotel_mai
 access_hotel_maintenance_maint_manager,hotel.maintenance.maint.manager,model_hotel_maintenance,group_hotel_maintenance_manager,1,1,1,1
 access_hotel_maintenance_room_user,hotel.maintenance.room.user,model_hotel_maintenance,group_hotel_room_user,1,0,0,0
 access_hotel_task_assignment_wizard,hotel.task.assignment.wizard,model_hotel_task_assignment_wizard,base.group_user,1,1,1,1
+access_hotel_task_completion_wizard,hotel.task.completion.wizard,model_hotel_task_completion_wizard,base.group_user,1,1,1,1
+access_hotel_whatsapp_template_system,hotel.whatsapp.template system,model_hotel_whatsapp_template,base.group_system,1,1,1,1
+access_hotel_whatsapp_log_system,hotel.whatsapp.log system,model_hotel_whatsapp_log,base.group_system,1,1,1,0

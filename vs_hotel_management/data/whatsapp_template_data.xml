@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <record id="hotel_task_notification_template"
+            model="hotel.whatsapp.template">
+        <field name="name">hotel_task_notification</field>
+        <field name="template_key">hotel_task_notification</field>
+        <field name="language">en</field>
+        <field name="category">utility</field>
+        <field name="task_type">both</field>
+        <field name="event">both</field>
+        <field name="body_text">Hotel: {{1}}
+            Building: {{2}}
+            Floor: {{3}}
+            Room: {{4}}
+            Task Type: {{5}}
+            Task Detail: {{6}}
+            Scheduled: {{7}}
+            Current Status: {{8}}
+            Instructions: {{9}}
+            View Task: {{10}}
+        </field>
+        <field name="meta_status">draft</field>
+        <field name="active" eval="True"/>
+        <field name="notes">Create this template in Meta WhatsApp Manager and wait for approval before sending real
+            notifications.
+        </field>
+    </record>
+</odoo>
