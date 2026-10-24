@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <!-- main building -->
+    <record id="hotel_building_main_building" model="hotel.building">
+        <field name="name">Main Building</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/hotel_building/hotel_01.jpg"/>
+        <field name="hotel_id" ref="hotel_demo"/>
+    </record>
+
+    <!-- executive tower -->
+    <record id="hotel_building_executive_tower" model="hotel.building">
+        <field name="name">North Wing</field>
+        <field name="hotel_id" ref="hotel_demo"/>
+    </record>
+
+    <!-- south_wing -->
+    <record id="hotel_building_south_wing" model="hotel.building">
+        <field name="name">South Wing</field>
+        <field name="hotel_id" ref="hotel_demo"/>
+    </record>
+
+    <!-- garden_wing -->
+    <record id="hotel_building_garden_wing" model="hotel.building">
+        <field name="name">Garden Wing</field>
+        <field name="hotel_id" ref="hotel_demo"/>
+    </record>
+
+    <!-- beach_wing -->
+    <record id="hotel_building_beach_wing" model="hotel.building">
+        <field name="name">Beach Villas</field>
+        <field name="hotel_id" ref="hotel_demo"/>
+    </record>
+
+</odoo>

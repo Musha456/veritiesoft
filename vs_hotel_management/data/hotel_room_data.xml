@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="hotel_room_101" model="hotel.room">
+            <field name="room_number">101</field>
+            <field name="room_category_id" ref="vs_hotel_management.hotel_room_category_standard_room"/>
+            <field name="building_id" ref="vs_hotel_management.hotel_building_main_building"/>
+            <field name="floor_id" ref="vs_hotel_management.hotel_floor_ground"/>
+        </record>
+
+        <record id="hotel_room_102" model="hotel.room">
+            <field name="room_number">102</field>
+            <field name="room_category_id" ref="vs_hotel_management.hotel_room_category_deluxe_room"/>
+            <field name="building_id" ref="vs_hotel_management.hotel_building_main_building"/>
+            <field name="floor_id" ref="vs_hotel_management.hotel_floor_ground"/>
+        </record>
+
+        <record id="hotel_room_103" model="hotel.room">
+            <field name="room_number">103</field>
+            <field name="room_category_id" ref="vs_hotel_management.hotel_room_category_executive_room"/>
+            <field name="building_id" ref="vs_hotel_management.hotel_building_main_building"/>
+            <field name="floor_id" ref="vs_hotel_management.hotel_floor_ground"/>
+        </record>
+
+        <record id="hotel_room_104" model="hotel.room">
+            <field name="room_number">104</field>
+            <field name="room_category_id" ref="vs_hotel_management.hotel_room_category_family_room"/>
+            <field name="building_id" ref="vs_hotel_management.hotel_building_main_building"/>
+            <field name="floor_id" ref="vs_hotel_management.hotel_floor_ground"/>
+        </record>
+
+        <record id="hotel_room_105" model="hotel.room">
+            <field name="room_number">105</field>
+            <field name="room_category_id" ref="vs_hotel_management.hotel_room_category_junior_suite"/>
+            <field name="building_id" ref="vs_hotel_management.hotel_building_main_building"/>
+            <field name="floor_id" ref="vs_hotel_management.hotel_floor_ground"/>
+        </record>
+
+        <record id="hotel_room_106" model="hotel.room">
+            <field name="room_number">106</field>
+            <field name="room_category_id" ref="vs_hotel_management.hotel_room_category_executive_suite"/>
+            <field name="building_id" ref="vs_hotel_management.hotel_building_main_building"/>
+            <field name="floor_id" ref="vs_hotel_management.hotel_floor_ground"/>
+        </record>
+
+        <record id="hotel_room_107" model="hotel.room">
+            <field name="room_number">107</field>
+            <field name="room_category_id" ref="vs_hotel_management.hotel_room_category_presidential_suite"/>
+            <field name="building_id" ref="vs_hotel_management.hotel_building_main_building"/>
+            <field name="floor_id" ref="vs_hotel_management.hotel_floor_ground"/>
+        </record>
+
+        <record id="hotel_room_108" model="hotel.room">
+            <field name="room_number">108</field>
+            <field name="room_category_id" ref="vs_hotel_management.hotel_room_category_standard_room"/>
+            <field name="building_id" ref="vs_hotel_management.hotel_building_main_building"/>
+            <field name="floor_id" ref="vs_hotel_management.hotel_floor_ground"/>
+        </record>
+
+        <record id="hotel_room_109" model="hotel.room">
+            <field name="room_number">109</field>
+            <field name="room_category_id" ref="vs_hotel_management.hotel_room_category_standard_room"/>
+            <field name="building_id" ref="vs_hotel_management.hotel_building_main_building"/>
+            <field name="floor_id" ref="vs_hotel_management.hotel_floor_ground"/>
+        </record>
+
+        <record id="hotel_room_110" model="hotel.room">
+            <field name="room_number">110</field>
+            <field name="room_category_id" ref="vs_hotel_management.hotel_room_category_standard_room"/>
+            <field name="building_id" ref="vs_hotel_management.hotel_building_main_building"/>
+            <field name="floor_id" ref="vs_hotel_management.hotel_floor_ground"/>
+        </record>
+
+        <record id="hotel_room_101_image_1" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_101"/>
+            <field name="name">Main View</field>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/room/room_01.jpg"/>
+        </record>
+
+        <record id="hotel_room_101_image_2" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_101"/>
+            <field name="name">Bathroom</field>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/room/room_01_bathroom.jpg"/>
+        </record>
+
+        <record id="hotel_room_101_image_3" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_101"/>
+            <field name="name">Balcony</field>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/room/room_01_bathroom_amenities.jpg"/>
+        </record>
+
+        <record id="hotel_room_101_image_4" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_101"/>
+            <field name="name">Bathroom Amenities</field>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/room/room_01_balcony.jpg"/>
+        </record>
+
+        <record id="hotel_room_102_image_1" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_102"/>
+            <field name="name">Main View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_02.jpg"/>
+        </record>
+
+        <record id="hotel_room_102_image_2" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_102"/>
+            <field name="name">Bedroom View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_03.jpg"/>
+        </record>
+
+        <record id="hotel_room_102_image_3" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_102"/>
+            <field name="name">Bathroom</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_04.jpg"/>
+        </record>
+
+        <record id="hotel_room_102_image_4" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_102"/>
+            <field name="name">Balcony</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_05.jpg"/>
+        </record>
+
+
+        <record id="hotel_room_103_image_1" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_103"/>
+            <field name="name">Main View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_03.jpg"/>
+        </record>
+
+        <record id="hotel_room_103_image_2" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_103"/>
+            <field name="name">Bedroom View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_04.jpg"/>
+        </record>
+
+        <record id="hotel_room_103_image_3" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_103"/>
+            <field name="name">Bathroom</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_05.jpg"/>
+        </record>
+
+        <record id="hotel_room_103_image_4" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_103"/>
+            <field name="name">Balcony</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_06.jpg"/>
+        </record>
+
+
+        <record id="hotel_room_104_image_1" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_104"/>
+            <field name="name">Main View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_04.jpg"/>
+        </record>
+
+        <record id="hotel_room_104_image_2" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_104"/>
+            <field name="name">Bedroom View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_05.jpg"/>
+        </record>
+
+        <record id="hotel_room_104_image_3" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_104"/>
+            <field name="name">Bathroom</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_06.jpg"/>
+        </record>
+
+        <record id="hotel_room_104_image_4" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_104"/>
+            <field name="name">Balcony</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_07.jpg"/>
+        </record>
+
+
+        <record id="hotel_room_105_image_1" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_105"/>
+            <field name="name">Main View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_05.jpg"/>
+        </record>
+
+        <record id="hotel_room_105_image_2" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_105"/>
+            <field name="name">Bedroom View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_06.jpg"/>
+        </record>
+
+        <record id="hotel_room_105_image_3" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_105"/>
+            <field name="name">Bathroom</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_07.jpg"/>
+        </record>
+
+        <record id="hotel_room_105_image_4" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_105"/>
+            <field name="name">Balcony</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_08.jpg"/>
+        </record>
+
+
+        <record id="hotel_room_106_image_1" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_106"/>
+            <field name="name">Main View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_06.jpg"/>
+        </record>
+
+        <record id="hotel_room_106_image_2" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_106"/>
+            <field name="name">Bedroom View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_07.jpg"/>
+        </record>
+
+        <record id="hotel_room_106_image_3" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_106"/>
+            <field name="name">Bathroom</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_08.jpg"/>
+        </record>
+
+        <record id="hotel_room_106_image_4" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_106"/>
+            <field name="name">Balcony</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_09.jpg"/>
+        </record>
+
+
+        <record id="hotel_room_107_image_1" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_107"/>
+            <field name="name">Main View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_07.jpg"/>
+        </record>
+
+        <record id="hotel_room_107_image_2" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_107"/>
+            <field name="name">Bedroom View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_08.jpg"/>
+        </record>
+
+        <record id="hotel_room_107_image_3" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_107"/>
+            <field name="name">Bathroom</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_09.jpg"/>
+        </record>
+
+        <record id="hotel_room_107_image_4" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_107"/>
+            <field name="name">Balcony</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_10.jpg"/>
+        </record>
+
+
+        <record id="hotel_room_108_image_1" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_108"/>
+            <field name="name">Main View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_08.jpg"/>
+        </record>
+
+        <record id="hotel_room_108_image_2" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_108"/>
+            <field name="name">Bedroom View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_09.jpg"/>
+        </record>
+
+        <record id="hotel_room_108_image_3" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_108"/>
+            <field name="name">Bathroom</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_10.jpg"/>
+        </record>
+
+        <record id="hotel_room_108_image_4" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_108"/>
+            <field name="name">Balcony</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_01.jpg"/>
+        </record>
+
+
+        <record id="hotel_room_109_image_1" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_109"/>
+            <field name="name">Main View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_09.jpg"/>
+        </record>
+
+        <record id="hotel_room_109_image_2" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_109"/>
+            <field name="name">Bedroom View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_10.jpg"/>
+        </record>
+
+        <record id="hotel_room_109_image_3" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_109"/>
+            <field name="name">Bathroom</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_01.jpg"/>
+        </record>
+
+        <record id="hotel_room_109_image_4" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_109"/>
+            <field name="name">Balcony</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_02.jpg"/>
+        </record>
+
+
+        <record id="hotel_room_110_image_1" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_110"/>
+            <field name="name">Main View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_10.jpg"/>
+        </record>
+
+        <record id="hotel_room_110_image_2" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_110"/>
+            <field name="name">Bedroom View</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_01.jpg"/>
+        </record>
+
+        <record id="hotel_room_110_image_3" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_110"/>
+            <field name="name">Bathroom</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_02.jpg"/>
+        </record>
+
+        <record id="hotel_room_110_image_4" model="hotel.room.image">
+            <field name="room_id" ref="vs_hotel_management.hotel_room_110"/>
+            <field name="name">Balcony</field>
+            <field name="image" type="base64" file="vs_hotel_management/static/src/img/room/room_03.jpg"/>
+        </record>
+
+
+    </data>
+</odoo>

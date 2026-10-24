@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="vs_hotel_management.HotelTaskTimer">
+        <div t-att-class="'d-inline-flex align-items-center gap-2 px-3 py-2 rounded border ' + (
+            props.record.data.state === 'in_progress'
+                ? 'text-success border-success bg-light'
+                : 'text-muted border-secondary bg-light'
+        )">
+            <i t-att-class="'fa fa-clock-o ' + (
+                props.record.data.state === 'in_progress'
+                    ? 'text-success'
+                    : 'text-muted'
+            )"
+               aria-hidden="true"/>
+
+            <span class="small">Elapsed</span>
+
+            <strong class="font-monospace" t-esc="formattedTime"/>
+
+            <span class="text-muted small">
+                (<t t-esc="totalSeconds === 3600 ? 'Hour' : 'Hours'"/>)
+            </span>
+
+        </div>
+    </t>
+</templates>

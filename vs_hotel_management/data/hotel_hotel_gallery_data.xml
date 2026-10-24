@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ================= Hotel Gallery Images ================= -->
+
+        <record id="hotel_image_hotel_exterior" model="hotel.hotel.image">
+            <field name="name">Hotel Exterior</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/hotel/gallery/hotel_exterior.jpg"/>
+            <field name="description">
+                Experience the elegant architecture and welcoming entrance of our hotel, designed to provide guests with a memorable first impression from the moment they arrive.
+            </field>
+        </record>
+
+        <record id="hotel_image_reception_desk" model="hotel.hotel.image">
+            <field name="name">Reception Desk</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/hotel/gallery/reception_desk.jpg"/>
+            <field name="description">
+                Our professional reception team is available around the clock to assist with check-in, check-out, reservations, and guest inquiries.
+            </field>
+        </record>
+
+        <record id="hotel_image_grand_lobby" model="hotel.hotel.image">
+            <field name="name">Grand Lobby</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/hotel/gallery/grand_lobby.jpg"/>
+            <field name="description">
+                Relax in our spacious grand lobby featuring elegant décor, comfortable seating, and a welcoming atmosphere for all guests.
+            </field>
+        </record>
+
+        <record id="hotel_image_concierge_desk" model="hotel.hotel.image">
+            <field name="name">Concierge Desk</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/hotel/gallery/concierge_desk.jpg"/>
+            <field name="description">
+                Our dedicated concierge team is ready to assist with transportation, sightseeing recommendations, restaurant reservations, and personalized guest services.
+            </field>
+        </record>
+
+        <record id="hotel_image_elevator_lobby" model="hotel.hotel.image">
+            <field name="name">Elevator Lobby</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/hotel/gallery/elevator_lobby.jpg"/>
+            <field name="description">
+                Modern elevator lobby offering convenient access to all guest floors with a clean, spacious, and well-lit environment.
+            </field>
+        </record>
+
+        <record id="hotel_image_staircase_lobby" model="hotel.hotel.image">
+            <field name="name">Grand Staircase</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/hotel/gallery/staircase_lobby.jpg"/>
+            <field name="description">
+                An elegant grand staircase showcasing timeless architectural beauty, perfect for memorable guest experiences and photographs.
+            </field>
+        </record>
+
+        <record id="hotel_image_hallway_corridors" model="hotel.hotel.image">
+            <field name="name">Hallway &amp; Corridors</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/hotel/gallery/hallway_and_corridors.jpg"/>
+            <field name="description">
+                Wide, beautifully maintained corridors provide comfortable access to guest rooms while maintaining a peaceful and elegant atmosphere.
+            </field>
+        </record>
+
+        <record id="hotel_image_rooftop_terrace" model="hotel.hotel.image">
+            <field name="name">Rooftop Terrace</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/hotel/gallery/rooftop_terrace.jpg"/>
+            <field name="description">
+                Enjoy breathtaking panoramic views from our rooftop terrace, an ideal place to relax, socialize, or admire the surrounding city skyline.
+            </field>
+        </record>
+
+        <record id="hotel_image_garden_courtyard" model="hotel.hotel.image">
+            <field name="name">Garden Courtyard</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/hotel/gallery/garden_courtyard.jpg"/>
+            <field name="description">
+                Escape into our beautifully landscaped garden courtyard featuring lush greenery, peaceful walkways, and tranquil seating areas.
+            </field>
+        </record>
+
+        <record id="hotel_image_swimming_pool" model="hotel.hotel.image">
+            <field name="name">Swimming Pool</field>
+            <field name="hotel_id" ref="hotel_demo"/>
+            <field name="image" type="base64"
+                   file="vs_hotel_management/static/src/img/hotel/gallery/swimming_pool.jpg"/>
+            <field name="description">
+                Refresh yourself in our luxurious swimming pool surrounded by comfortable loungers, offering the perfect setting for relaxation and leisure.
+            </field>
+        </record>
+
+    </data>
+</odoo>

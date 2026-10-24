@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+        <record id="res_config_settings_view_form_hotel" model="ir.ui.view">
+            <field name="name">res.config.settings.hotel.form</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//form" position="inside">
+
+                    <app data-string="Hotel Management" string="Hotel Management" name="vs_hotel_management"
+                         groups="vs_hotel_management.group_hotel_room_manager"
+                         logo="/vs_hotel_management/static/description/icon.png">
+
+                        <!-- ================================================= -->
+                        <!-- 1. GENERAL & TIMING                               -->
+                        <!-- ================================================= -->
+                        <block title="General &amp; Timing Settings" id="block_general_timing">
+
+                            <setting id="setting_checkin_time"
+                                     string="Default Check-in Time"
+                                     help="Standard default check-in time (e.g. 14.0 for 2:00 PM). Used when creating new reservations.">
+                                <field name="checkin_time_default" widget="float_time"/>
+                            </setting>
+
+                            <setting id="setting_checkout_time"
+                                     string="Default Check-out Time"
+                                     help="Standard default check-out time (e.g. 12.0 for 12:00 PM noon). Used when creating new reservations.">
+                                <field name="checkout_time_default" widget="float_time"/>
+                            </setting>
+
+                        </block>
+
+                        <!-- ================================================= -->
+                        <!-- 2. DEFAULT PROPERTY HIERARCHY                     -->
+                        <!-- ================================================= -->
+                        <block title="Default Property &amp; Location Hierarchy" id="block_default_hotel">
+
+                            <setting id="setting_default_hotel"
+                                     string="Default Hotel"
+                                     help="Pre-populate a default hotel on newly created reservations and rooms.">
+                                <field name="use_default_hotel"/>
+                                <div class="content-group" invisible="not use_default_hotel">
+                                    <div class="mt8">
+                                        <field name="configured_hotel_id"
+                                               required="use_default_hotel"
+                                               placeholder="Select Default Hotel..."/>
+                                    </div>
+                                </div>
+                            </setting>
+
+                            <setting id="setting_default_building"
+                                     string="Default Building"
+                                     help="Pre-populate a default building belonging to the selected hotel."
+                                     invisible="not use_default_hotel">
+                                <field name="use_default_building"/>
+                                <div class="content-group"
+                                     invisible="not use_default_hotel or not use_default_building">
+                                    <div class="mt8">
+                                        <field name="configured_building_id"
+                                               required="use_default_building"
+                                               domain="[('hotel_id', '=', configured_hotel_id)]"
+                                               placeholder="Select Default Building..."/>
+                                    </div>
+                                </div>
+                            </setting>
+
+                            <setting id="setting_default_floor"
+                                     string="Default Floor"
+                                     help="Pre-populate a default floor belonging to the selected building."
+                                     invisible="not use_default_hotel or not use_default_building">
+                                <field name="use_default_floor"/>
+                                <div class="content-group"
+                                     invisible="not use_default_hotel or not use_default_building or not use_default_floor">
+                                    <div class="mt8">
+                                        <field name="configured_floor_id"
+                                               required="use_default_floor"
+                                               domain="[('building_id', '=', configured_building_id)]"
+                                               placeholder="Select Default Floor..."/>
+                                    </div>
+                                </div>
+                            </setting>
+
+                        </block>
+
+                        <!-- ================================================= -->
+                        <!-- 3. RESERVATION RULES & STAY LIMITS                -->
+                        <!-- ================================================= -->
+                        <block title="Reservation Policies &amp; Stay Rules" id="block_reservation_rules">
+
+                            <setting id="hotel_minimum_stay_setting"
+                                     string="Minimum Stay (Nights)"
+                                     help="Minimum number of nights required for reservations.">
+                                <field name="hotel_minimum_stay"/>
+                            </setting>
+
+                            <setting id="hotel_maximum_stay_setting"
+                                     string="Maximum Stay (Nights)"
+                                     help="Maximum number of nights allowed for reservations.">
+                                <field name="hotel_maximum_stay"/>
+                            </setting>
+
+                            <setting id="hotel_require_guest_setting"
+                                     string="Require Guest Contact"
+                                     help="Require a valid guest partner before confirming a reservation.">
+                                <field name="hotel_require_guest"/>
+                            </setting>
+
+                            <setting id="hotel_require_rate_plan_setting"
+                                     string="Require Rate Plan"
+                                     help="Require a rate plan to be specified on each reservation line.">
+                                <field name="hotel_require_rate_plan"/>
+                            </setting>
+
+                            <setting id="allow_overbooking_setting"
+                                     string="Allow Overbooking"
+                                     help="Permit reservations to exceed room availability without throwing blocking errors.">
+                                <field name="allow_overbooking"/>
+                            </setting>
+
+                            <setting id="allow_early_checkin_setting"
+                                     string="Allow Early Check-in"
+                                     help="Permit front desk staff to check in guests before the scheduled check-in time.">
+                                <field name="allow_early_checkin"/>
+                            </setting>
+
+                            <setting id="allow_early_checkout_setting"
+                                     string="Allow Early Checkout"
+                                     help="Permit guests to check out before the scheduled check-out time without restrictions.">
+                                <field name="allow_early_checkout"/>
+                            </setting>
+
+                        </block>
+
+                        <!-- ================================================= -->
+                        <!-- 4. RESERVATION & BILLING AUTOMATION               -->
+                        <!-- ================================================= -->
+                        <block title="Reservation &amp; Billing Automation" id="block_reservation_automation">
+
+                            <setting id="hotel_auto_confirm_reservation_setting"
+                                     string="Auto-confirm Reservations"
+                                     help="Automatically confirm new hotel reservations upon creation.">
+                                <field name="hotel_auto_confirm_reservation"/>
+                            </setting>
+
+                            <setting id="hotel_auto_create_invoice_setting"
+                                     string="Auto-create Invoice on Checkout"
+                                     help="Automatically generate customer invoice from the guest folio upon checkout.">
+                                <field name="hotel_auto_create_invoice"/>
+                            </setting>
+
+                            <setting id="hotel_require_payment_before_checkout_setting"
+                                     string="Require Payment Before Checkout"
+                                     help="Enforce full payment and zero outstanding balance on the guest folio prior to checkout.">
+                                <field name="hotel_require_payment_before_checkout"/>
+                            </setting>
+
+                            <setting id="hotel_auto_close_folio_after_payment_setting"
+                                     string="Auto-close Folio After Payment"
+                                     help="Automatically transition guest folio status to Closed once all payments are received.">
+                                <field name="hotel_auto_close_folio_after_payment"/>
+                            </setting>
+
+                        </block>
+
+                        <!-- ================================================= -->
+                        <!-- 5. ROOM & TASK AUTOMATION                         -->
+                        <!-- ================================================= -->
+                        <block title="Room, Housekeeping &amp; Maintenance Automation" id="block_room_task_automation">
+
+                            <setting id="mark_room_dirty_on_checkout_setting"
+                                     string="Mark Room Dirty on Checkout"
+                                     help="Automatically mark room status as Dirty and schedule cleaning when a guest checks out.">
+                                 <field name="mark_room_dirty_on_checkout"/>
+                            </setting>
+
+                            <setting id="auto_start_housekeeping_setting"
+                                     string="Auto-start Scheduled Housekeeping"
+                                     help="Automatically transition scheduled housekeeping tasks to In Progress when scheduled time arrives."
+                                     invisible="not mark_room_dirty_on_checkout">
+                                <field name="auto_start_housekeeping"/>
+                            </setting>
+
+                            <setting id="setting_housekeeping_assigned_user"
+                                     string="Checkout Housekeeper"
+                                     help="Housekeeping staff member automatically assigned to checkout cleaning tasks."
+                                     invisible="not mark_room_dirty_on_checkout or not auto_start_housekeeping">
+                                <field name="housekeeping_assigned_user_id"
+                                       required="mark_room_dirty_on_checkout and auto_start_housekeeping"
+                                       placeholder="Select Housekeeping User..."/>
+                            </setting>
+
+                            <setting id="auto_start_maintenance_setting"
+                                     string="Auto-start Scheduled Maintenance"
+                                     help="Automatically transition scheduled maintenance tasks to In Progress when scheduled time arrives."
+                                     invisible="not mark_room_dirty_on_checkout">
+                                <field name="auto_start_maintenance"/>
+                            </setting>
+
+                        </block>
+
+                        <!-- ================================================= -->
+                        <!-- 6. NOTIFICATION CHANNELS (MASTER SWITCHES)        -->
+                        <!-- ================================================= -->
+                        <block title="Communication Channels (Master Controls)" id="block_notification_channels">
+
+                            <setting id="setting_email_enabled"
+                                     string="Email Notifications"
+                                     help="Master switch to enable or disable automated email dispatches across all hotel workflows.">
+                                <field name="email_notifications_enabled"/>
+                            </setting>
+
+                            <setting id="setting_whatsapp_enabled"
+                                     string="WhatsApp Notifications"
+                                     help="Master switch to enable or disable Meta WhatsApp Cloud API messaging across hotel workflows.">
+                                <field name="whatsapp_notifications_enabled"/>
+                            </setting>
+
+                            <setting id="setting_sms_enabled"
+                                     string="SMS Notifications"
+                                     help="Master switch to enable or disable automated SMS notifications across hotel workflows.">
+                                <field name="sms_notifications_enabled"/>
+                            </setting>
+
+                            <div class="text-muted small mt-2">
+                                <i class="fa fa-info-circle text-primary me-1"/>
+                                All notifications (Email, WhatsApp, SMS) are automatically queued when actions are triggered to guarantee an instant, smooth user experience without waiting, and dispatched asynchronously via background cron jobs.
+                            </div>
+
+                        </block>
+
+                        <!-- ================================================= -->
+                        <!-- 7. RESERVATION NOTIFICATIONS                      -->
+                        <!-- ================================================= -->
+                        <block title="Reservation Notifications" id="block_reservation_notifications">
+
+                            <setting id="setting_reservation_email_notifications"
+                                     string="Reservation Email Notifications"
+                                     help="Configure automatic email notifications sent to guests during reservation lifecycle."
+                                     invisible="not email_notifications_enabled">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <div class="col-12">
+                                            <field name="email_reservation_confirmed" class="oe_inline"/>
+                                            <label for="email_reservation_confirmed" class="oe_inline ms-2" string="Send Email on Reservation Confirmation"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="email_reservation_cancelled" class="oe_inline"/>
+                                            <label for="email_reservation_cancelled" class="oe_inline ms-2" string="Send Email on Reservation Cancellation"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="email_reservation_checkout" class="oe_inline"/>
+                                            <label for="email_reservation_checkout" class="oe_inline ms-2" string="Send Email on Checkout (Thank You &amp; Folio Charges)"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="email_reservation_noshow" class="oe_inline"/>
+                                            <label for="email_reservation_noshow" class="oe_inline ms-2" string="Send Email on Reservation No-Show"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </setting>
+
+                            <setting id="setting_reservation_whatsapp_notifications"
+                                     string="Reservation WhatsApp Notifications"
+                                     help="Configure automatic WhatsApp messages sent to guests during reservation lifecycle."
+                                     invisible="not whatsapp_notifications_enabled">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <div class="col-12">
+                                            <field name="whatsapp_reservation_confirmed" class="oe_inline"/>
+                                            <label for="whatsapp_reservation_confirmed" class="oe_inline ms-2" string="Send WhatsApp on Reservation Confirmation"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="whatsapp_reservation_cancelled" class="oe_inline"/>
+                                            <label for="whatsapp_reservation_cancelled" class="oe_inline ms-2" string="Send WhatsApp on Reservation Cancellation"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="whatsapp_reservation_checkout" class="oe_inline"/>
+                                            <label for="whatsapp_reservation_checkout" class="oe_inline ms-2" string="Send WhatsApp on Checkout (Thank You &amp; Folio Charges)"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="whatsapp_reservation_noshow" class="oe_inline"/>
+                                            <label for="whatsapp_reservation_noshow" class="oe_inline ms-2" string="Send WhatsApp on Reservation No-Show"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </setting>
+
+                            <setting id="setting_reservation_sms_notifications"
+                                     string="Reservation SMS Notifications"
+                                     help="Configure automatic SMS notifications sent to guests during reservation lifecycle."
+                                     invisible="not sms_notifications_enabled">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <div class="col-12">
+                                            <field name="sms_reservation_confirmed" class="oe_inline"/>
+                                            <label for="sms_reservation_confirmed" class="oe_inline ms-2" string="Send SMS on Reservation Confirmation"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="sms_reservation_cancelled" class="oe_inline"/>
+                                            <label for="sms_reservation_cancelled" class="oe_inline ms-2" string="Send SMS on Reservation Cancellation"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="sms_reservation_checkout" class="oe_inline"/>
+                                            <label for="sms_reservation_checkout" class="oe_inline ms-2" string="Send SMS on Checkout (Thank You &amp; Folio Balance)"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="sms_reservation_noshow" class="oe_inline"/>
+                                            <label for="sms_reservation_noshow" class="oe_inline ms-2" string="Send SMS on Reservation No-Show"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </setting>
+
+                        </block>
+
+                        <!-- ================================================= -->
+                        <!-- 8. TASK NOTIFICATIONS                             -->
+                        <!-- ================================================= -->
+                        <block title="Task Notifications (Housekeeping &amp; Maintenance)" id="block_task_notifications">
+
+                            <setting id="setting_task_email_notifications"
+                                     string="Staff Email Task Notifications"
+                                     help="Send automated email notifications to staff when tasks are assigned or cancelled."
+                                     invisible="not email_notifications_enabled">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <div class="col-12">
+                                            <field name="email_housekeeping_assigned" class="oe_inline"/>
+                                            <label for="email_housekeeping_assigned" class="oe_inline ms-2" string="Housekeeping Task Assignment"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="email_housekeeping_cancelled" class="oe_inline"/>
+                                            <label for="email_housekeeping_cancelled" class="oe_inline ms-2" string="Housekeeping Task Cancellation"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="email_maintenance_assigned" class="oe_inline"/>
+                                            <label for="email_maintenance_assigned" class="oe_inline ms-2" string="Maintenance Task Assignment"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="email_maintenance_cancelled" class="oe_inline"/>
+                                            <label for="email_maintenance_cancelled" class="oe_inline ms-2" string="Maintenance Task Cancellation"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </setting>
+
+                            <setting id="setting_task_whatsapp_notifications"
+                                     string="Staff WhatsApp Task Notifications"
+                                     help="Send automated WhatsApp messages to staff when tasks are assigned or cancelled."
+                                     invisible="not whatsapp_notifications_enabled">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <div class="col-12">
+                                            <field name="whatsapp_housekeeping_assigned" class="oe_inline"/>
+                                            <label for="whatsapp_housekeeping_assigned" class="oe_inline ms-2" string="Housekeeping Task Assignment"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="whatsapp_housekeeping_cancelled" class="oe_inline"/>
+                                            <label for="whatsapp_housekeeping_cancelled" class="oe_inline ms-2" string="Housekeeping Task Cancellation"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="whatsapp_maintenance_assigned" class="oe_inline"/>
+                                            <label for="whatsapp_maintenance_assigned" class="oe_inline ms-2" string="Maintenance Task Assignment"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="whatsapp_maintenance_cancelled" class="oe_inline"/>
+                                            <label for="whatsapp_maintenance_cancelled" class="oe_inline ms-2" string="Maintenance Task Cancellation"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </setting>
+
+                            <setting id="setting_task_sms_notifications"
+                                     string="Staff SMS Task Notifications"
+                                     help="Send automated SMS alerts to staff when tasks are assigned."
+                                     invisible="not sms_notifications_enabled">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <div class="col-12">
+                                            <field name="sms_housekeeping_assigned" class="oe_inline"/>
+                                            <label for="sms_housekeeping_assigned" class="oe_inline ms-2" string="Housekeeping Task Assignment"/>
+                                        </div>
+                                        <div class="col-12 mt8">
+                                            <field name="sms_maintenance_assigned" class="oe_inline"/>
+                                            <label for="sms_maintenance_assigned" class="oe_inline ms-2" string="Maintenance Task Assignment"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </setting>
+
+                        </block>
+
+                        <!-- ================================================= -->
+                        <!-- 9. COMPANY WHATSAPP CLOUD API INTEGRATION         -->
+                        <!-- ================================================= -->
+                        <block title="Company WhatsApp Integration (Meta Cloud API)" id="block_whatsapp_credentials">
+
+                            <div class="alert alert-info d-flex align-items-center mb-3 mx-3" role="status">
+                                <i class="fa fa-info-circle fa-2x me-3"/>
+                                <div>
+                                    <strong>Meta WhatsApp Cloud API Configuration</strong><br/>
+                                    Active Company: <strong><field name="company_id" readonly="1" class="oe_inline"/></strong>.
+                                    These credentials configure Meta WhatsApp Cloud API messaging for this company.
+                                </div>
+                            </div>
+
+                            <setting id="setting_whatsapp_company_credentials"
+                                     string="Meta WhatsApp Cloud API Settings"
+                                     help="Direct integration with Meta Graph API for automated guest and staff notifications.">
+                                <div class="content-group w-100">
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <label for="whatsapp_access_token" class="fw-bold d-block mb-1" string="Meta Access Token"/>
+                                            <field name="whatsapp_access_token" password="True" class="w-100" placeholder="EAAB..."/>
+                                            <div class="text-muted small mt-1">Permanent or System User access token from Meta App Dashboard.</div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label for="whatsapp_phone_number_id" class="fw-bold d-block mb-1" string="Phone Number ID"/>
+                                            <field name="whatsapp_phone_number_id" class="w-100" placeholder="e.g. 1223822660794927"/>
+                                            <div class="text-muted small mt-1">Found in Meta WhatsApp App Dashboard &gt; API Setup.</div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label for="whatsapp_business_account_id" class="fw-bold d-block mb-1" string="WhatsApp Business Account ID"/>
+                                            <field name="whatsapp_business_account_id" class="w-100" placeholder="e.g. 2101618547113454"/>
+                                            <div class="text-muted small mt-1">Meta WABA ID linked to your business account.</div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label for="whatsapp_api_version" class="fw-bold d-block mb-1" string="Graph API Version"/>
+                                            <field name="whatsapp_api_version" class="w-100" placeholder="v23.0"/>
+                                            <div class="text-muted small mt-1">Meta Graph API version (default: v23.0).</div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label for="whatsapp_template_name" class="fw-bold d-block mb-1" string="Task Notification Template Name"/>
+                                            <field name="whatsapp_template_name" class="w-100" placeholder="hotel_task_notification"/>
+                                            <div class="text-muted small mt-1">Approved template name in Meta WhatsApp Manager.</div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label for="whatsapp_template_language" class="fw-bold d-block mb-1" string="Template Language Code"/>
+                                            <field name="whatsapp_template_language" class="w-100" placeholder="en"/>
+                                            <div class="text-muted small mt-1">Template language code (e.g. en, en_US).</div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label for="whatsapp_webhook_verify_token" class="fw-bold d-block mb-1" string="Webhook Verify Token"/>
+                                            <field name="whatsapp_webhook_verify_token" class="w-100" placeholder="hotel_whatsapp_secret"/>
+                                            <div class="text-muted small mt-1">Token configured in Meta Developer Portal &gt; Configuration &gt; Webhook.</div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label for="whatsapp_webhook_url" class="fw-bold d-block mb-1" string="Webhook Callback URL"/>
+                                            <div class="p-2 bg-light border rounded font-monospace small text-dark">
+                                                <field name="whatsapp_webhook_url" readonly="1" class="w-100"/>
+                                            </div>
+                                            <div class="text-muted small mt-1">Enter this URL in Meta Developer Portal Webhook Callback URL.</div>
+                                        </div>
+                                        <div class="col-12 mt-3">
+                                            <button name="action_test_whatsapp_connection"
+                                                    type="object"
+                                                    string="Test WhatsApp Connection"
+                                                    class="btn-primary"
+                                                    icon="fa-plug"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </setting>
+
+                        </block>
+
+                    </app>
+
+                </xpath>
+
+            </field>
+
+        </record>
+
+        <record id="action_hotel_config_settings" model="ir.actions.act_window">
+            <field name="name">Settings</field>
+            <field name="res_model">res.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+            <field name="context">{'module' : 'vs_hotel_management', 'bin_size': False}</field>
+        </record>
+
+    </data>
+</odoo>

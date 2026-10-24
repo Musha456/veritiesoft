@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <!-- main building -->
+    <record id="hotel_building_main_building" model="hotel.building.floor">
+        <field name="name">Main Building</field>
+    </record>
+
+    <!-- executive tower -->
+    <record id="hotel_building_executive_tower" model="hotel.building.floor">
+        <field name="name">North Wing</field>
+    </record>
+
+    <!-- south_wing -->
+    <record id="hotel_building_south_wing" model="hotel.building.floor">
+        <field name="name">South Wing</field>
+    </record>
+
+    <!-- garden_wing -->
+    <record id="hotel_building_garden_wing" model="hotel.building.floor">
+        <field name="name">Garden Wing</field>
+    </record>
+
+    <!-- beach_wing -->
+    <record id="hotel_building_beach_wing" model="hotel.building.floor">
+        <field name="name">Beach Villas</field>
+    </record>
+
+</odoo>

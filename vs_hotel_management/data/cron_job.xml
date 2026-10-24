@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Scheduled Action: Start Housekeeping / Maintenance Tasks -->
+    <record id="ir_cron_start_scheduled_hotel_tasks" model="ir.cron">
+        <field name="name">Hotel: Start Scheduled Tasks</field>
+        <field name="model_id" ref="model_hotel_housekeeping"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_start_scheduled_tasks()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!-- Scheduled Action: Process Queued WhatsApp Notifications -->
+    <record id="ir_cron_process_hotel_whatsapp_queue" model="ir.cron">
+        <field name="name">Hotel: Process WhatsApp Notification Queue</field>
+        <field name="model_id" ref="model_hotel_whatsapp_log"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_process_whatsapp_queue()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!-- Scheduled Action: Process Outgoing Hotel Emails & SMS Queue -->
+    <record id="ir_cron_process_hotel_email_sms_queue" model="ir.cron">
+        <field name="name">Hotel: Process Email &amp; SMS Notification Queue</field>
+        <field name="model_id" ref="model_hotel_whatsapp_log"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_process_email_sms_queue()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

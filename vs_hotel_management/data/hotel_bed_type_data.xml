@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data noupdate="1">
+        <record id="hotel_bed_type_single_bed" model="hotel.bed.type">
+            <field name="name">Single Bed</field>
+<!--            <field name="image" type="base64" file="vs_hotel_management/static/src/img/bed_type/single_bed.png"/>-->
+        </record>
+
+        <record id="hotel_bed_type_twin_bed" model="hotel.bed.type">
+            <field name="name">Twin Bed</field>
+<!--            <field name="image" type="base64" file="vs_hotel_management/static/src/img/bed_type/twin_bed.png"/>-->
+        </record>
+
+        <record id="hotel_bed_type_double_bed" model="hotel.bed.type">
+            <field name="name">Double Bed</field>
+<!--            <field name="image" type="base64" file="vs_hotel_management/static/src/img/bed_type/double_bed.png"/>-->
+        </record>
+
+        <record id="hotel_bed_type_queen_bed" model="hotel.bed.type">
+            <field name="name">Queen Bed</field>
+<!--            <field name="image" type="base64" file="vs_hotel_management/static/src/img/bed_type/queen_bed.png"/>-->
+        </record>
+
+        <record id="hotel_bed_type_king_bed" model="hotel.bed.type">
+            <field name="name">King Bed</field>
+<!--            <field name="image" type="base64" file="vs_hotel_management/static/src/img/bed_type/king_bed.png"/>-->
+        </record>
+
+        <record id="hotel_bed_type_california_king_bed" model="hotel.bed.type">
+            <field name="name">California King Bed</field>
+<!--            <field name="image" type="base64" file="vs_hotel_management/static/src/img/bed_type/california_king_bed.png"/>-->
+        </record>
+
+        <record id="hotel_bed_type_bunk_bed" model="hotel.bed.type">
+            <field name="name">Bunk Bed</field>
+<!--            <field name="image" type="base64" file="vs_hotel_management/static/src/img/bed_type/bunk_bed.png"/>-->
+        </record>
+
+        <record id="hotel_bed_type_safa_bed" model="hotel.bed.type">
+            <field name="name">Sofa Bed</field>
+<!--            <field name="image" type="base64" file="vs_hotel_management/static/src/img/bed_type/sofa_bed.png"/>-->
+        </record>
+
+        <record id="hotel_bed_type_murphy_bed" model="hotel.bed.type">
+            <field name="name">Murphy Bed</field>
+<!--            <field name="image" type="base64" file="vs_hotel_management/static/src/img/bed_type/murphy_bed.png"/>-->
+        </record>
+
+        <record id="hotel_bed_type_rollaway_bed" model="hotel.bed.type">
+            <field name="name">Rollaway Bed</field>
+<!--            <field name="image" type="base64" file="vs_hotel_management/static/src/img/bed_type/rollaway_bed.png"/>-->
+        </record>
+    </data>
+</odoo>

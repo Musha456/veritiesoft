@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_users_form_hotel_inherit" model="ir.ui.view">
+        <field name="name">res.users.form.hotel.inherit</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//div[@name='button_box']" position="inside">
+
+                <button name="action_view_user_housekeeping_tasks"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-check-square-o">
+                    <field name="housekeeping_task_count"
+                           widget="statinfo"
+                           string="Housekeeping"/>
+                </button>
+
+                <button name="action_view_user_maintenance_tasks"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-wrench">
+                    <field name="maintenance_task_count"
+                           widget="statinfo"
+                           string="Maintenance"/>
+                </button>
+
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+
+                <page string="Hotel Roles" name="hotel_roles">
+                    <group>
+                        <group string="Management Roles">
+                            <field name="is_hotel_manager" widget="boolean_toggle"/>
+                            <field name="is_hotel_reservation_manager" widget="boolean_toggle"/>
+                            <field name="is_hotel_housekeeping_manager" widget="boolean_toggle"/>
+                            <field name="is_hotel_maintenance_manager" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Staff Operations Roles">
+                            <field name="is_hotel_housekeeping_user" widget="boolean_toggle"/>
+                            <field name="is_hotel_maintenance_user" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                </page>
+
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

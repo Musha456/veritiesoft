@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- ========================================================== -->
+        <!-- 1. Reservation Confirmation Email Template                 -->
+        <!-- ========================================================== -->
+        <record id="mail_template_hotel_reservation_confirmation" model="mail.template">
+            <field name="name">Hotel: Reservation Confirmation</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_reservation"/>
+            <field name="subject">{{ object.hotel_id.name }} - Reservation Confirmation {{ object.name }}</field>
+            <field name="email_from">{{ (object.hotel_id.email or object.company_id.email or user.email_formatted or 'hotel@veritiesoft.com') }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="report_template_ids" eval="[(4, ref('vs_hotel_management.action_report_hotel_reservation'))]"/>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; color: #2d3748;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);">
+                        <!-- Header -->
+                        <tr>
+                            <td style="padding: 28px 32px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: #ffffff; text-align: center;">
+                                <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;" t-out="object.hotel_id.name or 'Hotel'"/>
+                                <p style="margin: 6px 0 0; font-size: 15px; opacity: 0.9;">Reservation Confirmation</p>
+                                <div style="margin-top: 12px; display: inline-block; padding: 4px 14px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 13px; font-weight: 600; letter-spacing: 0.5px;" t-out="object.name"/>
+                            </td>
+                        </tr>
+
+                        <!-- Greeting -->
+                        <tr>
+                            <td style="padding: 28px 32px 16px;">
+                                <p style="margin: 0; font-size: 16px; line-height: 1.5;">
+                                    Dear <strong t-out="object.partner_id.name or 'Guest'"/>,
+                                </p>
+                                <p style="margin: 10px 0 0; font-size: 14px; color: #4a5568; line-height: 1.6;">
+                                    Thank you for choosing to stay with us. We are pleased to confirm your reservation at <strong t-out="object.hotel_id.name"/>. Below are your booking details:
+                                </p>
+                            </td>
+                        </tr>
+
+                        <!-- Stay Details Grid -->
+                        <tr>
+                            <td style="padding: 0 32px 20px;">
+                                <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 20px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px;">
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #64748b; width: 45%;">Check-In:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="object.check_in_formatted or object.check_in"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #64748b;">Check-Out:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="object.check_out_formatted or object.check_out"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #64748b;">Length of Stay:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;">
+                                                <span t-out="object.night_count"/> Night(s)
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #64748b;">Guests:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;">
+                                                <span t-out="object.guest_count"/> Guest(s)
+                                                (<span t-out="object.adult_count"/> Adults, <span t-out="object.child_count"/> Children)
+                                            </td>
+                                        </tr>
+                                        <tr t-if="object.line_ids">
+                                            <td style="padding: 6px 0; color: #64748b;">Room(s):</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="', '.join(object.line_ids.mapped('room_id.display_name')) or 'Standard Room'"/>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Financial Summary -->
+                        <tr>
+                            <td style="padding: 0 32px 24px;">
+                                <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 6px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 14px; font-weight: 600; color: #166534;">Total Amount:</span>
+                                    <span style="font-size: 18px; font-weight: 700; color: #15803d; float: right;" t-out="format_amount(object.total_amount, object.currency_id)"/>
+                                </div>
+                                <p style="margin: 14px 0 0; font-size: 12px; color: #64748b;">
+                                    * A detailed confirmation receipt is attached to this email for your records.
+                                </p>
+                            </td>
+                        </tr>
+
+                        <!-- Hotel Contact Footer -->
+                        <tr>
+                            <td style="padding: 24px 32px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; line-height: 1.6;">
+                                <p style="margin: 0 0 4px; font-weight: 600; color: #334155;" t-out="object.hotel_id.name"/>
+                                <p style="margin: 0 0 4px;" t-if="object.hotel_id.street">
+                                    <span t-out="object.hotel_id.street"/>, <span t-out="object.hotel_id.city"/>, <span t-out="object.hotel_id.country_id.name"/>
+                                </p>
+                                <p style="margin: 0;" t-if="object.hotel_id.phone or object.hotel_id.email">
+                                    <span t-if="object.hotel_id.phone">Phone: <strong t-out="object.hotel_id.phone"/></span>
+                                    <span t-if="object.hotel_id.phone and object.hotel_id.email"> | </span>
+                                    <span t-if="object.hotel_id.email">Email: <strong t-out="object.hotel_id.email"/></span>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- 2. Reservation Welcome / Pre-Arrival Email Template        -->
+        <!-- ========================================================== -->
+        <record id="mail_template_hotel_reservation_welcome" model="mail.template">
+            <field name="name">Hotel: Welcome &amp; Pre-Arrival</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_reservation"/>
+            <field name="subject">Welcome to {{ object.hotel_id.name }} - Pre-Arrival Information</field>
+            <field name="email_from">{{ (object.hotel_id.email or object.company_id.email or user.email_formatted or 'hotel@veritiesoft.com') }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; color: #2d3748;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <tr>
+                            <td style="padding: 28px 32px; background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); color: #ffffff; text-align: center;">
+                                <h1 style="margin: 0; font-size: 24px; font-weight: 700;" t-out="object.hotel_id.name or 'Hotel'"/>
+                                <p style="margin: 6px 0 0; font-size: 15px; opacity: 0.9;">We Look Forward to Welcoming You!</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 28px 32px;">
+                                <p style="margin: 0; font-size: 16px; line-height: 1.5;">
+                                    Dear <strong t-out="object.partner_id.name or 'Guest'"/>,
+                                </p>
+                                <p style="margin: 10px 0 0; font-size: 14px; color: #4a5568; line-height: 1.6;">
+                                    Your stay with us is just around the corner! Your scheduled arrival is on <strong><span t-out="object.check_in_formatted or object.check_in"/></strong> (Booking Reference: <strong><span t-out="object.name"/></strong>).
+                                </p>
+                                <div style="margin: 20px 0; background-color: #f0fdfa; border: 1px solid #ccfbf1; border-radius: 6px; padding: 18px 20px;">
+                                    <h4 style="margin: 0 0 10px; color: #0f766e; font-size: 14px;">Helpful Information for Your Arrival</h4>
+                                    <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: #134e4a; line-height: 1.7;">
+                                        <li>Standard Check-in starts at <strong><span t-out="object.checkin_time_default"/></strong>.</li>
+                                        <li>Please have a valid government-issued photo ID or passport ready at check-in.</li>
+                                        <li>Need an early check-in or airport shuttle? Simply reply to this email or call our front desk.</li>
+                                    </ul>
+                                </div>
+                                <p style="margin: 16px 0 0; font-size: 14px; color: #4a5568;">Safe travels, and we look forward to meeting you soon!</p>
+                                <p style="margin: 14px 0 0; font-size: 14px; font-weight: 600; color: #0f766e;">The Front Desk Team<br/><span t-out="object.hotel_id.name"/></p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- 3. Guest Folio / Bill Email Template                       -->
+        <!-- ========================================================== -->
+        <record id="mail_template_hotel_guest_folio" model="mail.template">
+            <field name="name">Hotel: Guest Folio Bill</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_guest_folio"/>
+            <field name="subject">{{ object.hotel_id.name }} - Guest Folio Statement {{ object.name }}</field>
+            <field name="email_from">{{ (object.hotel_id.email or object.company_id.email or user.email_formatted or 'hotel@veritiesoft.com') }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="report_template_ids" eval="[(4, ref('vs_hotel_management.action_report_hotel_guest_folio'))]"/>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; color: #2d3748;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <tr>
+                            <td style="padding: 28px 32px; background: linear-gradient(135deg, #334155 0%, #1e293b 100%); color: #ffffff; text-align: center;">
+                                <h1 style="margin: 0; font-size: 24px; font-weight: 700;" t-out="object.hotel_id.name or 'Hotel'"/>
+                                <p style="margin: 6px 0 0; font-size: 15px; opacity: 0.9;">Guest Folio Statement</p>
+                                <div style="margin-top: 10px; display: inline-block; padding: 3px 12px; background: rgba(255,255,255,0.15); border-radius: 16px; font-size: 12px;" t-out="object.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 28px 32px;">
+                                <p style="margin: 0; font-size: 16px;">Dear <strong t-out="object.partner_id.name or 'Guest'"/>,</p>
+                                <p style="margin: 10px 0 0; font-size: 14px; color: #4a5568;">
+                                    Thank you for staying at <strong t-out="object.hotel_id.name"/>. Below is your final folio billing statement. A detailed copy is attached.
+                                </p>
+                                <div style="margin: 20px 0; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 20px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px;">
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #64748b;">Folio Reference:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="object.name"/>
+                                        </tr>
+                                        <tr t-if="object.reservation_id">
+                                            <td style="padding: 6px 0; color: #64748b;">Reservation:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="object.reservation_id.name"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #64748b;">Total Charges:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="format_amount(object.total_amount, object.currency_id)"/>
+                                        </tr>
+                                        <tr t-if="object.paid_amount">
+                                            <td style="padding: 6px 0; color: #64748b;">Total Paid:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #166534;" t-out="format_amount(object.paid_amount, object.currency_id)"/>
+                                        </tr>
+                                        <tr style="border-top: 2px solid #e2e8f0;">
+                                            <td style="padding: 10px 0; font-size: 14px; font-weight: 700; color: #0f172a;">Outstanding Balance:</td>
+                                            <td style="padding: 10px 0; font-size: 15px; font-weight: 700; color: #b91c1c;" t-out="format_amount(object.balance_amount, object.currency_id)"/>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <p style="margin: 0; font-size: 13px; color: #64748b;">
+                                    If you have any questions regarding your bill, please reach out to our accounts department.
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- 4. Reservation Cancellation Email Template                 -->
+        <!-- ========================================================== -->
+        <record id="mail_template_hotel_reservation_cancellation" model="mail.template">
+            <field name="name">Hotel: Reservation Cancellation</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_reservation"/>
+            <field name="subject">{{ object.hotel_id.name }} - Reservation Cancellation {{ object.name }}</field>
+            <field name="email_from">{{ (object.hotel_id.email or object.company_id.email or user.email_formatted or 'hotel@veritiesoft.com') }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; color: #2d3748;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <tr>
+                            <td style="padding: 28px 32px; background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%); color: #ffffff; text-align: center;">
+                                <h1 style="margin: 0; font-size: 24px; font-weight: 700;" t-out="object.hotel_id.name or 'Hotel'"/>
+                                <p style="margin: 6px 0 0; font-size: 15px; opacity: 0.9;">Reservation Cancellation Notice</p>
+                                <div style="margin-top: 10px; display: inline-block; padding: 3px 12px; background: rgba(255,255,255,0.2); border-radius: 16px; font-size: 12px;" t-out="object.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 28px 32px;">
+                                <p style="margin: 0; font-size: 16px;">Dear <strong t-out="object.partner_id.name or 'Guest'"/>,</p>
+                                <p style="margin: 10px 0 0; font-size: 14px; color: #4a5568; line-height: 1.6;">
+                                    This email confirms that your reservation <strong><span t-out="object.name"/></strong> at <strong t-out="object.hotel_id.name"/> has been <strong style="color: #dc2626;">cancelled</strong>.
+                                </p>
+                                <div style="margin: 20px 0; background-color: #fef2f2; border: 1px solid #fee2e2; border-radius: 6px; padding: 18px 20px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px;">
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #991b1b; width: 45%;">Reservation Code:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="object.name"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #991b1b;">Original Check-In:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="object.check_in_formatted or object.check_in"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #991b1b;">Original Check-Out:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="object.check_out_formatted or object.check_out"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #991b1b;">Status:</td>
+                                            <td style="padding: 6px 0;"><span style="background-color: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 4px; font-weight: 700;">Cancelled</span></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <p style="margin: 16px 0 0; font-size: 13px; color: #64748b;">
+                                    If this cancellation was made in error or you would like to reschedule, please contact our front desk team.
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- 5. Reservation Checkout / Thank You Email Template         -->
+        <!-- ========================================================== -->
+        <record id="mail_template_hotel_reservation_checkout" model="mail.template">
+            <field name="name">Hotel: Reservation Checkout &amp; Thank You</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_reservation"/>
+            <field name="subject">{{ object.hotel_id.name }} - Thank You For Your Stay ({{ object.name }})</field>
+            <field name="email_from">{{ (object.hotel_id.email or object.company_id.email or user.email_formatted or 'hotel@veritiesoft.com') }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; color: #2d3748;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <tr>
+                            <td style="padding: 28px 32px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: #ffffff; text-align: center;">
+                                <h1 style="margin: 0; font-size: 24px; font-weight: 700;" t-out="object.hotel_id.name or 'Hotel'"/>
+                                <p style="margin: 6px 0 0; font-size: 15px; opacity: 0.9;">Thank You For Staying With Us!</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 28px 32px;">
+                                <p style="margin: 0; font-size: 16px;">Dear <strong t-out="object.partner_id.name or 'Guest'"/>,</p>
+                                <p style="margin: 10px 0 0; font-size: 14px; color: #4a5568; line-height: 1.6;">
+                                    We hope you had a relaxing and enjoyable stay at <strong t-out="object.hotel_id.name"/>! Your checkout has been processed successfully.
+                                </p>
+                                <div style="margin: 20px 0; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 20px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px;">
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #64748b; width: 45%;">Reservation:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="object.name"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #64748b;">Stay Duration:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;"><span t-out="object.night_count"/> Night(s)</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #64748b;">Total Charges:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="format_amount(object.total_amount, object.currency_id)"/>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <p style="margin: 16px 0 0; font-size: 14px; color: #4a5568;">
+                                    We would love to welcome you back again on your next journey. Safe travels!
+                                </p>
+                                <p style="margin: 14px 0 0; font-size: 14px; font-weight: 600; color: #1e3a8a;">
+                                    Warmest regards,<br/>The Hospitality Team at <span t-out="object.hotel_id.name"/>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- 6. Reservation No-Show Email Template                      -->
+        <!-- ========================================================== -->
+        <record id="mail_template_hotel_reservation_noshow" model="mail.template">
+            <field name="name">Hotel: Reservation No-Show Notice</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_reservation"/>
+            <field name="subject">{{ object.hotel_id.name }} - Reservation No-Show Notice {{ object.name }}</field>
+            <field name="email_from">{{ (object.hotel_id.email or object.company_id.email or user.email_formatted or 'hotel@veritiesoft.com') }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; color: #2d3748;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <tr>
+                            <td style="padding: 28px 32px; background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: #ffffff; text-align: center;">
+                                <h1 style="margin: 0; font-size: 24px; font-weight: 700;" t-out="object.hotel_id.name or 'Hotel'"/>
+                                <p style="margin: 6px 0 0; font-size: 15px; opacity: 0.9;">Reservation No-Show Notification</p>
+                                <div style="margin-top: 10px; display: inline-block; padding: 3px 12px; background: rgba(255,255,255,0.2); border-radius: 16px; font-size: 12px;" t-out="object.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 28px 32px;">
+                                <p style="margin: 0; font-size: 16px;">Dear <strong t-out="object.partner_id.name or 'Guest'"/>,</p>
+                                <p style="margin: 10px 0 0; font-size: 14px; color: #4a5568; line-height: 1.6;">
+                                    We noticed that you were unable to arrive for your scheduled reservation <strong><span t-out="object.name"/></strong> at <strong t-out="object.hotel_id.name"/>.
+                                </p>
+                                <div style="margin: 20px 0; background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 6px; padding: 18px 20px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px;">
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #92400e; width: 45%;">Reservation Reference:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="object.name"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #92400e;">Scheduled Check-In:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="object.check_in_formatted or object.check_in"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #92400e;">Status:</td>
+                                            <td style="padding: 6px 0;"><span style="background-color: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-weight: 700;">No-Show</span></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <p style="margin: 16px 0 0; font-size: 13px; color: #64748b; line-height: 1.6;">
+                                    In accordance with our booking policy, room holds have been released. If this was caused by travel disruptions or if you still require accommodations, please contact our front desk team immediately.
+                                </p>
+                                <p style="margin: 14px 0 0; font-size: 14px; font-weight: 600; color: #b45309;">
+                                    The Front Desk Team<br/><span t-out="object.hotel_id.name"/>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+    </data>
+</odoo>

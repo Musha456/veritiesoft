@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="tax_hotel_0" model="account.tax">
+        <field name="name">Hotel Tax 0%</field>
+        <field name="type_tax_use">sale</field>
+        <field name="amount_type">percent</field>
+        <field name="amount">0.0</field>
+        <field name="price_include">False</field>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+
+    <record id="tax_hotel_5" model="account.tax">
+        <field name="name">Hotel Tax 5%</field>
+        <field name="type_tax_use">sale</field>
+        <field name="amount_type">percent</field>
+        <field name="amount">5.0</field>
+        <field name="price_include">False</field>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+
+    <record id="tax_hotel_10" model="account.tax">
+        <field name="name">Hotel Tax 10%</field>
+        <field name="type_tax_use">sale</field>
+        <field name="amount_type">percent</field>
+        <field name="amount">10.0</field>
+        <field name="price_include">False</field>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+
+    <record id="tax_hotel_15" model="account.tax">
+        <field name="name">Hotel Tax 15%</field>
+        <field name="type_tax_use">sale</field>
+        <field name="amount_type">percent</field>
+        <field name="amount">15.0</field>
+        <field name="price_include">False</field>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+
+    <record id="tax_hotel_18" model="account.tax">
+        <field name="name">Hotel Tax 18%</field>
+        <field name="type_tax_use">sale</field>
+        <field name="amount_type">percent</field>
+        <field name="amount">18.0</field>
+        <field name="price_include">False</field>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+
+    <record id="tax_hotel_20" model="account.tax">
+        <field name="name">Hotel Tax 20%</field>
+        <field name="type_tax_use">sale</field>
+        <field name="amount_type">percent</field>
+        <field name="amount">20.0</field>
+        <field name="price_include">False</field>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========================================================== -->
+    <!-- Reservation Confirmation Report Action -->
+    <!-- ========================================================== -->
+    <record id="action_report_hotel_reservation" model="ir.actions.report">
+        <field name="name">Reservation Confirmation</field>
+        <field name="model">hotel.reservation</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">vs_hotel_management.report_hotel_reservation_document</field>
+        <field name="report_file">vs_hotel_management.report_hotel_reservation_document</field>
+        <field name="print_report_name">'Reservation - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_hotel_reservation"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- Guest Registration Card Action -->
+    <!-- ========================================================== -->
+    <record id="action_report_hotel_registration_card" model="ir.actions.report">
+        <field name="name">Guest Registration Card</field>
+        <field name="model">hotel.reservation</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">vs_hotel_management.report_hotel_registration_card_document</field>
+        <field name="report_file">vs_hotel_management.report_hotel_registration_card_document</field>
+        <field name="print_report_name">'RegCard - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_hotel_reservation"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- Guest Folio / Bill Report Action -->
+    <!-- ========================================================== -->
+    <record id="action_report_hotel_guest_folio" model="ir.actions.report">
+        <field name="name">Guest Folio Bill</field>
+        <field name="model">hotel.guest.folio</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">vs_hotel_management.report_hotel_guest_folio_document</field>
+        <field name="report_file">vs_hotel_management.report_hotel_guest_folio_document</field>
+        <field name="print_report_name">'Folio - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_hotel_guest_folio"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

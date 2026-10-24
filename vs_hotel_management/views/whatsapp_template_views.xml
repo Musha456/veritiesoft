@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_hotel_whatsapp_template_list" model="ir.ui.view">
+        <field name="name">hotel.whatsapp.template.list</field>
+        <field name="model">hotel.whatsapp.template</field>
+        <field name="arch" type="xml">
+            <list string="WhatsApp Templates"
+                  decoration-success="meta_status == 'approved'"
+                  decoration-danger="meta_status == 'rejected'"
+                  decoration-warning="meta_status in ('pending', 'paused')">
+                <field name="name"/>
+                <field name="template_key"/>
+                <field name="language"/>
+                <field name="category"/>
+                <field name="task_type"/>
+                <field name="event"/>
+                <field name="parameter_count"/>
+                <field name="meta_status" widget="badge"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_whatsapp_template_form" model="ir.ui.view">
+        <field name="name">hotel.whatsapp.template.form</field>
+        <field name="model">hotel.whatsapp.template</field>
+        <field name="arch" type="xml">
+            <form string="WhatsApp Template">
+                <header>
+                    <button name="action_mark_pending"
+                            type="object"
+                            string="Mark Pending"
+                            invisible="meta_status != 'draft'"/>
+                    <button name="action_mark_approved"
+                            type="object"
+                            string="Mark Approved"
+                            invisible="meta_status == 'approved'"
+                            class="btn-primary"/>
+                    <button name="action_mark_rejected"
+                            type="object"
+                            string="Mark Rejected"
+                            invisible="meta_status == 'rejected'"/>
+                    <button name="action_mark_paused"
+                            type="object"
+                            string="Mark Paused"
+                            invisible="meta_status == 'paused'"/>
+                    <button name="action_mark_draft"
+                            type="object"
+                            string="Reset to Draft"
+                            invisible="meta_status == 'draft'"/>
+                    <field name="meta_status" widget="statusbar"
+                           statusbar_visible="draft,pending,approved,rejected,paused,disabled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="hotel_task_notification"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Template Configuration">
+                            <field name="template_key"/>
+                            <field name="language"/>
+                            <field name="category"/>
+                            <field name="task_type"/>
+                            <field name="event"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Meta Template Details">
+                            <field name="parameter_count" readonly="1"/>
+                            <label for="parameter_count" string="Approval status must match Meta WhatsApp Manager."/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Message Body">
+                            <field name="body_text"
+                                   placeholder="Hello {{1}}, your task details are..."/>
+                            <div class="text-muted">
+                                Use sequential placeholders such as
+                                {{1}}, {{2}}, and {{3}}. The body must match
+                                the approved template in Meta.
+                            </div>
+                        </page>
+                        <page string="Internal Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hotel_whatsapp_template" model="ir.actions.act_window">
+        <field name="name">WhatsApp Templates</field>
+        <field name="res_model">hotel.whatsapp.template</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

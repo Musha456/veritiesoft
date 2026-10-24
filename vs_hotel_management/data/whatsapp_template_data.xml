@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <!-- 1. Task Notification Template -->
+    <record id="hotel_task_notification_template"
+            model="hotel.whatsapp.template">
+        <field name="name">hotel_task_notification</field>
+        <field name="template_key">hotel_task_notification</field>
+        <field name="language">en</field>
+        <field name="category">utility</field>
+        <field name="task_type">both</field>
+        <field name="event">both</field>
+        <field name="body_text">Hotel: {{1}}
+            Building: {{2}}
+            Floor: {{3}}
+            Room: {{4}}
+            Task Type: {{5}}
+            Task Detail: {{6}}
+            Scheduled: {{7}}
+            Current Status: {{8}}
+            Instructions: {{9}}
+            View Task: {{10}}
+        </field>
+        <field name="meta_status">draft</field>
+        <field name="active" eval="True"/>
+        <field name="notes">Create this template in Meta WhatsApp Manager and wait for approval before sending real
+            notifications.
+        </field>
+    </record>
+
+    <!-- 2. Reservation Confirmation WhatsApp Template -->
+    <record id="hotel_reservation_confirmation_whatsapp_template"
+            model="hotel.whatsapp.template">
+        <field name="name">hotel_reservation_confirmation</field>
+        <field name="template_key">hotel_reservation_confirmation</field>
+        <field name="language">en</field>
+        <field name="category">utility</field>
+        <field name="task_type">reservation</field>
+        <field name="event">confirmed</field>
+        <field name="body_text">Dear {{1}}, your reservation {{2}} at {{3}} has been confirmed for check-in on {{4}} and
+            check-out on {{5}}. Total Amount: {{6}}. We look forward to welcoming you!
+        </field>
+        <field name="meta_status">draft</field>
+        <field name="active" eval="True"/>
+        <field name="notes">Meta WhatsApp template for guest reservation confirmation alerts.</field>
+    </record>
+
+    <!-- 3. Reservation Cancellation WhatsApp Template -->
+    <record id="hotel_reservation_cancellation_whatsapp_template"
+            model="hotel.whatsapp.template">
+        <field name="name">hotel_reservation_cancellation</field>
+        <field name="template_key">hotel_reservation_cancellation</field>
+        <field name="language">en</field>
+        <field name="category">utility</field>
+        <field name="task_type">reservation</field>
+        <field name="event">cancelled</field>
+        <field name="body_text">Dear {{1}}, your reservation {{2}} at {{3}} has been cancelled. If you have questions,
+            please reach out to our front desk team.
+        </field>
+        <field name="meta_status">draft</field>
+        <field name="active" eval="True"/>
+        <field name="notes">Meta WhatsApp template for guest reservation cancellation alerts.</field>
+    </record>
+
+    <!-- 4. Reservation Checkout & Folio WhatsApp Template -->
+    <record id="hotel_reservation_checkout_whatsapp_template"
+            model="hotel.whatsapp.template">
+        <field name="name">hotel_reservation_checkout</field>
+        <field name="template_key">hotel_reservation_checkout</field>
+        <field name="language">en</field>
+        <field name="category">utility</field>
+        <field name="task_type">reservation</field>
+        <field name="event">checkout</field>
+        <field name="body_text">Dear {{1}}, thank you for staying at {{2}}! Your checkout for reservation {{3}} (Folio:
+            {{4}}) is complete. Total: {{5}}, Paid: {{6}}, Balance: {{7}}. Safe travels!
+        </field>
+        <field name="meta_status">draft</field>
+        <field name="active" eval="True"/>
+        <field name="notes">Meta WhatsApp template for guest checkout thank-you and folio billing summary.</field>
+    </record>
+
+</odoo>

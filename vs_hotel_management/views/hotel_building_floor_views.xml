@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="view_hotel_building_floor_tree" model="ir.ui.view">
+        <field name="name">hotel.building.floor.tree</field>
+        <field name="model">hotel.building.floor</field>
+        <field name="arch" type="xml">
+            <list default_order="building_id,sequence,level">
+
+                <field name="sequence" widget="handle"/>
+
+                <field name="name"/>
+
+                <field name="building_id"/>
+
+                <field name="level"/>
+
+                <field name="room_count"/>
+
+                <field
+                        name="company_id"
+                        groups="base.group_multi_company"/>
+
+                <field
+                        name="active"
+                        widget="boolean_toggle"/>
+
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_building_floor_search" model="ir.ui.view">
+        <field name="name">hotel.building.floor.search</field>
+        <field name="model">hotel.building.floor</field>
+        <field name="arch" type="xml">
+
+            <search>
+
+                <field name="name"/>
+                <field name="code"/>
+                <field name="building_id"/>
+
+                <separator/>
+
+                <filter
+                        name="active"
+                        string="Active"
+                        domain="[('active','=',True)]"/>
+
+                <filter
+                        name="archived"
+                        string="Archived"
+                        domain="[('active','=',False)]"/>
+
+                <group string="Group By" expand="0">
+
+                    <filter
+                            name="group_building"
+                            string="Building"
+                            context="{'group_by':'building_id'}"/>
+
+                    <filter
+                            name="group_company"
+                            string="Company"
+                            context="{'group_by':'company_id'}"
+                            groups="base.group_multi_company"/>
+
+                </group>
+
+            </search>
+
+        </field>
+    </record>
+
+    <record id="view_hotel_building_floor_form" model="ir.ui.view">
+        <field name="name">hotel.building.floor.form</field>
+        <field name="model">hotel.building.floor</field>
+        <field name="arch" type="xml">
+
+            <form string="Floor">
+
+                <sheet>
+
+                    <div class="oe_button_box" name="button_box">
+
+                        <button
+                                name="action_view_rooms"
+                                type="object"
+                                class="oe_stat_button"
+                                invisible="not room_count"
+                                icon="fa-bed">
+
+                            <field
+                                    name="room_count"
+                                    widget="statinfo"
+                                    string="Rooms"/>
+
+                        </button>
+
+                    </div>
+
+                    <!-- Title -->
+                    <div class="oe_title">
+
+                        <label for="name"/>
+
+                        <h1>
+
+                            <field
+                                    name="name"
+                                    placeholder="e.g. Ground Floor"/>
+
+                        </h1>
+
+                        <div class="text-muted mt-1">
+
+                            <strong>Code:</strong>
+
+                            <field name="code"
+                                   class="oe_inline"
+                                   readonly="1"/>
+
+                        </div>
+
+                    </div>
+
+                    <group>
+
+                        <group string="General Information">
+                            <field name="building_id"/>
+                            <field name="level"/>
+                        </group>
+
+                        <group>
+                            <field name="active"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+
+                    </group>
+
+                    <group string="Description">
+
+                        <field
+                                name="description"
+                                nolabel="1"
+                                placeholder="Add internal notes..."/>
+
+                    </group>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+
+    <record id="action_hotel_building_floor" model="ir.actions.act_window">
+        <field name="name">Floors</field>
+        <field name="res_model">hotel.building.floor</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hotel_building_floor_search"/>
+    </record>
+</odoo>
