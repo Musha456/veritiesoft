@@ -1,8 +1,8 @@
 {
     'name': "Hotel Management System",
     'description': """Hotel Management System""",
-    'owner': 'Veritiesoft',
-    'version': '1.0',
+    'author': 'Veritiesoft',
+    'version': '20.0.1.0.0',
     'category': 'Hotel',
     "license": "Other proprietary",
     'sequence': -100,
@@ -10,7 +10,6 @@
     'currency': 'USD',
     'website': 'https://www.veritiesoft.com',
     'depends': [
-        'base',
         'mail',
         'account',
         'product',
@@ -19,8 +18,7 @@
     ],
     'data': [
         'security/security.xml',
-        'security/ir.model.access.csv',
-        'security/rule.xml',
+        'security/ir.access.csv',
         'data/cron_job.xml',
         'data/hotel_sequence.xml',
         'data/hotel_amenity_type_data.xml',

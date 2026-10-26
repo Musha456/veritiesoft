@@ -128,18 +128,14 @@ class HotelRoomCategory(models.Model):
         }
 
 
-    _sql_constraints = [
-        (
-            "hotel_room_category_name_company_unique",
-            "unique(name, company_id)",
-            "Room Category must be unique per company.",
-        ),
-        (
-            "hotel_room_category_code_company_unique",
-            "unique(code, company_id)",
-            "Code must be unique per company.",
-        ),
-    ]
+    _hotel_room_category_name_company_unique = models.Constraint(
+        'unique(name, company_id)',
+        "Room Category must be unique per company.",
+    )
+    _hotel_room_category_code_company_unique = models.Constraint(
+        'unique(code, company_id)',
+        "Code must be unique per company.",
+    )
 
     @api.model_create_multi
     def create(self, vals_list):

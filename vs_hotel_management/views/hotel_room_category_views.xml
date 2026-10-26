@@ -26,7 +26,7 @@
                 <separator/>
                 <filter name="active" string="Active" domain="[('active','=',True)]"/>
                 <filter name="archived" string="Archived" domain="[('active','=',False)]"/>
-                <group string="Group By">
+                <group>
                     <filter name="group_company" string="Company" context="{'group_by':'company_id'}"
                             groups="base.group_multi_company"/>
                     <filter name="group_bed_type" string="Bed Type" context="{'group_by':'bed_type_id'}"/>

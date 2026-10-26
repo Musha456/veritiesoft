@@ -80,18 +80,14 @@ class HotelWhatsAppTemplate(models.Model):
         string="Meta Approval Status",
         default="draft",
         required=True,
-        tracking=True,
     )
     active = fields.Boolean(default=True)
     notes = fields.Text(string="Internal Notes")
 
-    _sql_constraints = [
-        (
-            "template_key_language_unique",
-            "unique(template_key, language)",
-            "The internal template reference must be unique per language.",
-        ),
-    ]
+    _template_key_language_unique = models.Constraint(
+        'unique(template_key, language)',
+        "The internal template reference must be unique per language.",
+    )
 
     @api.depends("body_text")
     def _compute_parameter_count(self):

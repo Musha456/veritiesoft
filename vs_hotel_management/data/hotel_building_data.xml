@@ -4,7 +4,7 @@
     <!-- main building -->
     <record id="hotel_building_main_building" model="hotel.building">
         <field name="name">Main Building</field>
-            <field name="image" type="base64" file="vs_hotel_management/static/src/img/hotel_building/hotel_01.jpg"/>
+            <field name="image" type="bytes" file="vs_hotel_management/static/src/img/hotel_building/hotel_01.jpg"/>
         <field name="hotel_id" ref="hotel_demo"/>
     </record>
 

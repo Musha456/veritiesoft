@@ -6,9 +6,9 @@
 
             <field name="name">Verity Grand Hotel</field>
 
-            <field name="logo" type="base64" file="vs_hotel_management/static/src/img/hotel/hotel_01_logo.png"/>
+            <field name="logo" type="bytes" file="vs_hotel_management/static/src/img/hotel/hotel_01_logo.png"/>
 
-            <field name="hero_image" type="base64" file="vs_hotel_management/static/src/img/hotel/hotel_01.jpg"/>
+            <field name="hero_image" type="bytes" file="vs_hotel_management/static/src/img/hotel/hotel_01.jpg"/>
 
             <field name="star_rating">5</field>
 

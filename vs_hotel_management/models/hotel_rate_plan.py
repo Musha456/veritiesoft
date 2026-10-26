@@ -374,15 +374,11 @@ class HotelRatePlan(models.Model):
             ):
                 record.state = "expired"
 
-    _sql_constraints = [
-        (
-            "hotel_rate_plan_name_unique",
-            "unique(name, hotel_id)",
-            "Rate plan name must be unique per hotel.",
-        ),
-        (
-            "hotel_rate_plan_code_unique",
-            "unique(code, company_id)",
-            "Rate plan code must be unique.",
-        ),
-    ]
+    _hotel_rate_plan_name_unique = models.Constraint(
+        'unique(name, hotel_id)',
+        "Rate plan name must be unique per hotel.",
+    )
+    _hotel_rate_plan_code_unique = models.Constraint(
+        'unique(code, company_id)',
+        "Rate plan code must be unique.",
+    )

@@ -15,10 +15,10 @@
 
             <span class="small">Elapsed</span>
 
-            <strong class="font-monospace" t-esc="formattedTime"/>
+            <strong class="font-monospace" t-out="formattedTime"/>
 
             <span class="text-muted small">
-                (<t t-esc="totalSeconds === 3600 ? 'Hour' : 'Hours'"/>)
+                (<t t-out="totalSeconds === 3600 ? 'Hour' : 'Hours'"/>)
             </span>
 
         </div>

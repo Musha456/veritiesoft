@@ -62,7 +62,7 @@
 
         <record id="product_template_hotel_service_airport_pickup" model="product.template">
             <field name="name">Airport Pickup</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/airport_pickup.png"/>
             <field name="categ_id" ref="product_category_hotel_service_transport"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -75,7 +75,7 @@
 
         <record id="product_template_hotel_service_airport_dropoff" model="product.template">
             <field name="name">Airport Drop-off</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/airport_dropoff.png"/>
             <field name="categ_id" ref="product_category_hotel_service_transport"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -88,7 +88,7 @@
 
         <record id="product_template_hotel_service_shuttle" model="product.template">
             <field name="name">Shuttle Service</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/shuttle_service.png"/>
             <field name="categ_id" ref="product_category_hotel_service_transport"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -104,7 +104,7 @@
 
         <record id="product_template_hotel_service_room_service" model="product.template">
             <field name="name">Room Service</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/room_service.png"/>
             <field name="categ_id" ref="product_category_hotel_service_food"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -117,7 +117,7 @@
 
         <record id="product_template_hotel_service_breakfast" model="product.template">
             <field name="name">Breakfast Buffet</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/breakfast_buffet.png"/>
             <field name="categ_id" ref="product_category_hotel_service_food"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -130,7 +130,7 @@
 
         <record id="product_template_hotel_service_cafe" model="product.template">
             <field name="name">Coffee Shop</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/coffee_shop.png"/>
             <field name="categ_id" ref="product_category_hotel_service_food"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -143,7 +143,7 @@
 
         <record id="product_template_hotel_service_bar" model="product.template">
             <field name="name">Bar &amp; Lounge</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/bar_and_lounge.png"/>
             <field name="categ_id" ref="product_category_hotel_service_food"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -159,7 +159,7 @@
 
         <record id="product_template_hotel_service_spa" model="product.template">
             <field name="name">Spa</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/spa_service.png"/>
             <field name="categ_id" ref="product_category_hotel_service_wellness"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -172,7 +172,7 @@
 
         <record id="product_template_hotel_service_massage" model="product.template">
             <field name="name">Massage</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/message.png"/>
             <field name="categ_id" ref="product_category_hotel_service_wellness"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -185,7 +185,7 @@
 
         <record id="product_template_hotel_service_sauna" model="product.template">
             <field name="name">Sauna</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/sauna_service.png"/>
             <field name="categ_id" ref="product_category_hotel_service_wellness"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -201,7 +201,7 @@
 
         <record id="product_template_hotel_service_gym" model="product.template">
             <field name="name">Fitness Center</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/fitness_center.png"/>
             <field name="categ_id" ref="product_category_hotel_service_fitness"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -214,7 +214,7 @@
 
         <record id="product_template_hotel_service_pool" model="product.template">
             <field name="name">Swimming Pool</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/swimming_pool.png"/>
             <field name="categ_id" ref="product_category_hotel_service_fitness"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -230,7 +230,7 @@
 
         <record id="product_template_hotel_service_business_center" model="product.template">
             <field name="name">Business Center</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/business_center.png"/>
             <field name="categ_id" ref="product_category_hotel_service_business"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -243,7 +243,7 @@
 
         <record id="product_template_hotel_service_meeting_room" model="product.template">
             <field name="name">Meeting Room</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/meeting_room.png"/>
             <field name="categ_id" ref="product_category_hotel_service_business"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -259,7 +259,7 @@
 
         <record id="product_template_hotel_service_laundry" model="product.template">
             <field name="name">Laundry</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/laundry.png"/>
             <field name="categ_id" ref="product_category_hotel_service_laundry"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -272,7 +272,7 @@
 
         <record id="product_template_hotel_service_dry_cleaning" model="product.template">
             <field name="name">Dry Cleaning</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/dry_cleaning.png"/>
             <field name="categ_id" ref="product_category_hotel_service_laundry"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -288,7 +288,7 @@
 
         <record id="product_template_hotel_service_housekeeping" model="product.template">
             <field name="name">Daily Housekeeping</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/daily_housekeeping.png"/>
             <field name="categ_id" ref="product_category_hotel_service_housekeeping"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -301,7 +301,7 @@
 
         <record id="product_template_hotel_service_turndown" model="product.template">
             <field name="name">Turndown Service</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/turndown_service.png"/>
             <field name="categ_id" ref="product_category_hotel_service_housekeeping"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -317,7 +317,7 @@
 
         <record id="product_template_hotel_service_parking" model="product.template">
             <field name="name">Parking</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/parking.png"/>
             <field name="categ_id" ref="product_category_hotel_service_parking"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -330,7 +330,7 @@
 
         <record id="product_template_hotel_service_valet" model="product.template">
             <field name="name">Valet Parking</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/valet_parking.png"/>
             <field name="categ_id" ref="product_category_hotel_service_parking"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -346,7 +346,7 @@
 
         <record id="product_template_hotel_service_games" model="product.template">
             <field name="name">Games Room</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/games_room.png"/>
             <field name="categ_id" ref="product_category_hotel_service_recreation"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -359,7 +359,7 @@
 
         <record id="product_template_hotel_service_kids_club" model="product.template">
             <field name="name">Kids Club</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/kids_club.png"/>
             <field name="categ_id" ref="product_category_hotel_service_recreation"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -375,7 +375,7 @@
 
         <record id="product_template_hotel_service_wifi" model="product.template">
             <field name="name">Free Wi-Fi</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/free_wifi.png"/>
             <field name="categ_id" ref="product_category_hotel_service_general"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -388,7 +388,7 @@
 
         <record id="product_template_hotel_service_concierge" model="product.template">
             <field name="name">Concierge Service</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/concierge_service.png"/>
             <field name="categ_id" ref="product_category_hotel_service_general"/>
             <field name="hotel_id" ref="hotel_demo"/>
@@ -401,7 +401,7 @@
 
         <record id="product_template_hotel_service_luggage" model="product.template">
             <field name="name">Luggage Storage</field>
-            <field name="image_1920" type="base64"
+            <field name="image_1920" type="bytes"
                    file="vs_hotel_management/static/src/img/hotel/service/luggage_storage.png"/>
             <field name="categ_id" ref="product_category_hotel_service_general"/>
             <field name="hotel_id" ref="hotel_demo"/>

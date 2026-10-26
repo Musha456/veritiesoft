@@ -1,16 +1,15 @@
-
 /** @odoo-module **/
 
-import { Component, onMounted, onWillUnmount, useState } from "@odoo/owl";
+import { Component, onMounted, onWillUnmount, proxy, useProps } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 
 export class HotelTaskTimer extends Component {
     static template = "vs_hotel_management.HotelTaskTimer";
-    static props = { ...standardFieldProps };
+    props = useProps({ ...standardFieldProps });
 
     setup() {
-        this.state = useState({ elapsed: 0 });
+        this.state = proxy({ elapsed: 0 });
         this.interval = null;
 
         this.updateElapsed = () => {

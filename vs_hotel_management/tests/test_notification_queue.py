@@ -13,7 +13,7 @@ class TestHotelNotificationQueue(TransactionCase):
         cls.partner = cls.env['res.partner'].create({
             'name': 'Notification Test Guest',
             'email': 'notification_guest@test.com',
-            'mobile': '+15551234567',
+            'phone': '+15551234567',
         })
 
         cls.hotel = cls.env['hotel.hotel'].search([], limit=1)
@@ -50,8 +50,8 @@ class TestHotelNotificationQueue(TransactionCase):
             })
 
         cls.room = cls.env['hotel.room'].create({
-            'name': 'Room N101',
-            'category_id': cls.category.id,
+            'room_number': 'N101',
+            'room_category_id': cls.category.id,
             'hotel_id': cls.hotel.id,
             'building_id': cls.building.id,
             'floor_id': cls.floor.id,

@@ -94,7 +94,7 @@
                         string="★"
                         domain="[('star_rating', '=', '1')]"/>
 
-                <group expand="0" string="Group By">
+                <group>
 
                     <filter name="country_id" string="Country"
                             context="{'group_by':'country_id'}"/>

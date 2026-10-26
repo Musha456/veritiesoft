@@ -57,7 +57,7 @@
                     domain="[('is_complimentary', '=', False)]"
                 />
 
-                <group expand="0" string="Group By">
+                <group>
 
                     <filter
                         name="category"

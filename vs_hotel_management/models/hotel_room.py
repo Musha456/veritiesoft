@@ -605,18 +605,14 @@ class HotelRoom(models.Model):
             },
         }
 
-    _sql_constraints = [
-        (
-            "room_number_company_unique",
-            "unique(room_number, company_id)",
-            "Room number must be unique per company.",
-        ),
-        (
-            "room_code_company_unique",
-            "unique(code, company_id)",
-            "Code must be unique per company.",
-        ),
-    ]
+    _room_number_company_unique = models.Constraint(
+        'unique(room_number, company_id)',
+        "Room number must be unique per company.",
+    )
+    _room_code_company_unique = models.Constraint(
+        'unique(code, company_id)',
+        "Code must be unique per company.",
+    )
 
     def is_available(
             self,

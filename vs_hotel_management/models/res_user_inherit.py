@@ -64,7 +64,7 @@ class ResUsers(models.Model):
         compute="_compute_hotel_task_counts",
     )
 
-    @api.depends("groups_id")
+    @api.depends("all_group_ids")
     def _compute_hotel_roles(self):
         hotel_mgr_grp = self.env.ref(
             "vs_hotel_management.group_hotel_room_manager",
@@ -92,7 +92,7 @@ class ResUsers(models.Model):
         )
 
         for user in self:
-            user_groups = user.groups_id
+            user_groups = user.all_group_ids
             user.is_hotel_manager = bool(hotel_mgr_grp and hotel_mgr_grp in user_groups)
             user.is_hotel_reservation_manager = bool(res_mgr_grp and res_mgr_grp in user_groups)
             user.is_hotel_housekeeping_manager = bool(hk_mgr_grp and hk_mgr_grp in user_groups)
@@ -105,10 +105,10 @@ class ResUsers(models.Model):
         if not group:
             return
         for user in self:
-            if enable and group not in user.groups_id:
-                user.groups_id = [(4, group.id)]
-            elif not enable and group in user.groups_id:
-                user.groups_id = [(3, group.id)]
+            if enable and group not in user.group_ids:
+                user.group_ids = [(4, group.id)]
+            elif not enable and group in user.group_ids:
+                user.group_ids = [(3, group.id)]
 
     def _inverse_hotel_manager(self):
         for user in self:

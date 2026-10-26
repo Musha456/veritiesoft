@@ -87,7 +87,7 @@
                         string="All Inclusive"
                         domain="[('meal_plan','=','all_inclusive')]"/>
 
-                <group expand="0" string="Group By">
+                <group>
 
                     <filter
                             name="hotel"

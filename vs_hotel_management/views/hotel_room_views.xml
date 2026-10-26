@@ -31,7 +31,7 @@
                 <filter name="status" string="Dirty" domain="[('status','=','dirty')]"/>
                 <filter name="status" string="Maintenance" domain="[('status','=','maintenance')]"/>
                 <filter name="archived" string="Archived" domain="[('active','=',False)]"/>
-                <group expand="0" string="Group By">
+                <group>
                     <filter name="room_category_id" string="Room Category" context="{'group_by':'room_category_id'}"/>
                     <filter name="floor_id" string="Floor" context="{'group_by':'floor_id'}"/>
                     <filter name="building_id" string="Building" context="{'group_by':'building_id'}"/>

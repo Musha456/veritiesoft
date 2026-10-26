@@ -52,7 +52,7 @@
                         string="Archived"
                         domain="[('active','=',False)]"/>
 
-                <group string="Group By" expand="0">
+                <group>
 
                     <filter
                             name="group_building"

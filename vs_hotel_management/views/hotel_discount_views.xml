@@ -531,7 +531,7 @@
                         string="Archived"
                         domain="[('active','=',False)]"/>
 
-                <group expand="0" string="Group By">
+                <group>
 
                     <filter
                             name="hotel"

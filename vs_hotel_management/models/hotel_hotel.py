@@ -1,5 +1,4 @@
 from odoo import api, fields, models, _
-from odoo.osv import expression
 import pytz
 
 
@@ -516,20 +515,6 @@ class HotelHotel(models.Model):
                 ) or "/"
         return super().create(vals_list)
 
-    # @api.model
-    # def _name_search(self, name='', args=None, operator='ilike', limit=100, order=None):
-    #     args = args or []
-    #     domain = []
-    #
-    #     if name:
-    #         domain = ['|', '|',
-    #                   ('name', operator, name),
-    #                   ('code', operator, name),
-    #                   ('description', operator, name),
-    #                   ]
-    #
-    #     return self._search(expression.AND([domain, args]), limit=limit, order=order)
-
     def action_view_buildings(self):
         self.ensure_one()
 
@@ -617,10 +602,7 @@ class HotelHotel(models.Model):
             "domain": [("id", "in", guest_ids)],
         }
 
-    _sql_constraints = [
-        (
-            "hotel_code_company_unique",
-            "unique(code, company_id)",
-            "Hotel code must be unique per company.",
-        ),
-    ]
+    _hotel_code_company_unique = models.Constraint(
+        'unique(code, company_id)',
+        "Hotel code must be unique per company.",
+    )

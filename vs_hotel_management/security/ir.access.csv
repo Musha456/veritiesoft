@@ -1,0 +1,82 @@
+id,name,model_id,group_id/id,operation,domain
+access_hotel_hotel_room_user,hotel.hotel.room.user,hotel.hotel,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_hotel_room_manager,hotel.hotel.room.manager,hotel.hotel,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_hotel_res_user,hotel.hotel.res.user,hotel.hotel,vs_hotel_management.group_hotel_reservation_user,r,
+access_hotel_hotel_image_room_user,hotel.hotel.image.room.user,hotel.hotel.image,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_hotel_image_room_manager,hotel.hotel.image.room.manager,hotel.hotel.image,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_building_room_user,hotel.building.room.user,hotel.building,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_building_room_manager,hotel.building.room.manager,hotel.building,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_building_res_user,hotel.building.res.user,hotel.building,vs_hotel_management.group_hotel_reservation_user,r,
+access_hotel_building_floor_room_user,hotel.building.floor.room.user,hotel.building.floor,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_building_floor_room_manager,hotel.building.floor.room.manager,hotel.building.floor,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_building_floor_res_user,hotel.building.floor.res.user,hotel.building.floor,vs_hotel_management.group_hotel_reservation_user,r,
+access_hotel_room_category_room_user,hotel.room.category.room.user,hotel.room.category,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_room_category_room_manager,hotel.room.category.room.manager,hotel.room.category,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_room_category_res_user,hotel.room.category.res.user,hotel.room.category,vs_hotel_management.group_hotel_reservation_user,r,
+access_hotel_room_room_user,hotel.room.room.user,hotel.room,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_room_room_manager,hotel.room.room.manager,hotel.room,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_room_res_user,hotel.room.res.user,hotel.room,vs_hotel_management.group_hotel_reservation_user,r,
+access_hotel_room_hk_user,hotel.room.hk.user,hotel.room,vs_hotel_management.group_hotel_housekeeping_user,ru,
+access_hotel_room_maint_user,hotel.room.maint.user,hotel.room,vs_hotel_management.group_hotel_maintenance_user,ru,
+access_hotel_room_image_room_user,hotel.room.image.room.user,hotel.room.image,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_room_image_room_manager,hotel.room.image.room.manager,hotel.room.image,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_room_status_room_user,hotel.room.status.room.user,hotel.room.status,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_room_status_room_manager,hotel.room.status.room.manager,hotel.room.status,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_amenity_room_user,hotel.amenity.room.user,hotel.amenity,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_amenity_room_manager,hotel.amenity.room.manager,hotel.amenity,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_amenity_type_room_user,hotel.amenity.type.room.user,hotel.amenity.type,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_amenity_type_room_manager,hotel.amenity.type.room.manager,hotel.amenity.type,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_bed_type_room_user,hotel.bed.type.room.user,hotel.bed.type,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_bed_type_room_manager,hotel.bed.type.room.manager,hotel.bed.type,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_rate_plan_room_user,hotel.rate.plan.room.user,hotel.rate.plan,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_rate_plan_room_manager,hotel.rate.plan.room.manager,hotel.rate.plan,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_rate_plan_res_user,hotel.rate.plan.res.user,hotel.rate.plan,vs_hotel_management.group_hotel_reservation_user,r,
+access_hotel_discount_room_user,hotel.discount.room.user,hotel.discount,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_discount_room_manager,hotel.discount.room.manager,hotel.discount,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_discount_res_user,hotel.discount.res.user,hotel.discount,vs_hotel_management.group_hotel_reservation_user,r,
+access_hotel_reservation_res_user,hotel.reservation.res.user,hotel.reservation,vs_hotel_management.group_hotel_reservation_user,cru,
+access_hotel_reservation_res_manager,hotel.reservation.res.manager,hotel.reservation,vs_hotel_management.group_hotel_reservation_manager,crud,
+access_hotel_reservation_room_user,hotel.reservation.room.user,hotel.reservation,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_reservation_line_res_user,hotel.reservation.line.res.user,hotel.reservation.line,vs_hotel_management.group_hotel_reservation_user,cru,
+access_hotel_reservation_line_res_manager,hotel.reservation.line.res.manager,hotel.reservation.line,vs_hotel_management.group_hotel_reservation_manager,crud,
+access_hotel_reservation_line_room_user,hotel.reservation.line.room.user,hotel.reservation.line,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_room_booking_res_user,hotel.room.booking.res.user,hotel.room.booking,vs_hotel_management.group_hotel_reservation_user,cru,
+access_hotel_room_booking_res_manager,hotel.room.booking.res.manager,hotel.room.booking,vs_hotel_management.group_hotel_reservation_manager,crud,
+access_hotel_room_booking_room_user,hotel.room.booking.room.user,hotel.room.booking,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_res_service_line_res_user,hotel.reservation.service.line.res.user,hotel.reservation.service.line,vs_hotel_management.group_hotel_reservation_user,cru,
+access_hotel_res_service_line_res_manager,hotel.reservation.service.line.res.manager,hotel.reservation.service.line,vs_hotel_management.group_hotel_reservation_manager,crud,
+access_hotel_res_service_line_room_user,hotel.reservation.service.line.room.user,hotel.reservation.service.line,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_guest_folio_billing_user,hotel.guest.folio.billing.user,hotel.guest.folio,vs_hotel_management.group_hotel_billing_user,cru,
+access_hotel_guest_folio_billing_manager,hotel.guest.folio.billing.manager,hotel.guest.folio,vs_hotel_management.group_hotel_billing_manager,crud,
+access_hotel_guest_folio_res_user,hotel.guest.folio.res.user,hotel.guest.folio,vs_hotel_management.group_hotel_reservation_user,cru,
+access_hotel_guest_folio_res_manager,hotel.guest.folio.res.manager,hotel.guest.folio,vs_hotel_management.group_hotel_reservation_manager,crud,
+access_hotel_guest_folio_line_billing_user,hotel.guest.folio.line.billing.user,hotel.guest.folio.line,vs_hotel_management.group_hotel_billing_user,cru,
+access_hotel_guest_folio_line_billing_manager,hotel.guest.folio.line.billing.manager,hotel.guest.folio.line,vs_hotel_management.group_hotel_billing_manager,crud,
+access_hotel_guest_folio_line_res_user,hotel.guest.folio.line.res.user,hotel.guest.folio.line,vs_hotel_management.group_hotel_reservation_user,cru,
+access_hotel_guest_folio_line_res_manager,hotel.guest.folio.line.res.manager,hotel.guest.folio.line,vs_hotel_management.group_hotel_reservation_manager,crud,
+access_hotel_housekeeping_hk_user,hotel.housekeeping.hk.user,hotel.housekeeping,vs_hotel_management.group_hotel_housekeeping_user,ru,"['|', ('assigned_to', '=', False), ('assigned_to', '=', user.id)]"
+access_hotel_housekeeping_hk_manager,hotel.housekeeping.hk.manager,hotel.housekeeping,vs_hotel_management.group_hotel_housekeeping_manager,crud,
+access_hotel_housekeeping_room_user,hotel.housekeeping.room.user,hotel.housekeeping,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_maintenance_maint_user,hotel.maintenance.maint.user,hotel.maintenance,vs_hotel_management.group_hotel_maintenance_user,ru,"['|', ('assigned_to', '=', False), ('assigned_to', '=', user.id)]"
+access_hotel_maintenance_maint_manager,hotel.maintenance.maint.manager,hotel.maintenance,vs_hotel_management.group_hotel_maintenance_manager,crud,
+access_hotel_maintenance_room_user,hotel.maintenance.room.user,hotel.maintenance,vs_hotel_management.group_hotel_room_user,r,
+access_hotel_task_assignment_wizard,hotel.task.assignment.wizard,hotel.task.assignment.wizard,base.group_user,crud,
+access_hotel_task_completion_wizard,hotel.task.completion.wizard,hotel.task.completion.wizard,base.group_user,crud,
+access_hotel_whatsapp_template_system,hotel.whatsapp.template system,hotel.whatsapp.template,base.group_system,crud,
+access_hotel_whatsapp_template_manager,hotel.whatsapp.template manager,hotel.whatsapp.template,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_whatsapp_template_user,hotel.whatsapp.template user,hotel.whatsapp.template,vs_hotel_management.group_hotel_reservation_user,r,
+access_hotel_whatsapp_log_system,hotel.whatsapp.log system,hotel.whatsapp.log,base.group_system,cru,
+access_hotel_whatsapp_log_manager,hotel.whatsapp.log manager,hotel.whatsapp.log,vs_hotel_management.group_hotel_room_manager,crud,
+access_hotel_whatsapp_log_user,hotel.whatsapp.log user,hotel.whatsapp.log,vs_hotel_management.group_hotel_reservation_user,cru,
+rule_hotel_hotel_company,Hotel: Multi-Company,hotel.hotel,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+rule_hotel_building_company,Hotel Building: Multi-Company,hotel.building,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+rule_hotel_building_floor_company,Hotel Floor: Multi-Company,hotel.building.floor,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+rule_hotel_room_category_company,Hotel Room Category: Multi-Company,hotel.room.category,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+rule_hotel_room_company,Hotel Room: Multi-Company,hotel.room,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+rule_hotel_reservation_company,Hotel Reservation: Multi-Company,hotel.reservation,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+rule_hotel_reservation_line_company,Hotel Reservation Line: Multi-Company,hotel.reservation.line,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+rule_hotel_room_booking_company,Hotel Room Booking: Multi-Company,hotel.room.booking,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+rule_hotel_guest_folio_company,Hotel Guest Folio: Multi-Company,hotel.guest.folio,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+rule_hotel_guest_folio_line_company,Hotel Guest Folio Line: Multi-Company,hotel.guest.folio.line,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+rule_hotel_housekeeping_company,Hotel Housekeeping: Multi-Company,hotel.housekeeping,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+rule_hotel_maintenance_company,Hotel Maintenance: Multi-Company,hotel.maintenance,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"

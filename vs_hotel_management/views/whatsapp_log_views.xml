@@ -123,7 +123,7 @@
                 <filter string="Reservation" name="filter_res" domain="[('task_type', '=', 'reservation')]"/>
                 <filter string="Housekeeping" name="filter_hk" domain="[('task_type', '=', 'housekeeping')]"/>
                 <filter string="Maintenance" name="filter_maint" domain="[('task_type', '=', 'maintenance')]"/>
-                <group expand="0" string="Group By">
+                <group>
                     <filter string="Status" name="group_status" context="{'group_by': 'status'}"/>
                     <filter string="Module / Type" name="group_task_type" context="{'group_by': 'task_type'}"/>
                     <filter string="Event" name="group_event" context="{'group_by': 'event'}"/>

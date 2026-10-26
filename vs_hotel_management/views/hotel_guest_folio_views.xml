@@ -227,7 +227,7 @@
                         string="Closed"
                         domain="[('state', '=', 'closed')]"/>
 
-                <group expand="0" string="Group By">
+                <group>
 
                     <filter name="group_guest"
                             string="Guest"

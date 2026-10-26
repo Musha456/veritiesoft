@@ -207,17 +207,13 @@ class HotelBuilding(models.Model):
             },
         }
 
-    _sql_constraints = [
-        (
-            "building_name_company_unique",
-            "unique(name, company_id)",
-            "Building name must be unique per company.",
-        ),
-        (
-            "building_code_company_unique",
-            "unique(code, company_id)",
-            "Building code must be unique per company.",
-        ),
-    ]
+    _building_name_company_unique = models.Constraint(
+        'unique(name, company_id)',
+        "Building name must be unique per company.",
+    )
+    _building_code_company_unique = models.Constraint(
+        'unique(code, company_id)',
+        "Building code must be unique per company.",
+    )
 
 

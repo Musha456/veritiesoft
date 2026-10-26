@@ -59,13 +59,10 @@ class HotelHotelImage(models.Model):
         readonly=True,
     )
 
-    _sql_constraints = [
-        (
-            "hotel_image_name_unique",
-            "unique(hotel_id, name)",
-            "The image title must be unique per hotel.",
-        ),
-    ]
+    _hotel_image_name_unique = models.Constraint(
+        'unique(hotel_id, name)',
+        "The image title must be unique per hotel.",
+    )
 
     # @api.constrains("is_cover", "hotel_id")
     # def _check_single_cover(self):

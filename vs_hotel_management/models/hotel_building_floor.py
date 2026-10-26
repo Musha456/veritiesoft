@@ -116,22 +116,17 @@ class HotelFloor(models.Model):
             },
         }
 
-    _sql_constraints = [
-        (
-            "floor_name_building_unique",
-            "unique(name, building_id)",
-            "Floor name must be unique within the building.",
-        ),
-        (
-            "floor_level_building_unique",
-            "unique(level, building_id)",
-            "Floor level must be unique within the building.",
-        ),
-        (
-            "floor_code_company_unique",
-            "unique(code, company_id)",
-            "Code must be unique per company.",
-        ),
-    ]
+    _floor_name_building_unique = models.Constraint(
+        'unique(name, building_id)',
+        "Floor name must be unique within the building.",
+    )
+    _floor_level_building_unique = models.Constraint(
+        'unique(level, building_id)',
+        "Floor level must be unique within the building.",
+    )
+    _floor_code_company_unique = models.Constraint(
+        'unique(code, company_id)',
+        "Code must be unique per company.",
+    )
 
     

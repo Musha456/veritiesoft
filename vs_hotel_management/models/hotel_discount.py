@@ -331,15 +331,11 @@ class HotelDiscount(models.Model):
     # SQL Constraints
     # ---------------------------------------------------------
 
-    _sql_constraints = [
-        (
-            "hotel_discount_name_unique",
-            "unique(name, hotel_id)",
-            "Discount name must be unique per hotel.",
-        ),
-        (
-            "hotel_discount_code_unique",
-            "unique(code, company_id)",
-            "Discount code must be unique.",
-        ),
-    ]
+    _hotel_discount_name_unique = models.Constraint(
+        'unique(name, hotel_id)',
+        "Discount name must be unique per hotel.",
+    )
+    _hotel_discount_code_unique = models.Constraint(
+        'unique(code, company_id)',
+        "Discount code must be unique.",
+    )

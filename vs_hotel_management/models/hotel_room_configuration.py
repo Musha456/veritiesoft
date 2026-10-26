@@ -69,18 +69,14 @@ class HotelAmenityType(models.Model):
             if record.code and " " in record.code:
                 raise ValidationError("Code cannot contain spaces.")
 
-    _sql_constraints = [
-        (
-            "hotel_amenity_type_name_company_unique",
-            "unique(name, company_id)",
-            "Amenity Type must be unique per company.",
-        ),
-        (
-            "hotel_amenity_type_code_company_unique",
-            "unique(code, company_id)",
-            "Amenity Type Code must be unique per company.",
-        ),
-    ]
+    _hotel_amenity_type_name_company_unique = models.Constraint(
+        'unique(name, company_id)',
+        "Amenity Type must be unique per company.",
+    )
+    _hotel_amenity_type_code_company_unique = models.Constraint(
+        'unique(code, company_id)',
+        "Amenity Type Code must be unique per company.",
+    )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -153,18 +149,14 @@ class HotelAmenity(models.Model):
 
     description = fields.Text()
 
-    _sql_constraints = [
-        (
-            "hotel_amenity_name_company_unique",
-            "unique(name, company_id)",
-            "Amenity must be unique per company.",
-        ),
-        (
-            "hotel_amenity_code_company_unique",
-            "unique(code, company_id)",
-            "Code must be unique per company.",
-        ),
-    ]
+    _hotel_amenity_name_company_unique = models.Constraint(
+        'unique(name, company_id)',
+        "Amenity must be unique per company.",
+    )
+    _hotel_amenity_code_company_unique = models.Constraint(
+        'unique(code, company_id)',
+        "Code must be unique per company.",
+    )
 
     @api.model_create_multi
     def create(self, vals_list):

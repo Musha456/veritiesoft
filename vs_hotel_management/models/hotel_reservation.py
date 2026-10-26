@@ -2180,10 +2180,7 @@ class HotelReservation(models.Model):
                             ) % room.display_name
                         )
 
-    _sql_constraints = [
-        (
-            "hotel_reservation_name_unique",
-            "unique(name, company_id)",
-            "Reservation reference must be unique.",
-        ),
-    ]
+    _hotel_reservation_name_unique = models.Constraint(
+        'unique(name, company_id)',
+        "Reservation reference must be unique.",
+    )

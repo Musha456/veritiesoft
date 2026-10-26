@@ -71,7 +71,6 @@ class HotelTaskAssignmentWizard(models.TransientModel):
         string="Housekeeping Type",
         required=True,
         default="checkout",
-        tracking=True,
     )
 
     maintenance_type = fields.Selection(
@@ -84,7 +83,6 @@ class HotelTaskAssignmentWizard(models.TransientModel):
         string="Maintenance Type",
         required=True,
         default="corrective",
-        tracking=True,
     )
 
     priority = fields.Selection(

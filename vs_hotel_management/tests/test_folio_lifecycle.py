@@ -51,12 +51,11 @@ class TestHotelFolioLifecycle(TransactionCase):
             })
 
         cls.room = cls.env['hotel.room'].create({
-            'name': 'Room F101',
-            'category_id': cls.category.id,
+            'room_number': 'F101',
+            'room_category_id': cls.category.id,
             'hotel_id': cls.hotel.id,
             'building_id': cls.building.id,
             'floor_id': cls.floor.id,
-            'price': 200.0,
             'status': 'available',
         })
 
