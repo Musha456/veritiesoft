@@ -59,19 +59,30 @@ class TestHotelFolioLifecycle(TransactionCase):
             'status': 'available',
         })
 
+        cls.rate_plan = cls.env['hotel.rate.plan'].create({
+            'name': 'Folio Rate Plan',
+            'hotel_id': cls.hotel.id,
+            'room_category_ids': [(6, 0, [cls.category.id])],
+            'state': 'active',
+            'base_price': 200.0,
+            'company_id': cls.env.company.id,
+        })
+
     def _create_and_checkout_reservation(self):
         """Helper to create, confirm, reserve, check-in and check-out a reservation."""
-        check_in = datetime.datetime.now() + datetime.timedelta(days=1)
-        check_out = check_in + datetime.timedelta(days=2)
+        check_in = datetime.datetime.now() - datetime.timedelta(days=2)
+        check_out = datetime.datetime.now() - datetime.timedelta(hours=1)
 
         reservation = self.env['hotel.reservation'].create({
             'partner_id': self.partner.id,
             'hotel_id': self.hotel.id,
             'line_ids': [(0, 0, {
+                'room_category_id': self.category.id,
+                'rate_plan_id': self.rate_plan.id,
                 'room_id': self.room.id,
                 'check_in': check_in,
                 'check_out': check_out,
-                'rate': 200.0,
+                'room_price': 200.0,
             })],
         })
 

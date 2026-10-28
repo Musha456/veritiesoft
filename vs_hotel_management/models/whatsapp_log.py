@@ -1,4 +1,5 @@
-from odoo import api, fields, models, _
+from odoo import api, fields, models, tools, _
+from odoo.tools import config
 import requests
 import logging
 import datetime
@@ -348,15 +349,19 @@ class HotelWhatsAppLog(models.Model):
         for log in queued_logs:
             try:
                 log._send_meta_whatsapp_message()
-                self.env.cr.commit()
+                if not config['test_enable']:
+                    self.env.cr.commit()
             except Exception as e:
-                self.env.cr.rollback()
+                if not config['test_enable']:
+                    self.env.cr.rollback()
                 _logger.exception("Error processing WhatsApp log %s: %s", log.name, e)
                 try:
                     log.write({"status": "failed", "error_details": str(e)[:4000]})
-                    self.env.cr.commit()
+                    if not config['test_enable']:
+                        self.env.cr.commit()
                 except Exception:
-                    self.env.cr.rollback()
+                    if not config['test_enable']:
+                        self.env.cr.rollback()
 
         return True
 

@@ -502,7 +502,7 @@ class HotelTaskNotificationMixin(models.AbstractModel):
                 continue
 
             partner = task.assigned_to.partner_id
-            phone = partner.mobile or partner.phone
+            phone = getattr(partner, "mobile", False) or partner.phone
 
             if not phone:
                 _logger.warning(
@@ -589,7 +589,7 @@ class HotelTaskNotificationMixin(models.AbstractModel):
             if not partner:
                 continue
 
-            phone = partner.mobile or partner.phone
+            phone = getattr(partner, "mobile", False) or partner.phone
             if not phone:
                 continue
 

@@ -447,49 +447,41 @@ class ResConfigSettings(models.TransientModel):
         res = super().get_values()
         config = self.env["ir.config_parameter"].sudo()
 
+        def get_config_id(key):
+            value = config.get_param(key, default="0")
+            return int(value) if value and value.isdigit() and int(value) > 0 else False
+
         res.update(
             use_default_hotel=(
-                config.get_param(
-                    "vs_hotel_management.use_default_hotel",
-                    default="False",
-                ) == "True"
+                    config.get_param(
+                        "vs_hotel_management.use_default_hotel",
+                        default="False",
+                    ) == "True"
             ),
-            configured_hotel_id=int(
-                config.get_param(
-                    "vs_hotel_management.default_hotel_id",
-                    default="0",
-                )
-            ) or False,
+            configured_hotel_id=get_config_id(
+                "vs_hotel_management.default_hotel_id"
+            ),
             use_default_building=(
-                config.get_param(
-                    "vs_hotel_management.use_default_building",
-                    default="False",
-                ) == "True"
+                    config.get_param(
+                        "vs_hotel_management.use_default_building",
+                        default="False",
+                    ) == "True"
             ),
-            configured_building_id=int(
-                config.get_param(
-                    "vs_hotel_management.default_building_id",
-                    default="0",
-                )
-            ) or False,
+            configured_building_id=get_config_id(
+                "vs_hotel_management.default_building_id"
+            ),
             use_default_floor=(
-                config.get_param(
-                    "vs_hotel_management.use_default_floor",
-                    default="False",
-                ) == "True"
+                    config.get_param(   
+                        "vs_hotel_management.use_default_floor",
+                        default="False",
+                    ) == "True"
             ),
-            configured_floor_id=int(
-                config.get_param(
-                    "vs_hotel_management.default_floor_id",
-                    default="0",
-                )
-            ) or False,
-            housekeeping_assigned_user_id=int(
-                config.get_param(
-                    "vs_hotel_management.housekeeping_assigned_user_id",
-                    default="0",
-                )
-            ) or False,
+            configured_floor_id=get_config_id(
+                "vs_hotel_management.default_floor_id"
+            ),
+            housekeeping_assigned_user_id=get_config_id(
+                "vs_hotel_management.housekeeping_assigned_user_id"
+            ),
         )
 
         return res

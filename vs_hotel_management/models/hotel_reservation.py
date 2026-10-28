@@ -770,7 +770,7 @@ class HotelReservation(models.Model):
             "context": {
                 "default_task_reference": f"{self._name},{self.id}",
                 "default_recipient_id": self.partner_id.id,
-                "default_phone_number": self.partner_id.mobile or self.partner_id.phone or self.guest_phone,
+                "default_phone_number": getattr(self.partner_id, "mobile", False) or self.partner_id.phone or self.guest_phone,
                 "default_task_type": "reservation",
                 "default_company_id": self.company_id.id,
             },
@@ -1078,7 +1078,7 @@ class HotelReservation(models.Model):
             if not partner:
                 continue
 
-            phone = partner.mobile or partner.phone or reservation.guest_phone or ""
+            phone = getattr(partner, "mobile", False) or partner.phone or reservation.guest_phone or ""
             hotel = reservation.hotel_id
             hotel_name = hotel.name if hotel else _("Hotel")
             currency_symbol = reservation.currency_id.symbol or reservation.currency_id.name or ""

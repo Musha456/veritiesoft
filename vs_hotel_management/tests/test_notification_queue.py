@@ -14,6 +14,7 @@ class TestHotelNotificationQueue(TransactionCase):
             'name': 'Notification Test Guest',
             'email': 'notification_guest@test.com',
             'phone': '+15551234567',
+            'id_number': 'NOTIF12345',
         })
 
         cls.hotel = cls.env['hotel.hotel'].search([], limit=1)
@@ -55,8 +56,16 @@ class TestHotelNotificationQueue(TransactionCase):
             'hotel_id': cls.hotel.id,
             'building_id': cls.building.id,
             'floor_id': cls.floor.id,
-            'price': 100.0,
             'status': 'available',
+        })
+
+        cls.rate_plan = cls.env['hotel.rate.plan'].create({
+            'name': 'Notification Rate Plan',
+            'hotel_id': cls.hotel.id,
+            'room_category_ids': [(6, 0, [cls.category.id])],
+            'state': 'active',
+            'base_price': 100.0,
+            'company_id': cls.env.company.id,
         })
 
         # Enable notification settings
@@ -77,10 +86,12 @@ class TestHotelNotificationQueue(TransactionCase):
             'partner_id': self.partner.id,
             'hotel_id': self.hotel.id,
             'line_ids': [(0, 0, {
+                'room_category_id': self.category.id,
+                'rate_plan_id': self.rate_plan.id,
                 'room_id': self.room.id,
                 'check_in': check_in,
                 'check_out': check_out,
-                'rate': 100.0,
+                'room_price': 100.0,
             })],
         })
 
