@@ -98,6 +98,17 @@ class HotelDiscount(models.Model):
         help="Percentage or fixed amount depending on the discount type.",
     )
 
+    discount_target = fields.Selection(
+        [
+            ("all", "All (Rooms & Services)"),
+            ("room", "Rooms"),
+            ("service", "Services"),
+        ],
+        string="Applies To",
+        default="all",
+        tracking=True,
+    )
+
     maximum_discount = fields.Monetary(
         currency_field="currency_id",
         help="Maximum discount amount when using percentage discounts.",

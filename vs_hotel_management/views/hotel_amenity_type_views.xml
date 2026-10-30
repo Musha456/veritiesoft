@@ -44,7 +44,7 @@
                     <div class="oe_button_box" name="button_box">
 
                         <button name="action_view_amenities" type="object" class="oe_stat_button"
-                                invisible="not amenity_count" icon="fa-star">
+                                invisible="not amenity_count" icon="star">
                             <field name="amenity_count" widget="statinfo" string="Amenities"/>
                         </button>
 

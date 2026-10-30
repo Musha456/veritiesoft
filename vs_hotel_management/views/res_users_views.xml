@@ -11,7 +11,7 @@
                 <button name="action_view_user_housekeeping_tasks"
                         type="object"
                         class="oe_stat_button"
-                        icon="fa-check-square-o">
+                        icon="check_box">
                     <field name="housekeeping_task_count"
                            widget="statinfo"
                            string="Housekeeping"/>
@@ -20,7 +20,7 @@
                 <button name="action_view_user_maintenance_tasks"
                         type="object"
                         class="oe_stat_button"
-                        icon="fa-wrench">
+                        icon="build">
                     <field name="maintenance_task_count"
                            widget="statinfo"
                            string="Maintenance"/>

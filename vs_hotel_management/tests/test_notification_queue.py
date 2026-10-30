@@ -70,6 +70,9 @@ class TestHotelNotificationQueue(TransactionCase):
 
         # Enable notification settings
         ICP = cls.env['ir.config_parameter'].sudo()
+        ICP.set_param('vs_hotel_management.notify_reservation_email', 'True')
+        ICP.set_param('vs_hotel_management.notify_reservation_whatsapp', 'True')
+        ICP.set_param('vs_hotel_management.notify_reservation_sms', 'True')
         ICP.set_param('vs_hotel_management.email_enabled', 'True')
         ICP.set_param('vs_hotel_management.whatsapp_enabled', 'True')
         ICP.set_param('vs_hotel_management.sms_enabled', 'True')
@@ -147,3 +150,38 @@ class TestHotelNotificationQueue(TransactionCase):
         """Verify unified cron executes without exception."""
         result = self.env['hotel.whatsapp.log'].cron_process_all_notification_queues()
         self.assertTrue(result)
+
+    def test_04_modular_channel_enabling_without_legacy_master_key(self):
+        """Verify notifications queue cleanly when only modular switches are enabled (master key False)."""
+        ICP = self.env['ir.config_parameter'].sudo()
+        ICP.set_param('vs_hotel_management.whatsapp_enabled', 'False')
+        ICP.set_param('vs_hotel_management.notify_reservation_whatsapp', 'True')
+
+        check_in = datetime.datetime.now() + datetime.timedelta(days=3)
+        check_out = check_in + datetime.timedelta(days=2)
+
+        reservation = self.env['hotel.reservation'].create({
+            'partner_id': self.partner.id,
+            'hotel_id': self.hotel.id,
+            'check_in': check_in,
+            'check_out': check_out,
+            'line_ids': [(0, 0, {
+                'room_category_id': self.category.id,
+                'rate_plan_id': self.rate_plan.id,
+                'room_id': self.room.id,
+                'check_in': check_in,
+                'check_out': check_out,
+                'room_price': 100.0,
+            })],
+        })
+
+        with patch('requests.post'):
+            reservation.action_confirm()
+
+        logs = self.env['hotel.whatsapp.log'].search([
+            ('task_reference', '=', f'hotel.reservation,{reservation.id}'),
+            ('event', '=', 'confirmed'),
+        ])
+        self.assertTrue(logs, "A WhatsApp log record should be created even if legacy master switch was False")
+        self.assertEqual(logs[0].status, 'queued', "Status should be queued instead of failed")
+        self.assertFalse(logs[0].error_details, "Should have no error details about disabled settings")

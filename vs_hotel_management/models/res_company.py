@@ -33,9 +33,9 @@ class ResCompany(models.Model):
 
     whatsapp_api_version = fields.Char(
         string="Graph API Version",
-        default="v23.0",
+        default="v25.0",
         groups="base.group_system",
-        help="Meta Graph API Version (e.g. v23.0).",
+        help="Meta Graph API Version (e.g. v25.0).",
     )
 
     whatsapp_template_name = fields.Char(
@@ -64,7 +64,7 @@ class ResCompany(models.Model):
         self.ensure_one()
         token = self.whatsapp_access_token
         phone_number_id = self.whatsapp_phone_number_id
-        api_version = (self.whatsapp_api_version or "v23.0").strip()
+        api_version = (self.whatsapp_api_version or "v25.0").strip()
 
         if not token or not phone_number_id:
             raise UserError(

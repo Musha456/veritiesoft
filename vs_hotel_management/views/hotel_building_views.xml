@@ -92,7 +92,7 @@
                         <button name="action_view_floors"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-list-alt"
+                                icon="layers"
                                 invisible="not floor_count">
 
                             <field name="floor_count"
@@ -104,7 +104,7 @@
                         <button name="action_view_rooms"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-bed"
+                                icon="bed"
                                 invisible="not room_count">
 
                             <field name="room_count"

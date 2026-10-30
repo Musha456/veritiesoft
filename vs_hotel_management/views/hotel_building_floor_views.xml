@@ -88,7 +88,7 @@
                                 type="object"
                                 class="oe_stat_button"
                                 invisible="not room_count"
-                                icon="fa-bed">
+                                icon="bed">
 
                             <field
                                     name="room_count"

@@ -132,7 +132,7 @@
                         <button name="action_view_buildings"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-building"
+                                icon="apartment"
                                 invisible="not building_count">
 
                             <field name="building_count"
@@ -144,7 +144,7 @@
                         <button name="action_view_floors"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-list-alt"
+                                icon="layers"
                                 invisible="not floor_count">
 
                             <field name="floor_count"
@@ -156,7 +156,7 @@
                         <button name="action_view_rooms"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-bed"
+                                icon="bed"
                                 invisible="not room_count">
 
                             <field name="room_count"
@@ -168,7 +168,7 @@
                         <button name="action_view_services"
                                 type="object"
                                 claass="oe_stat_button"
-                                icon="fa-cogs"
+                                icon="settings"
                                 invisible="not service_count">
 
                             <field name="service_count"
@@ -179,7 +179,7 @@
                         <button name="action_view_gallery"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-image"
+                                icon="image"
                                 invisible="not gallery_count">
 
                             <field name="gallery_count"
@@ -191,7 +191,7 @@
                         <button name="action_view_reservations"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-calendar-check-o"
+                                icon="calendar_today"
                                 invisible="not reservation_count">
 
                             <field name="reservation_count"
@@ -203,7 +203,7 @@
                         <button name="action_view_guests"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-user-o"
+                                icon="person"
                                 invisible="not guest_count">
 
                             <field name="guest_count"

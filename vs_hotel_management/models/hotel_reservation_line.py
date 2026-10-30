@@ -568,14 +568,31 @@ class HotelReservationLine(models.Model):
             self.room_id = False
 
         if self.hotel_id and self.room_category_id:
-            self.rate_plan_id = self.env["hotel.rate.plan"].search(
-                [
-                    ("hotel_id", "=", self.hotel_id.id),
-                    ("room_category_ids", "in", self.room_category_id.id),
-                    ("state", "=", "active"),
-                ],
-                limit=1,
-            )
+            ICP = self.env["ir.config_parameter"].sudo()
+            def_rate_plan_id = int(ICP.get_param("vs_hotel_management.default_rate_plan_id", 0) or 0)
+            if def_rate_plan_id:
+                plan = self.env["hotel.rate.plan"].browse(def_rate_plan_id)
+                if plan.exists() and plan.state == "active" and (not plan.hotel_id or plan.hotel_id == self.hotel_id):
+                    self.rate_plan_id = plan
+            if not self.rate_plan_id:
+                self.rate_plan_id = self.env["hotel.rate.plan"].search(
+                    [
+                        ("hotel_id", "=", self.hotel_id.id),
+                        ("room_category_ids", "in", self.room_category_id.id),
+                        ("state", "=", "active"),
+                    ],
+                    limit=1,
+                )
+
+            if not self.discount_id:
+                if self.room_category_id.discount_ids:
+                    self.discount_id = self.room_category_id.discount_ids.filtered(lambda d: d.state == "active")[:1]
+                else:
+                    def_disc_id = int(ICP.get_param("vs_hotel_management.default_room_discount_id", 0) or 0)
+                    if def_disc_id:
+                        disc = self.env["hotel.discount"].browse(def_disc_id)
+                        if disc.exists() and disc.state == "active":
+                            self.discount_id = disc
 
     @api.constrains(
         "adults",
@@ -1097,10 +1114,11 @@ class HotelReservationLine(models.Model):
             if not record.room_id or not record.check_in or not record.check_out:
                 continue
 
-            # Do not validate inactive/completed reservation states.
-            # Draft reservations must still validate the selected room,
-            # but they should not themselves block room availability.
+            # Do not validate inactive, draft, or completed reservation states.
+            # Draft reservations are quotations/proposals; room availability
+            # is strictly validated upon reservation confirmation.
             if record.reservation_id and record.reservation_id.state in (
+                    "draft",
                     "cancelled",
                     "no_show",
                     "completed",
@@ -1277,8 +1295,11 @@ class HotelReservationLine(models.Model):
         # Create lines only after all reservations pass the state check.
         records = super().create(vals_list)
 
-        # Preserve existing reservation-line validation.
+        # Preserve reservation-line validation for confirmed or non-draft states.
+        # Draft reservations validate availability upon confirmation.
         for line in records:
+            if line.reservation_id and line.reservation_id.state in ("draft", "cancelled"):
+                continue
             line._validate_reservation_line()
 
         return records

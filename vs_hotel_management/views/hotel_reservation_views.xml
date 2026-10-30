@@ -71,7 +71,7 @@
                                 string="Send by WhatsApp"
                                 type="object"
                                 class="btn-secondary"
-                                icon="fa-whatsapp"
+                                icon="chat"
                                 invisible="state == 'draft'"/>
 
                     </div>
@@ -94,7 +94,7 @@
                         <button name="action_open_room_bookings"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-bed"
+                                icon="bed"
                                 invisible="room_booking_count == 0">
 
                             <field name="room_booking_count"
@@ -106,22 +106,17 @@
                         <button name="action_view_guest_folios"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-money"
-                                invisible="folio_balance == 0">
-                            <div class="o_stat_info">
-                                <span class="o_stat_value">
-                                    <field name="folio_balance"
-                                           widget="monetary"
-                                           options="{'currency_field': 'currency_id'}"/>
-                                </span>
-                                <span class="o_stat_text">Folios</span>
-                            </div>
+                                icon="payments"
+                                invisible="folio_count == 0">
+                            <field name="folio_count"
+                                   widget="statinfo"
+                                   string="Folios"/>
                         </button>
 
                         <button name="action_view_invoices"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-file-text-o"
+                                icon="receipt_long"
                                 invisible="invoice_amount == 0">
                             <div class="o_stat_info">
                                 <span class="o_stat_value">
@@ -136,7 +131,7 @@
                         <button name="action_view_whatsapp_logs"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-whatsapp"
+                                icon="chat"
                                 invisible="whatsapp_log_count == 0">
                             <field name="whatsapp_log_count"
                                    widget="statinfo"
@@ -451,14 +446,16 @@
 
                         <page string="Extra Information">
                             <group>
-                                <group>
+                                <group string="Booking Details">
                                     <field name="booking_source"/>
                                     <field name="reference"/>
                                     <field name="arrival_time"/>
                                     <field name="departure_time"/>
                                 </group>
-                                <group>
-                                    <field name="payment_status"/>
+                                <group string="Travel Agent Details" invisible="booking_source != 'travel_agent'">
+                                    <field name="agent_id"/>
+                                    <field name="agent_commission_percentage"/>
+                                    <field name="agent_commission_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                                 </group>
                             </group>
                         </page>
@@ -481,34 +478,31 @@
                     </notebook>
 
                     <!-- ================================================= -->
-                    <!-- Amount Summary -->
+                    <!-- Financial Summary & Folio Status Footer           -->
                     <!-- ================================================= -->
 
-                    <group class="mt-3">
+                    <group class="mt-4">
 
-                        <group/>
+                        <group string="Billing &amp; Payment">
+                            <field name="folio_id" readonly="1" invisible="not folio_id"/>
+                            <field name="payment_status"
+                                   widget="badge"
+                                   decoration-success="payment_status == 'paid'"
+                                   decoration-warning="payment_status == 'partially_paid'"
+                                   decoration-danger="payment_status == 'unpaid'"/>
+                            <field name="agent_id" readonly="1" invisible="not agent_id"/>
+                            <field name="agent_commission_amount" readonly="1" invisible="not agent_id"/>
+                        </group>
 
-                        <group class="oe_subtotal_footer">
-
+                        <group class="oe_subtotal_footer" string="Reservation Summary">
                             <field name="room_amount" readonly="1"/>
                             <field name="service_amount" readonly="1"/>
 
-                            <separator string="Discount"/>
+                            <separator string="Adjustments"/>
+                            <field name="discount_amount" readonly="1" string="Discounts"/>
+                            <field name="tax_amount" readonly="1" string="Taxes"/>
 
-                            <field name="room_discount_amount" readonly="1"/>
-                            <field name="service_discount_amount" readonly="1"/>
-                            <field name="discount_amount" readonly="1"/>
-
-                            <separator string="Tax"/>
-
-                            <field name="room_tax_amount" readonly="1"/>
-                            <field name="service_tax_amount" readonly="1"/>
-                            <field name="tax_amount" readonly="1"/>
-
-                            <field name="subtotal" readonly="1"/>
-
-                            <field name="total_amount" class="oe_subtotal" readonly="1"/>
-
+                            <field name="total_amount" class="oe_subtotal_footer_separator fw-bold fs-5" readonly="1"/>
                         </group>
 
                     </group>
@@ -715,8 +709,7 @@
         <field name="model">hotel.reservation</field>
         <field name="arch" type="xml">
 
-            <kanban class="o_kanban_record hotel_room_kanban_card"
-                    create="1"
+            <kanban create="1"
                     edit="1"
                     delete="1">
 
@@ -725,9 +718,8 @@
                 <field name="hotel_id"/>
                 <field name="check_in"/>
                 <field name="check_out"/>
-                <field name="night_count"/>
-                <field name="adult_count"/>
-                <field name="child_count"/>
+                <field name="room_count"/>
+                <field name="guest_count"/>
                 <field name="total_amount"/>
                 <field name="currency_id"/>
                 <field name="state"/>
@@ -736,182 +728,61 @@
 
                     <t t-name="card">
 
-                        <div class="oe_kanban_global_click hotel_room_kanban_card">
+                        <div class="oe_kanban_global_click p-2 d-flex flex-column justify-content-between h-100">
 
-                            <!-- HEADER -->
-                            <div class="hotel_reservation_header">
-
-                                <div class="d-flex align-items-center gap-2">
-
-                                    <i class="fa fa-ticket text-primary" title="Reservation"/>
-
-                                    <strong class="text-truncate">
-                                        <field name="name"/>
-                                    </strong>
-
+                            <!-- Top Header: Guest Name & Status Badge -->
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                <div class="text-truncate">
+                                    <div class="fw-bold fs-6 text-dark text-truncate">
+                                        <field name="partner_id"/>
+                                    </div>
+                                    <div class="text-muted small text-truncate">
+                                        <i class="oi oi-apartment me-1 text-secondary"/>
+                                        <field name="hotel_id"/>
+                                    </div>
                                 </div>
-
-                                <field name="state"
-                                       widget="badge"/>
-
+                                <field name="state" widget="badge"/>
                             </div>
 
-
-                            <!-- BODY -->
-                            <div class="hotel_room_body">
-
-                                <!-- GUEST & HOTEL -->
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mx-2">
-
-                                    <!-- GUEST -->
-                                    <div class="hotel_reservation_guest d-flex align-items-center">
-
-                                        <i class="fa fa-user text-primary me-1" title="Guest"/>
-
+                            <!-- Body: Horizontally Aligned Check-In & Check-Out Times, Booked Rooms, Guests -->
+                            <div class="my-2">
+                                <div class="row g-2 align-items-center py-1">
+                                    <div class="col-6 d-flex align-items-center gap-1 text-truncate">
+                                        <i class="oi oi-calendar-today text-primary small flex-shrink-0"/>
                                         <div class="text-truncate">
-
-                                            <span class="hotel_reservation_label">
-                                                Guest
-                                            </span>
-
-                                            <strong>
-                                                <field name="partner_id"/>
-                                            </strong>
-
+                                            <div class="text-muted" style="font-size: 0.72rem; line-height: 1.1;">Check-In</div>
+                                            <strong class="text-dark small"><field name="check_in"/></strong>
                                         </div>
-
                                     </div>
-
-
-                                    <!-- HOTEL -->
-                                    <div class="hotel_reservation_hotel d-flex align-items-center">
-
-                                        <i class="fa fa-hotel me-1"/>
-
-                                        <span>
-                                            <field name="hotel_id"/>
-                                        </span>
-
+                                    <div class="col-6 d-flex align-items-center gap-1 text-truncate">
+                                        <i class="oi oi-calendar-today text-secondary small flex-shrink-0"/>
+                                        <div class="text-truncate">
+                                            <div class="text-muted" style="font-size: 0.72rem; line-height: 1.1;">Check-Out</div>
+                                            <strong class="text-dark small"><field name="check_out"/></strong>
+                                        </div>
                                     </div>
-
                                 </div>
 
-
-                                <!-- DATES -->
-                                <div class="hotel_reservation_dates">
-
-                                    <div class="hotel_reservation_date">
-
-                                        <i class="fa fa-sign-in" title="Check-in"/>
-
-                                        <div>
-                                            <span class="hotel_reservation_label">
-                                                Check-in
-                                            </span>
-
-                                            <strong>
-                                                <field name="check_in"/>
-                                            </strong>
-                                        </div>
-
-                                    </div>
-
-
-                                    <!--                                    <div class="hotel_reservation_date_arrow">-->
-                                    <!--                                        <i class="fa fa-long-arrow-right"/>-->
-                                    <!--                                    </div>-->
-
-
-                                    <div class="hotel_reservation_date">
-
-                                        <i class="fa fa-sign-out" title="Check-out"/>
-
-                                        <div>
-                                            <span class="hotel_reservation_label">
-                                                Check-out
-                                            </span>
-
-                                            <strong>
-                                                <field name="check_out"/>
-                                            </strong>
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-
-                                <!-- STATISTICS -->
-                                <div class="hotel_reservation_stats d-flex align-items-center flex-nowrap gap-2 mt-3">
-
-                                    <!-- Nights -->
-                                    <div class="hotel_reservation_stat d-flex align-items-center gap-1 flex-fill">
-                                        <i class="fa fa-moon-o text-primary"/>
-                                        <span class="hotel_reservation_stat_label">
-                                            Nights
-                                        </span>
-                                        <strong class="hotel_reservation_stat_value">
-                                            <field name="night_count"/>
-                                        </strong>
-                                    </div>
-
-                                    <!-- Rooms -->
-                                    <div class="hotel_reservation_stat d-flex align-items-center gap-1 flex-fill">
-                                        <i class="fa fa-bed text-primary" title="Room"/>
-                                        <span class="hotel_reservation_stat_label">
-                                            Rooms
-                                        </span>
-                                        <strong class="hotel_reservation_stat_value">
-                                            <field name="room_count"/>
-                                        </strong>
-                                    </div>
-
-                                    <!-- Adults -->
-                                    <div class="hotel_reservation_stat d-flex align-items-center gap-1 flex-fill">
-                                        <i class="fa fa-user text-primary" title="Adults"/>
-                                        <span class="hotel_reservation_stat_label">
-                                            Adults
-                                        </span>
-                                        <strong class="hotel_reservation_stat_value">
-                                            <field name="adult_count"/>
-                                        </strong>
-                                    </div>
-
-                                    <!-- Children -->
-                                    <div class="hotel_reservation_stat d-flex align-items-center gap-1 flex-fill">
-                                        <i class="fa fa-child text-primary"/>
-                                        <span class="hotel_reservation_stat_label">
-                                            Children
-                                        </span>
-                                        <strong class="hotel_reservation_stat_value">
-                                            <field name="child_count"/>
-                                        </strong>
-                                    </div>
-
+                                <div class="d-flex justify-content-between align-items-center mt-2 pt-1 text-nowrap">
+                                    <span class="badge rounded-pill bg-light text-dark border me-2">
+                                        <i class="oi oi-bed me-1 text-primary"/>
+                                        <field name="room_count"/> Rooms
+                                    </span>
+                                    <span class="badge rounded-pill bg-light text-dark border">
+                                        <i class="oi oi-person me-1 text-secondary"/>
+                                        <field name="guest_count"/> Guests
+                                    </span>
                                 </div>
                             </div>
 
-
-                            <!-- FOOTER -->
-                            <div class="hotel_room_footer reservation">
-
-                                <div class="hotel_reservation_total">
-
-                                    <span class="text-muted">
-                                        <!--                                        <i class="fa fa-money"/>-->
-                                        Total
-                                    </span>
-
-                                    <strong class="hotel_reservation_total_amount">
-
-                                        <field name="total_amount"
-                                               widget="monetary"
-                                               options="{'currency_field': 'currency_id'}"/>
-
-                                    </strong>
-
-                                </div>
-
+                            <!-- Footer: Total Amount -->
+                            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                                <span class="text-muted small fw-semibold">Total Amount</span>
+                                <strong class="fs-6 text-primary">
+                                    <field name="total_amount"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                </strong>
                             </div>
 
                         </div>

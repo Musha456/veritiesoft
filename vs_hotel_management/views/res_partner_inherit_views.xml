@@ -11,7 +11,7 @@
                 <button name="action_view_hotel_reservations"
                         type="object"
                         class="oe_stat_button"
-                        icon="fa-calendar-check-o">
+                        icon="calendar_today">
 
                     <field name="reservation_count"
                            widget="statinfo"
@@ -22,7 +22,7 @@
                 <button name="action_view_hotel_room_bookings"
                         type="object"
                         class="oe_stat_button"
-                        icon="fa-bed">
+                        icon="bed">
 
                     <field name="room_booking_count"
                            widget="statinfo"
@@ -33,7 +33,7 @@
                 <button name="action_view_hotel_folios"
                         type="object"
                         class="oe_stat_button"
-                        icon="fa-money">
+                        icon="payments">
 
                     <field name="folio_count"
                            widget="statinfo"
@@ -44,7 +44,7 @@
                 <button name="action_view_hotel_invoices"
                         type="object"
                         class="oe_stat_button"
-                        icon="fa-file-text-o">
+                        icon="receipt_long">
 
                     <field name="hotel_invoice_count"
                            widget="statinfo"
@@ -55,7 +55,7 @@
                 <button name="action_view_whatsapp_logs"
                         type="object"
                         class="oe_stat_button"
-                        icon="fa-whatsapp">
+                        icon="chat">
 
                     <field name="whatsapp_log_count"
                            widget="statinfo"
@@ -67,12 +67,16 @@
 
             <xpath expr="//sheet/div[@name='button_box']" position="after">
 
-                <div class="oe_title">
-
-                    <label for="is_hotel_guest"/>
+                <div class="oe_title d-flex gap-4">
 
                     <div>
+                        <label for="is_hotel_guest" class="fw-bold me-2"/>
                         <field name="is_hotel_guest" widget="boolean_toggle"/>
+                    </div>
+
+                    <div>
+                        <label for="is_travel_agent" class="fw-bold me-2"/>
+                        <field name="is_travel_agent" widget="boolean_toggle"/>
                     </div>
 
                 </div>
@@ -115,6 +119,20 @@
                         <field name="hotel_guest_notes"
                                nolabel="1"
                                placeholder="Add guest-specific notes..."/>
+
+                    </group>
+
+                </page>
+
+                <page string="Travel Agent"
+                      name="travel_agent_info"
+                      invisible="not is_travel_agent">
+
+                    <group>
+
+                        <group string="Commission Settings">
+                            <field name="agent_commission_percentage"/>
+                        </group>
 
                     </group>
 

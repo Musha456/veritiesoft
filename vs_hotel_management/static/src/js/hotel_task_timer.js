@@ -13,7 +13,11 @@ export class HotelTaskTimer extends Component {
         this.interval = null;
 
         this.updateElapsed = () => {
-            const record = this.props.record;
+            const record = this.props?.record;
+            if (!record || !record.data) {
+                this.state.elapsed = 0;
+                return;
+            }
             const startedAt = record.data.started_at;
             const completedAt = record.data.completed_at;
             const taskState = record.data.state;
@@ -87,6 +91,10 @@ export class HotelTaskTimer extends Component {
 
     get totalSeconds() {
         return this.state.elapsed;
+    }
+
+    get isTaskInProgress() {
+        return Boolean(this.props?.record?.data?.state === "in_progress");
     }
 }
 

@@ -85,6 +85,15 @@ class HotelRoomCategory(models.Model):
         string="Amenities",
     )
 
+    discount_ids = fields.Many2many(
+        "hotel.discount",
+        "hotel_room_category_discount_rel",
+        "room_category_id",
+        "discount_id",
+        string="Applicable Discounts",
+        help="Discounts applicable when booking rooms of this category.",
+    )
+
     description = fields.Html()
 
     room_count = fields.Integer(

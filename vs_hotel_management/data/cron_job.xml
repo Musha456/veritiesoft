@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<odoo>
+<odoo noupdate="1">
     <!-- Scheduled Action: Start Housekeeping / Maintenance Tasks -->
     <record id="ir_cron_start_scheduled_hotel_tasks" model="ir.cron">
         <field name="name">Hotel: Start Scheduled Tasks</field>

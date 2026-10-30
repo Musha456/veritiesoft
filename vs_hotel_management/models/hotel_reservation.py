@@ -308,14 +308,49 @@ class HotelReservation(models.Model):
 
     payment_status = fields.Selection(
         [
-            ("pending", "Pending"),
-            ("partial", "Partially Paid"),
+            ("unpaid", "Unpaid"),
+            ("partially_paid", "Partially Paid"),
             ("paid", "Paid"),
-            ("refunded", "Refunded"),
         ],
         string="Payment Status",
-        default="pending",
+        compute="_compute_payment_status",
+        store=True,
         tracking=True,
+    )
+
+    folio_id = fields.Many2one(
+        "hotel.guest.folio",
+        string="Folio",
+        compute="_compute_primary_folio",
+        store=True,
+    )
+
+    booked_rooms_display = fields.Char(
+        string="Booked Rooms",
+        compute="_compute_booked_rooms_display",
+        store=True,
+    )
+
+    agent_id = fields.Many2one(
+        "res.partner",
+        string="Travel Agent",
+        domain="[('is_travel_agent', '=', True)]",
+        tracking=True,
+        help="Travel agent or agency associated with this booking.",
+    )
+
+    agent_commission_percentage = fields.Float(
+        string="Agent Commission (%)",
+        tracking=True,
+        help="Commission percentage for the travel agent.",
+    )
+
+    agent_commission_amount = fields.Monetary(
+        string="Commission Amount",
+        compute="_compute_agent_commission",
+        store=True,
+        currency_field="currency_id",
+        help="Total commission amount allocated to the travel agent calculated on room charges.",
     )
 
     room_booking_ids = fields.One2many(
@@ -482,6 +517,65 @@ class HotelReservation(models.Model):
             reservation.invoice_amount = sum(
                 invoices.mapped("amount_total")
             )
+
+    @api.depends("folio_ids", "folio_ids.state")
+    def _compute_primary_folio(self):
+        for reservation in self:
+            active_folios = reservation.folio_ids.filtered(lambda f: f.state != "cancelled")
+            reservation.folio_id = active_folios[:1] if active_folios else self.env["hotel.guest.folio"]
+
+    @api.depends("folio_ids", "folio_ids.state", "folio_ids.paid_amount", "folio_ids.balance_amount", "folio_ids.total_amount")
+    def _compute_payment_status(self):
+        for reservation in self:
+            active_folios = reservation.folio_ids.filtered(lambda f: f.state != "cancelled")
+            if not active_folios:
+                reservation.payment_status = "unpaid"
+                continue
+            total = sum(active_folios.mapped("total_amount"))
+            paid = sum(active_folios.mapped("paid_amount"))
+            if any(f.state == "paid" for f in active_folios) or (total > 0 and paid >= total):
+                reservation.payment_status = "paid"
+            elif paid > 0 or any(f.state == "partially_paid" for f in active_folios):
+                reservation.payment_status = "partially_paid"
+            else:
+                reservation.payment_status = "unpaid"
+
+    @api.depends(
+        "line_ids.room_id",
+        "line_ids.room_id.room_number",
+        "line_ids.room_category_id",
+        "line_ids.room_category_id.name",
+    )
+    def _compute_booked_rooms_display(self):
+        for reservation in self:
+            rooms = []
+            for line in reservation.line_ids:
+                if line.room_id and line.room_id.room_number:
+                    rooms.append(line.room_id.room_number)
+                elif line.room_category_id and line.room_category_id.name:
+                    rooms.append(line.room_category_id.name)
+            reservation.booked_rooms_display = ", ".join(rooms) if rooms else "-"
+
+    @api.onchange("agent_id")
+    def _onchange_agent_id(self):
+        if self.agent_id:
+            if self.agent_id.agent_commission_percentage:
+                self.agent_commission_percentage = self.agent_id.agent_commission_percentage
+            else:
+                ICP = self.env["ir.config_parameter"].sudo()
+                self.agent_commission_percentage = float(
+                    ICP.get_param("vs_hotel_management.default_agent_commission_percentage", 10.0) or 10.0
+                )
+        else:
+            self.agent_commission_percentage = 0.0
+
+    @api.depends("room_amount", "agent_commission_percentage", "agent_id")
+    def _compute_agent_commission(self):
+        for res in self:
+            if res.agent_id and res.agent_commission_percentage:
+                res.agent_commission_amount = (res.room_amount * res.agent_commission_percentage) / 100.0
+            else:
+                res.agent_commission_amount = 0.0
 
     def _get_stay_limits(self):
         """Return minimum and maximum stay limits from configuration settings."""
@@ -1065,13 +1159,35 @@ class HotelReservation(models.Model):
     def _notify_reservation(self, event):
         """
         Dispatch multi-channel notifications (Email, WhatsApp, SMS)
-        for reservation events: confirmed, cancelled, checkout.
-        Respects configuration toggles dynamically.
+        for reservation events: confirmed, cancelled, checkout, no_show.
+        Respects consolidated configuration toggles dynamically.
         """
         ICP = self.env["ir.config_parameter"].sudo()
-        email_master = ICP.get_param("vs_hotel_management.email_enabled", "True").lower() in ("true", "1", "yes")
-        whatsapp_master = ICP.get_param("vs_hotel_management.whatsapp_enabled", "False").lower() in ("true", "1", "yes")
-        sms_master = ICP.get_param("vs_hotel_management.sms_enabled", "False").lower() in ("true", "1", "yes")
+
+        def _is_channel_active(new_key, legacy_master_key, legacy_event_key):
+            val = ICP.get_param(new_key, None)
+            if val is not None:
+                return val.lower() in ("true", "1", "yes")
+            # Fallback to legacy master & event switches
+            master = ICP.get_param(legacy_master_key, "True" if "email" in legacy_master_key else "False").lower() in ("true", "1", "yes")
+            event_val = ICP.get_param(legacy_event_key, "True" if "email" in legacy_event_key else "False").lower() in ("true", "1", "yes")
+            return master and event_val
+
+        send_email = _is_channel_active(
+            "vs_hotel_management.notify_reservation_email",
+            "vs_hotel_management.email_enabled",
+            f"vs_hotel_management.email_reservation_{event}",
+        )
+        send_whatsapp = _is_channel_active(
+            "vs_hotel_management.notify_reservation_whatsapp",
+            "vs_hotel_management.whatsapp_enabled",
+            f"vs_hotel_management.whatsapp_reservation_{event}",
+        )
+        send_sms = _is_channel_active(
+            "vs_hotel_management.notify_reservation_sms",
+            "vs_hotel_management.sms_enabled",
+            f"vs_hotel_management.sms_reservation_{event}",
+        )
 
         for reservation in self:
             partner = reservation.partner_id
@@ -1088,96 +1204,92 @@ class HotelReservation(models.Model):
             # -------------------------------------------------
             if event == "confirmed":
                 # Email
-                if email_master and ICP.get_param("vs_hotel_management.email_reservation_confirmed", "True").lower() in ("true", "1", "yes"):
+                if send_email:
                     reservation._send_notification_email("vs_hotel_management.mail_template_hotel_reservation_confirmation")
 
                 # WhatsApp
-                if whatsapp_master and ICP.get_param("vs_hotel_management.whatsapp_reservation_confirmed", "False").lower() in ("true", "1", "yes"):
-                    if phone:
-                        room_names = ", ".join(reservation.line_ids.mapped("room_id.display_name")) or _("Standard Room")
-                        ci = reservation._format_datetime_local(reservation.check_in)
-                        co = reservation._format_datetime_local(reservation.check_out)
-                        msg = (
-                            f"🏨 *{hotel_name}*\n"
-                            f"*{_('Reservation Confirmation')}*\n\n"
-                            f"{_('Dear')} *{partner.name or _('Guest')}*,\n"
-                            f"{_('Thank you for choosing to stay with us. Your reservation is confirmed!')}\n\n"
-                            f"📋 *{_('Reservation Ref')}:* {reservation.name}\n"
-                            f"📅 *{_('Check-In')}:* {ci}\n"
-                            f"📅 *{_('Check-Out')}:* {co}\n"
-                            f"🌙 *{_('Duration')}:* {reservation.night_count} {_('Night(s)')}\n"
-                            f"👥 *{_('Guests')}:* {reservation.guest_count}\n"
-                            f"🛏️ *{_('Rooms')}:* {room_names}\n"
-                            f"💰 *{_('Total Amount')}:* {reservation.total_amount:,.2f} {currency_symbol}\n\n"
-                            f"{_('We look forward to welcoming you!')}"
-                        )
-                        reservation._send_whatsapp_message(
-                            recipient=phone,
-                            message_text=msg,
-                            log_values={
-                                "recipient_id": partner.id,
-                                "task_type": "reservation",
-                                "event": "confirmed",
-                                "task_reference": f"{reservation._name},{reservation.id}",
-                                "message": f"Confirmation WhatsApp message for {reservation.name}",
-                            },
-                        )
+                if send_whatsapp and phone:
+                    room_names = ", ".join(reservation.line_ids.mapped("room_id.display_name")) or _("Standard Room")
+                    ci = reservation._format_datetime_local(reservation.check_in, partner=partner)
+                    co = reservation._format_datetime_local(reservation.check_out, partner=partner)
+                    msg = (
+                        f"🏨 *{hotel_name}*\n"
+                        f"*{_('Reservation Confirmation')}*\n\n"
+                        f"{_('Dear')} *{partner.name or _('Guest')}*,\n"
+                        f"{_('Thank you for choosing to stay with us. Your reservation is confirmed!')}\n\n"
+                        f"📋 *{_('Reservation Ref')}:* {reservation.name}\n"
+                        f"📅 *{_('Check-In')}:* {ci}\n"
+                        f"📅 *{_('Check-Out')}:* {co}\n"
+                        f"🌙 *{_('Duration')}:* {reservation.night_count} {_('Night(s)')}\n"
+                        f"👥 *{_('Guests')}:* {reservation.guest_count}\n"
+                        f"🛏️ *{_('Rooms')}:* {room_names}\n"
+                        f"💰 *{_('Total Amount')}:* {reservation.total_amount:,.2f} {currency_symbol}\n\n"
+                        f"{_('We look forward to welcoming you!')}"
+                    )
+                    reservation._send_whatsapp_message(
+                        recipient=phone,
+                        message_text=msg,
+                        log_values={
+                            "recipient_id": partner.id,
+                            "task_type": "reservation",
+                            "event": "confirmed",
+                            "task_reference": f"{reservation._name},{reservation.id}",
+                            "message": f"Confirmation WhatsApp message for {reservation.name}",
+                        },
+                    )
 
                 # SMS
-                if sms_master and ICP.get_param("vs_hotel_management.sms_reservation_confirmed", "False").lower() in ("true", "1", "yes"):
-                    if phone:
-                        ci_date = reservation._format_datetime_local(reservation.check_in, dt_format="%d/%m/%Y")
-                        co_date = reservation._format_datetime_local(reservation.check_out, dt_format="%d/%m/%Y")
-                        sms_msg = _("%(hotel)s: Reservation %(ref)s confirmed from %(ci)s to %(co)s. Total: %(amt).2f %(curr)s. Welcome!") % {
-                            "hotel": hotel_name,
-                            "ref": reservation.name,
-                            "ci": ci_date,
-                            "co": co_date,
-                            "amt": reservation.total_amount,
-                            "curr": currency_symbol,
-                        }
-                        reservation._send_notification_sms(recipient=phone, message_text=sms_msg)
+                if send_sms and phone:
+                    ci_date = reservation._format_datetime_local(reservation.check_in, partner=partner, dt_format="%d/%m/%Y")
+                    co_date = reservation._format_datetime_local(reservation.check_out, partner=partner, dt_format="%d/%m/%Y")
+                    sms_msg = _("%(hotel)s: Reservation %(ref)s confirmed from %(ci)s to %(co)s. Total: %(amt).2f %(curr)s. Welcome!") % {
+                        "hotel": hotel_name,
+                        "ref": reservation.name,
+                        "ci": ci_date,
+                        "co": co_date,
+                        "amt": reservation.total_amount,
+                        "curr": currency_symbol,
+                    }
+                    reservation._send_notification_sms(recipient=phone, message_text=sms_msg)
 
             # -------------------------------------------------
             # 2. CANCELLATION
             # -------------------------------------------------
             elif event == "cancelled":
                 # Email
-                if email_master and ICP.get_param("vs_hotel_management.email_reservation_cancelled", "True").lower() in ("true", "1", "yes"):
+                if send_email:
                     reservation._send_notification_email("vs_hotel_management.mail_template_hotel_reservation_cancellation")
 
                 # WhatsApp
-                if whatsapp_master and ICP.get_param("vs_hotel_management.whatsapp_reservation_cancelled", "False").lower() in ("true", "1", "yes"):
-                    if phone:
-                        ci = reservation._format_datetime_local(reservation.check_in, dt_format="%d %b %Y")
-                        co = reservation._format_datetime_local(reservation.check_out, dt_format="%d %b %Y")
-                        msg = (
-                            f"🏨 *{hotel_name}*\n"
-                            f"*{_('Reservation Cancellation Notice')}*\n\n"
-                            f"{_('Dear')} *{partner.name or _('Guest')}*,\n"
-                            f"{_('Your reservation')} *{reservation.name}* ({ci} - {co}) {_('has been cancelled.')}\n\n"
-                            f"{_('If you have questions or require further assistance, please contact our front desk team.')}"
-                        )
-                        reservation._send_whatsapp_message(
-                            recipient=phone,
-                            message_text=msg,
-                            log_values={
-                                "recipient_id": partner.id,
-                                "task_type": "reservation",
-                                "event": "cancelled",
-                                "task_reference": f"{reservation._name},{reservation.id}",
-                                "message": f"Cancellation WhatsApp message for {reservation.name}",
-                            },
-                        )
+                if send_whatsapp and phone:
+                    ci = reservation._format_datetime_local(reservation.check_in, partner=partner, dt_format="%d %b %Y")
+                    co = reservation._format_datetime_local(reservation.check_out, partner=partner, dt_format="%d %b %Y")
+                    msg = (
+                        f"🏨 *{hotel_name}*\n"
+                        f"*{_('Reservation Cancellation Notice')}*\n\n"
+                        f"{_('Dear')} *{partner.name or _('Guest')}*,\n"
+                        f"{_('Your reservation')} *{reservation.name}* ({ci} - {co}) {_('has been cancelled.')}\n\n"
+                        f"{_('If you have questions or require further assistance, please contact our front desk team.')}"
+                    )
+                    reservation._send_whatsapp_message(
+                        recipient=phone,
+                        message_text=msg,
+                        log_values={
+                            "recipient_id": partner.id,
+                            "task_type": "reservation",
+                            "event": "cancelled",
+                            "task_reference": f"{reservation._name},{reservation.id}",
+                            "message": f"Cancellation WhatsApp message for {reservation.name}",
+                        },
+                    )
 
                 # SMS
-                if sms_master and ICP.get_param("vs_hotel_management.sms_reservation_cancelled", "False").lower() in ("true", "1", "yes"):
-                    if phone:
-                        sms_msg = _("%(hotel)s: Your reservation %(ref)s has been cancelled. Please contact our front desk for assistance.") % {
-                            "hotel": hotel_name,
-                            "ref": reservation.name,
-                        }
-                        reservation._send_notification_sms(recipient=phone, message_text=sms_msg)
+                if send_sms and phone:
+                    sms_msg = _("%(hotel)s: Your reservation %(ref)s has been cancelled. Please contact our front desk for assistance.") % {
+                        "hotel": hotel_name,
+                        "ref": reservation.name,
+                    }
+                    reservation._send_notification_sms(recipient=phone, message_text=sms_msg)
 
             # -------------------------------------------------
             # 3. CHECKOUT & FOLIO
@@ -1190,92 +1302,87 @@ class HotelReservation(models.Model):
                 balance_amount = folio.balance_amount if folio else 0.0
 
                 # Email
-                if email_master and ICP.get_param("vs_hotel_management.email_reservation_checkout", "True").lower() in ("true", "1", "yes"):
+                if send_email:
                     if folio:
                         folio._send_notification_email("vs_hotel_management.mail_template_hotel_guest_folio")
                     else:
                         reservation._send_notification_email("vs_hotel_management.mail_template_hotel_reservation_checkout")
 
                 # WhatsApp
-                if whatsapp_master and ICP.get_param("vs_hotel_management.whatsapp_reservation_checkout", "False").lower() in ("true", "1", "yes"):
-                    if phone:
-                        msg = (
-                            f"🏨 *{hotel_name}*\n"
-                            f"*{_('Thank You for Staying with Us!')}*\n\n"
-                            f"{_('Dear')} *{partner.name or _('Guest')}*,\n"
-                            f"{_('We hope you enjoyed your stay at')} *{hotel_name}*.\n"
-                            f"{_('Your checkout is complete.')}\n\n"
-                            f"📋 *{_('Reservation Ref')}:* {reservation.name}\n"
-                            f"🧾 *{_('Folio Number')}:* {folio_name}\n"
-                            f"💵 *{_('Total Charges')}:* {total_charges:,.2f} {currency_symbol}\n"
-                            f"💳 *{_('Total Paid')}:* {paid_amount:,.2f} {currency_symbol}\n"
-                            f"⚖️ *{_('Outstanding Balance')}:* {balance_amount:,.2f} {currency_symbol}\n\n"
-                            f"{_('Thank you for choosing us, and we look forward to welcoming you back again soon. Safe travels!')}"
-                        )
-                        reservation._send_whatsapp_message(
-                            recipient=phone,
-                            message_text=msg,
-                            log_values={
-                                "recipient_id": partner.id,
-                                "task_type": "reservation",
-                                "event": "checkout",
-                                "task_reference": f"{reservation._name},{reservation.id}",
-                                "message": f"Checkout thank-you & folio summary sent for {reservation.name}",
-                            },
-                        )
+                if send_whatsapp and phone:
+                    msg = (
+                        f"🏨 *{hotel_name}*\n"
+                        f"*{_('Thank You for Staying with Us!')}*\n\n"
+                        f"{_('Dear')} *{partner.name or _('Guest')}*,\n"
+                        f"{_('We hope you enjoyed your stay at')} *{hotel_name}*.\n"
+                        f"{_('Your checkout is complete.')}\n\n"
+                        f"📋 *{_('Reservation Ref')}:* {reservation.name}\n"
+                        f"🧾 *{_('Folio Number')}:* {folio_name}\n"
+                        f"💵 *{_('Total Charges')}:* {total_charges:,.2f} {currency_symbol}\n"
+                        f"💳 *{_('Total Paid')}:* {paid_amount:,.2f} {currency_symbol}\n"
+                        f"⚖️ *{_('Outstanding Balance')}:* {balance_amount:,.2f} {currency_symbol}\n\n"
+                        f"{_('Thank you for choosing us, and we look forward to welcoming you back again soon. Safe travels!')}"
+                    )
+                    reservation._send_whatsapp_message(
+                        recipient=phone,
+                        message_text=msg,
+                        log_values={
+                            "recipient_id": partner.id,
+                            "task_type": "reservation",
+                            "event": "checkout",
+                            "task_reference": f"{reservation._name},{reservation.id}",
+                            "message": f"Checkout thank-you & folio summary sent for {reservation.name}",
+                        },
+                    )
 
                 # SMS
-                if sms_master and ICP.get_param("vs_hotel_management.sms_reservation_checkout", "False").lower() in ("true", "1", "yes"):
-                    if phone:
-                        sms_msg = _("Thank you for staying at %(hotel)s! %(ref)s charges: %(tot).2f %(curr)s, Balance: %(bal).2f %(curr)s. Safe travels!") % {
-                            "hotel": hotel_name,
-                            "ref": reservation.name,
-                            "tot": total_charges,
-                            "bal": balance_amount,
-                            "curr": currency_symbol,
-                        }
-                        reservation._send_notification_sms(recipient=phone, message_text=sms_msg)
+                if send_sms and phone:
+                    sms_msg = _("Thank you for staying at %(hotel)s! %(ref)s charges: %(tot).2f %(curr)s, Balance: %(bal).2f %(curr)s. Safe travels!") % {
+                        "hotel": hotel_name,
+                        "ref": reservation.name,
+                        "tot": total_charges,
+                        "bal": balance_amount,
+                        "curr": currency_symbol,
+                    }
+                    reservation._send_notification_sms(recipient=phone, message_text=sms_msg)
 
             # -------------------------------------------------
             # 4. NO SHOW
             # -------------------------------------------------
             elif event == "no_show":
                 # Email
-                if email_master and ICP.get_param("vs_hotel_management.email_reservation_noshow", "False").lower() in ("true", "1", "yes"):
+                if send_email:
                     reservation._send_notification_email("vs_hotel_management.mail_template_hotel_reservation_noshow")
 
                 # WhatsApp
-                if whatsapp_master and ICP.get_param("vs_hotel_management.whatsapp_reservation_noshow", "False").lower() in ("true", "1", "yes"):
-                    if phone:
-                        ci = reservation._format_datetime_local(reservation.check_in)
-                        msg = (
-                            f"🏨 *{hotel_name}*\n"
-                            f"*{_('Reservation No-Show Notification')}*\n\n"
-                            f"{_('Dear')} *{partner.name or _('Guest')}*,\n"
-                            f"{_('We noticed you were unable to arrive for your reservation')} *{reservation.name}* ({_('Scheduled check-in:')} {ci}).\n"
-                            f"{_('In accordance with our booking policy, your reservation has been marked as No-Show.')}\n\n"
-                            f"{_('If you experienced travel delays or need assistance, please contact our front desk team.')}"
-                        )
-                        reservation._send_whatsapp_message(
-                            recipient=phone,
-                            message_text=msg,
-                            log_values={
-                                "recipient_id": partner.id,
-                                "task_type": "reservation",
-                                "event": "no_show",
-                                "task_reference": f"{reservation._name},{reservation.id}",
-                                "message": f"No-Show WhatsApp notification for {reservation.name}",
-                            },
-                        )
+                if send_whatsapp and phone:
+                    ci = reservation._format_datetime_local(reservation.check_in, partner=partner)
+                    msg = (
+                        f"🏨 *{hotel_name}*\n"
+                        f"*{_('Reservation No-Show Notification')}*\n\n"
+                        f"{_('Dear')} *{partner.name or _('Guest')}*,\n"
+                        f"{_('We noted that you were unable to check in for your reservation')} *{reservation.name}* ({ci}).\n\n"
+                        f"{_('If you need to reschedule or require assistance, please contact our front desk team.')}"
+                    )
+                    reservation._send_whatsapp_message(
+                        recipient=phone,
+                        message_text=msg,
+                        log_values={
+                            "recipient_id": partner.id,
+                            "task_type": "reservation",
+                            "event": "no_show",
+                            "task_reference": f"{reservation._name},{reservation.id}",
+                            "message": f"No-show notice sent for {reservation.name}",
+                        },
+                    )
 
                 # SMS
-                if sms_master and ICP.get_param("vs_hotel_management.sms_reservation_noshow", "False").lower() in ("true", "1", "yes"):
-                    if phone:
-                        sms_msg = _("%(hotel)s: Reservation %(ref)s has been marked as No-Show. Please contact our front desk if you require assistance.") % {
-                            "hotel": hotel_name,
-                            "ref": reservation.name,
-                        }
-                        reservation._send_notification_sms(recipient=phone, message_text=sms_msg)
+                if send_sms and phone:
+                    sms_msg = _("%(hotel)s: Reservation %(ref)s marked as No-Show. Please contact front desk if you need assistance.") % {
+                        "hotel": hotel_name,
+                        "ref": reservation.name,
+                    }
+                    reservation._send_notification_sms(recipient=phone, message_text=sms_msg)
 
     # =========================================================
     # WORKFLOW
@@ -1283,6 +1390,7 @@ class HotelReservation(models.Model):
 
     def action_confirm(self):
         """Confirm the reservation without creating room bookings."""
+        # Pre-validate reservation lines and rooms before prompting for guest ID
         for reservation in self:
             if reservation.state != "draft":
                 raise UserError(
@@ -1294,6 +1402,41 @@ class HotelReservation(models.Model):
                     _("A reservation must contain at least one room before it can be confirmed.")
                 )
 
+            for line in reservation.line_ids:
+                if not line.room_id:
+                    raise ValidationError(
+                        _("Each reservation line must have a room.")
+                    )
+
+        # Prompt for guest identification if required and missing
+        if len(self) == 1 and not self.env.context.get("skip_guest_id_check"):
+            res = self[0]
+            require_guest_id = (
+                res.hotel_id.require_guest_identification
+                or (self.env["ir.config_parameter"].sudo().get_param("vs_hotel_management.require_guest_id", "False").lower() in ("true", "1"))
+            )
+            guest = res.partner_id
+            guest_id_num = (guest and guest.id_number) or getattr(res, "id_number", False)
+            if require_guest_id and not guest_id_num:
+                guest_country = (guest and guest.nationality) or getattr(res, "id_country_id", False)
+                return {
+                    "name": _("Guest Identification Details"),
+                    "type": "ir.actions.act_window",
+                    "res_model": "hotel.guest.id.wizard",
+                    "view_mode": "form",
+                    "target": "new",
+                    "context": {
+                        "default_reservation_id": res.id,
+                        "default_partner_id": guest.id if guest else False,
+                        "default_id_type": (guest and guest.id_type) or getattr(res, "id_type", "national_id"),
+                        "default_id_number": guest_id_num or "",
+                        "default_id_country_id": guest_country.id if guest_country else False,
+                        "default_date_of_birth": (guest and guest.date_of_birth) or getattr(res, "date_of_birth", False),
+                        "default_gender": (guest and guest.gender) or getattr(res, "gender", False),
+                    },
+                }
+
+        for reservation in self:
             room_ids = reservation.line_ids.mapped("room_id").ids
             if room_ids:
                 self.env.cr.execute(
@@ -1302,12 +1445,6 @@ class HotelReservation(models.Model):
                 )
 
             reservation._validate_reservation()
-
-            for line in reservation.line_ids:
-                if not line.room_id:
-                    raise ValidationError(
-                        _("Each reservation line must have a room.")
-                    )
 
             reservation.state = "confirmed"
             reservation._notify_reservation(event="confirmed")
@@ -2042,13 +2179,14 @@ class HotelReservation(models.Model):
                 or get_bool("require_guest_id")
         )
 
-        if require_guest_id and not self.partner_id.id_number:
-            raise ValidationError(
-                _(
-                    "Guest identification (ID Number) is required "
-                    "for reservations at %s."
-                ) % self.hotel_id.name
-            )
+        if require_guest_id and not (self.partner_id.id_number or getattr(self, "id_number", False)):
+            if not self.env.context.get("skip_guest_id_check"):
+                raise ValidationError(
+                    _(
+                        "Guest identification (ID Number) is required "
+                        "for reservations at %s."
+                    ) % self.hotel_id.name
+                )
 
         if not self.line_ids:
             raise ValidationError(

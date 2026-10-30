@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_hotel_guest_id_wizard_form" model="ir.ui.view">
+        <field name="name">hotel.guest.id.wizard.form</field>
+        <field name="model">hotel.guest.id.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Guest Identification Details">
+                <div class="alert alert-warning d-flex align-items-center mb-3" role="status">
+                    <i class="oi oi-info me-2 fs-4"/>
+                    <div>
+                        <strong>Guest Identification Required:</strong> This hotel requires valid guest identification before confirming the reservation. Please provide the guest details below to complete confirmation.
+                    </div>
+                </div>
+
+                <group>
+                    <group string="Guest Information">
+                        <field name="partner_id" readonly="1"/>
+                        <field name="reservation_id" invisible="1"/>
+                        <field name="id_type"/>
+                        <field name="id_number" placeholder="e.g. AB1234567"/>
+                    </group>
+                    <group string="Nationality &amp; Personal">
+                        <field name="id_country_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="date_of_birth"/>
+                        <field name="gender"/>
+                    </group>
+                </group>
+
+                <footer>
+                    <button name="action_confirm_reservation"
+                            string="Confirm Reservation"
+                            type="object"
+                            class="btn-primary"
+                            icon="check_box"/>
+                    <button string="Discard"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

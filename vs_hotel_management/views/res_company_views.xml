@@ -33,7 +33,7 @@
                                 type="object"
                                 string="Test Connection"
                                 class="btn-primary"
-                                icon="fa-plug"/>
+                                icon="link"/>
                     </div>
                 </page>
             </xpath>

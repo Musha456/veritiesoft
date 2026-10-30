@@ -2,12 +2,12 @@
 <templates xml:space="preserve">
     <t t-name="vs_hotel_management.HotelTaskTimer">
         <div t-att-class="'d-inline-flex align-items-center gap-2 px-3 py-2 rounded border ' + (
-            props.record.data.state === 'in_progress'
+            this.isTaskInProgress
                 ? 'text-success border-success bg-light'
                 : 'text-muted border-secondary bg-light'
         )">
             <i t-att-class="'fa fa-clock-o ' + (
-                props.record.data.state === 'in_progress'
+                this.isTaskInProgress
                     ? 'text-success'
                     : 'text-muted'
             )"
@@ -15,10 +15,10 @@
 
             <span class="small">Elapsed</span>
 
-            <strong class="font-monospace" t-out="formattedTime"/>
+            <strong class="font-monospace" t-out="this.formattedTime"/>
 
             <span class="text-muted small">
-                (<t t-out="totalSeconds === 3600 ? 'Hour' : 'Hours'"/>)
+                (<t t-out="this.totalSeconds === 3600 ? 'Hour' : 'Hours'"/>)
             </span>
 
         </div>

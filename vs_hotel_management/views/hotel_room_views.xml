@@ -103,7 +103,7 @@
                         <button name="action_view_reservations"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-calendar-check-o"
+                                icon="calendar_today"
                                 invisible="reservation_count == 0">
 
                             <field name="reservation_count"
@@ -115,7 +115,7 @@
                         <button name="action_view_housekeeping"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-tasks"
+                                icon="cleaning_services"
                                 invisible="housekeeping_count == 0">
 
                             <field name="housekeeping_count"
@@ -127,7 +127,7 @@
                         <button name="action_view_maintenance"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="fa-wrench"
+                                icon="build"
                                 invisible="maintenance_count == 0">
 
                             <field name="maintenance_count"

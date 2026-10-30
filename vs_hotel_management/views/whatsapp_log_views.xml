@@ -15,7 +15,7 @@
                             type="object"
                             string="Process Queue Now"
                             class="btn-secondary"
-                            icon="fa-paper-plane"/>
+                            icon="send"/>
                 </header>
                 <field name="name"/>
                 <field name="create_date" string="Created"/>
@@ -35,14 +35,14 @@
                         type="object"
                         string="Send / Resend"
                         class="btn-sm btn-link text-primary"
-                        icon="fa-paper-plane"
+                        icon="send"
                         title="Send or Resend WhatsApp Message"
                         invisible="status not in ('draft', 'failed', 'queued')"/>
                 <button name="action_set_to_draft"
                         type="object"
                         string="Draft"
                         class="btn-sm btn-link text-muted"
-                        icon="fa-undo"
+                        icon="undo"
                         title="Set to Draft"
                         invisible="status != 'failed'"/>
             </list>
@@ -59,13 +59,13 @@
                             type="object"
                             string="Send / Resend WhatsApp"
                             class="btn-primary"
-                            icon="fa-paper-plane"
+                            icon="send"
                             invisible="status not in ('draft', 'failed', 'queued')"/>
                     <button name="action_set_to_draft"
                             type="object"
                             string="Set to Draft"
                             class="btn-secondary"
-                            icon="fa-undo"
+                            icon="undo"
                             invisible="status != 'failed'"/>
                     <field name="status" widget="statusbar"
                            statusbar_visible="draft,queued,sent,delivered,read,failed"/>

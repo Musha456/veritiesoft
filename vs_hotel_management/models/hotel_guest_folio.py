@@ -306,6 +306,20 @@ class HotelGuestFolio(models.Model):
                 raise UserError(
                     _("Closed folios cannot be cancelled.")
                 )
+            if folio.reservation_id and folio.reservation_id.state in ("checked_in", "checked_out", "completed"):
+                state_label = dict(folio.reservation_id._fields["state"].selection).get(
+                    folio.reservation_id.state, folio.reservation_id.state
+                )
+                raise UserError(
+                    _(
+                        "Folio '%(folio)s' cannot be cancelled because it is linked to reservation '%(res)s' which is already %(state)s."
+                    )
+                    % {
+                        "folio": folio.name,
+                        "res": folio.reservation_id.name,
+                        "state": state_label,
+                    }
+                )
 
             folio.state = "cancelled"
 

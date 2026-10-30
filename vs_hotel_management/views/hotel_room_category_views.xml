@@ -45,12 +45,12 @@
                     <div class="oe_button_box" name="button_box">
 
                         <button name="action_view_rooms" type="object" class="oe_stat_button"
-                                invisible="not room_count" icon="fa-list">
+                                invisible="not room_count" icon="view_list">
                             <field name="room_count" widget="statinfo" string="Rooms"/>
                         </button>
 
 <!--                        <button name="action_view_reservations" type="object" class="oe_stat_button"-->
-<!--                                invisible="not reservation_count" icon="fa-list">-->
+<!--                                invisible="not reservation_count" icon="view_list">-->
 <!--                            <field name="reservation_count" widget="statinfo" string="Reservations"/>-->
 <!--                        </button>-->
 
@@ -108,6 +108,10 @@
 
                     <group string="Amenities">
                         <field name="amenity_ids" widget="many2many_tags"/>
+                    </group>
+
+                    <group string="Applicable Discounts">
+                        <field name="discount_ids" widget="many2many_tags" placeholder="Select discounts applicable to this room category..."/>
                     </group>
 
 

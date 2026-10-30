@@ -44,7 +44,7 @@
                     <div class="oe_button_box" name="button_box">
 
                         <button name="action_view_room_categories" type="object" class="oe_stat_button"
-                                invisible="not room_category_count" icon="fa-tags">
+                                invisible="not room_category_count" icon="label">
                             <field name="room_category_count" widget="statinfo" string="Room Category"/>
                         </button>
 

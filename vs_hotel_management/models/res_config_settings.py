@@ -179,190 +179,115 @@ class ResConfigSettings(models.TransientModel):
     )
 
     # ---------------------------------------------------------
-    # Master Channel Controls
+    # Simplified Notification Channels & Automation
     # ---------------------------------------------------------
 
-    email_notifications_enabled = fields.Boolean(
-        string="Enable Email Notifications",
-        config_parameter="vs_hotel_management.email_enabled",
+    # 1. Reservation Notifications (Email, WhatsApp, SMS)
+    notify_reservation_email = fields.Boolean(
+        string="Send Email for Reservation Actions",
+        config_parameter="vs_hotel_management.notify_reservation_email",
         default=True,
-        help="Master switch to activate or deactivate automated email notifications across all hotel workflows.",
+        help="Automatically send email notifications to guests for all reservation lifecycle actions (confirmation, cancellation, checkout, no-show).",
     )
 
-    whatsapp_notifications_enabled = fields.Boolean(
-        string="Enable WhatsApp Notifications",
-        config_parameter="vs_hotel_management.whatsapp_enabled",
+    notify_reservation_whatsapp = fields.Boolean(
+        string="Send WhatsApp for Reservation Actions",
+        config_parameter="vs_hotel_management.notify_reservation_whatsapp",
         default=False,
-        help="Master switch to activate or deactivate automated Meta WhatsApp notifications across all hotel workflows.",
+        help="Automatically send Meta WhatsApp messages to guests for all reservation lifecycle actions (confirmation, cancellation, checkout, no-show).",
     )
 
-    sms_notifications_enabled = fields.Boolean(
-        string="Enable SMS Notifications",
-        config_parameter="vs_hotel_management.sms_enabled",
+    notify_reservation_sms = fields.Boolean(
+        string="Send SMS for Reservation Actions",
+        config_parameter="vs_hotel_management.notify_reservation_sms",
         default=False,
-        help="Master switch to activate or deactivate automated SMS notifications across hotel workflows.",
+        help="Automatically send SMS alerts to guests for all reservation lifecycle actions (confirmation, cancellation, checkout, no-show).",
     )
 
-    # ---------------------------------------------------------
-    # Reservation Notifications (Email, WhatsApp & SMS)
-    # ---------------------------------------------------------
-
-    email_reservation_confirmed = fields.Boolean(
-        string="Email on Confirmation",
-        config_parameter="vs_hotel_management.email_reservation_confirmed",
+    # 2. Housekeeping Task Notifications (Email, WhatsApp, SMS)
+    notify_housekeeping_email = fields.Boolean(
+        string="Send Email for Housekeeping Tasks",
+        config_parameter="vs_hotel_management.notify_housekeeping_email",
         default=True,
-        help="Send an automatic reservation confirmation email with full booking details to the guest.",
+        help="Send email notifications to assigned housekeepers for task assignment and cancellation.",
     )
 
-    email_reservation_cancelled = fields.Boolean(
-        string="Email on Cancellation",
-        config_parameter="vs_hotel_management.email_reservation_cancelled",
+    notify_housekeeping_whatsapp = fields.Boolean(
+        string="Send WhatsApp for Housekeeping Tasks",
+        config_parameter="vs_hotel_management.notify_housekeeping_whatsapp",
+        default=False,
+        help="Send WhatsApp messages to assigned housekeepers for task assignment and cancellation.",
+    )
+
+    notify_housekeeping_sms = fields.Boolean(
+        string="Send SMS for Housekeeping Tasks",
+        config_parameter="vs_hotel_management.notify_housekeeping_sms",
+        default=False,
+        help="Send SMS alerts to assigned housekeepers for task assignment and cancellation.",
+    )
+
+    # 3. Maintenance Task Notifications (Email, WhatsApp, SMS)
+    notify_maintenance_email = fields.Boolean(
+        string="Send Email for Maintenance Tasks",
+        config_parameter="vs_hotel_management.notify_maintenance_email",
         default=True,
-        help="Send an automatic cancellation notice email to the guest when a reservation is cancelled.",
+        help="Send email notifications to assigned technicians for maintenance task assignment and cancellation.",
     )
 
-    email_reservation_checkout = fields.Boolean(
-        string="Email on Checkout (Thank You & Folio)",
-        config_parameter="vs_hotel_management.email_reservation_checkout",
-        default=True,
-        help="Send an automatic thank-you email including folio charges and billing statement to the guest upon checkout.",
-    )
-
-    email_reservation_noshow = fields.Boolean(
-        string="Email on No-Show",
-        config_parameter="vs_hotel_management.email_reservation_noshow",
+    notify_maintenance_whatsapp = fields.Boolean(
+        string="Send WhatsApp for Maintenance Tasks",
+        config_parameter="vs_hotel_management.notify_maintenance_whatsapp",
         default=False,
-        help="Send an automatic notification email to the guest when their reservation is marked as No-Show.",
+        help="Send WhatsApp messages to assigned technicians for maintenance task assignment and cancellation.",
     )
 
-    whatsapp_reservation_confirmed = fields.Boolean(
-        string="WhatsApp on Confirmation",
-        config_parameter="vs_hotel_management.whatsapp_reservation_confirmed",
+    notify_maintenance_sms = fields.Boolean(
+        string="Send SMS for Maintenance Tasks",
+        config_parameter="vs_hotel_management.notify_maintenance_sms",
         default=False,
-        help="Send an automatic WhatsApp confirmation message with booking summary to the guest's phone number.",
-    )
-
-    whatsapp_reservation_cancelled = fields.Boolean(
-        string="WhatsApp on Cancellation",
-        config_parameter="vs_hotel_management.whatsapp_reservation_cancelled",
-        default=False,
-        help="Send an automatic WhatsApp cancellation notification to the guest when a reservation is cancelled.",
-    )
-
-    whatsapp_reservation_checkout = fields.Boolean(
-        string="WhatsApp on Checkout (Thank You & Folio)",
-        config_parameter="vs_hotel_management.whatsapp_reservation_checkout",
-        default=False,
-        help="Send an automatic WhatsApp thank-you message with folio charges, payments, and balance upon checkout.",
-    )
-
-    whatsapp_reservation_noshow = fields.Boolean(
-        string="WhatsApp on No-Show",
-        config_parameter="vs_hotel_management.whatsapp_reservation_noshow",
-        default=False,
-        help="Send an automatic WhatsApp notice to the guest when their reservation is marked as No-Show.",
-    )
-
-    sms_reservation_confirmed = fields.Boolean(
-        string="SMS on Confirmation",
-        config_parameter="vs_hotel_management.sms_reservation_confirmed",
-        default=False,
-        help="Send an automatic SMS confirmation alert to the guest when a reservation is confirmed.",
-    )
-
-    sms_reservation_cancelled = fields.Boolean(
-        string="SMS on Cancellation",
-        config_parameter="vs_hotel_management.sms_reservation_cancelled",
-        default=False,
-        help="Send an automatic SMS cancellation alert to the guest when a reservation is cancelled.",
-    )
-
-    sms_reservation_checkout = fields.Boolean(
-        string="SMS on Checkout",
-        config_parameter="vs_hotel_management.sms_reservation_checkout",
-        default=False,
-        help="Send an automatic SMS thank-you notification with folio balance upon checkout.",
-    )
-
-    sms_reservation_noshow = fields.Boolean(
-        string="SMS on No-Show",
-        config_parameter="vs_hotel_management.sms_reservation_noshow",
-        default=False,
-        help="Send an automatic SMS alert to the guest when their reservation is marked as No-Show.",
+        help="Send SMS alerts to assigned technicians for maintenance task assignment and cancellation.",
     )
 
     # ---------------------------------------------------------
-    # Task Notifications (Housekeeping & Maintenance)
+    # Travel Agent Commission Configuration
     # ---------------------------------------------------------
 
-    email_housekeeping_assigned = fields.Boolean(
-        string="Housekeeping Assignment (Email)",
-        config_parameter="vs_hotel_management.email_housekeeping_assigned",
-        default=True,
-        help="Send an email to the assigned housekeeper when a task is assigned.",
-    )
-
-    email_housekeeping_cancelled = fields.Boolean(
-        string="Housekeeping Cancellation (Email)",
-        config_parameter="vs_hotel_management.email_housekeeping_cancelled",
+    enable_travel_agent_commission = fields.Boolean(
+        string="Enable Travel Agent Commission",
+        config_parameter="vs_hotel_management.enable_travel_agent_commission",
         default=False,
-        help="Send an email cancellation notice to the housekeeper if the task is cancelled.",
+        help="Enable travel agent commission calculation on reservations.",
     )
 
-    email_maintenance_assigned = fields.Boolean(
-        string="Maintenance Assignment (Email)",
-        config_parameter="vs_hotel_management.email_maintenance_assigned",
-        default=True,
-        help="Send an email to the assigned technician when a maintenance task is assigned.",
+    hotel_default_agent_commission_percentage = fields.Float(
+        string="Default Commission (%)",
+        config_parameter="vs_hotel_management.default_agent_commission_percentage",
+        default=10.0,
+        help="Default commission percentage applied to travel agents when not set on their contact profile.",
     )
 
-    email_maintenance_cancelled = fields.Boolean(
-        string="Maintenance Cancellation (Email)",
-        config_parameter="vs_hotel_management.email_maintenance_cancelled",
-        default=False,
-        help="Send an email cancellation notice to the technician if the maintenance task is cancelled.",
+    # ---------------------------------------------------------
+    # Rate Plan & Discounts Defaults
+    # ---------------------------------------------------------
+
+    hotel_default_rate_plan_id = fields.Many2one(
+        "hotel.rate.plan",
+        string="Default Rate Plan",
+        help="Default rate plan pre-selected on reservation room lines.",
     )
 
-    whatsapp_housekeeping_assigned = fields.Boolean(
-        string="Housekeeping Assignment (WhatsApp)",
-        config_parameter="vs_hotel_management.whatsapp_housekeeping_assigned",
-        default=False,
-        help="Send a WhatsApp notification to the assigned housekeeper when a task is assigned.",
+    hotel_default_room_discount_id = fields.Many2one(
+        "hotel.discount",
+        string="Default Room Discount",
+        domain="[('state', '=', 'active')]",
+        help="Default discount pre-selected for room bookings.",
     )
 
-    whatsapp_housekeeping_cancelled = fields.Boolean(
-        string="Housekeeping Cancellation (WhatsApp)",
-        config_parameter="vs_hotel_management.whatsapp_housekeeping_cancelled",
-        default=False,
-        help="Send a WhatsApp cancellation notice to the housekeeper if the task is cancelled.",
-    )
-
-    whatsapp_maintenance_assigned = fields.Boolean(
-        string="Maintenance Assignment (WhatsApp)",
-        config_parameter="vs_hotel_management.whatsapp_maintenance_assigned",
-        default=False,
-        help="Send a WhatsApp notification to the assigned technician when a maintenance task is assigned.",
-    )
-
-    whatsapp_maintenance_cancelled = fields.Boolean(
-        string="Maintenance Cancellation (WhatsApp)",
-        config_parameter="vs_hotel_management.whatsapp_maintenance_cancelled",
-        default=False,
-        help="Send a WhatsApp cancellation notice to the technician if the maintenance task is cancelled.",
-    )
-
-    sms_housekeeping_assigned = fields.Boolean(
-        string="Housekeeping Assignment (SMS)",
-        config_parameter="vs_hotel_management.sms_housekeeping_assigned",
-        default=False,
-        help="Send an SMS alert to the assigned housekeeper when a task is assigned.",
-    )
-
-    sms_maintenance_assigned = fields.Boolean(
-        string="Maintenance Assignment (SMS)",
-        config_parameter="vs_hotel_management.sms_maintenance_assigned",
-        default=False,
-        help="Send an SMS alert to the assigned technician when a maintenance task is assigned.",
+    hotel_default_service_discount_id = fields.Many2one(
+        "hotel.discount",
+        string="Default Service Discount",
+        domain="[('state', '=', 'active')]",
+        help="Default discount pre-selected for hotel service lines.",
     )
 
     # ---------------------------------------------------------
@@ -398,7 +323,7 @@ class ResConfigSettings(models.TransientModel):
         readonly=False,
         string="Graph API Version",
         groups="base.group_system",
-        help="Meta Graph API version (e.g. v23.0) for this company.",
+        help="Meta Graph API version (e.g. v25.0) for this company.",
     )
 
     whatsapp_template_name = fields.Char(
@@ -482,6 +407,15 @@ class ResConfigSettings(models.TransientModel):
             housekeeping_assigned_user_id=get_config_id(
                 "vs_hotel_management.housekeeping_assigned_user_id"
             ),
+            hotel_default_rate_plan_id=get_config_id(
+                "vs_hotel_management.default_rate_plan_id"
+            ),
+            hotel_default_room_discount_id=get_config_id(
+                "vs_hotel_management.default_room_discount_id"
+            ),
+            hotel_default_service_discount_id=get_config_id(
+                "vs_hotel_management.default_service_discount_id"
+            ),
         )
 
         return res
@@ -530,6 +464,40 @@ class ResConfigSettings(models.TransientModel):
                 "vs_hotel_management.housekeeping_assigned_user_id",
                 settings.housekeeping_assigned_user_id.id if settings.housekeeping_assigned_user_id else "",
             )
+            config.set_param(
+                "vs_hotel_management.default_rate_plan_id",
+                settings.hotel_default_rate_plan_id.id if settings.hotel_default_rate_plan_id else "",
+            )
+            config.set_param(
+                "vs_hotel_management.default_room_discount_id",
+                settings.hotel_default_room_discount_id.id if settings.hotel_default_room_discount_id else "",
+            )
+            config.set_param(
+                "vs_hotel_management.default_service_discount_id",
+                settings.hotel_default_service_discount_id.id if settings.hotel_default_service_discount_id else "",
+            )
+
+            # Synchronize master notification channel switches with modular settings
+            whatsapp_active = bool(
+                settings.notify_reservation_whatsapp
+                or settings.notify_housekeeping_whatsapp
+                or settings.notify_maintenance_whatsapp
+            )
+            config.set_param("vs_hotel_management.whatsapp_enabled", str(whatsapp_active))
+
+            email_active = bool(
+                settings.notify_reservation_email
+                or settings.notify_housekeeping_email
+                or settings.notify_maintenance_email
+            )
+            config.set_param("vs_hotel_management.email_enabled", str(email_active))
+
+            sms_active = bool(
+                settings.notify_reservation_sms
+                or settings.notify_housekeeping_sms
+                or settings.notify_maintenance_sms
+            )
+            config.set_param("vs_hotel_management.sms_enabled", str(sms_active))
 
     @api.onchange("use_default_hotel")
     def _onchange_use_default_hotel(self):

@@ -496,6 +496,16 @@ class TestHotelReservationAvailability(TransactionCase):
         res.action_reserve()
         res.action_check_in()
         res.action_check_out()
+        for folio in res.folio_ids:
+            self.env['hotel.guest.folio.line'].create({
+                'folio_id': folio.id,
+                'charge_type': 'payment',
+                'description': 'Settlement Payment',
+                'unit_price': folio.total_amount,
+                'quantity': 1,
+                'total_amount': folio.total_amount,
+            })
+            folio._compute_amounts()
         res.action_complete()
         self.assertEqual(res.state, 'completed')
 

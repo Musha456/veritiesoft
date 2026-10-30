@@ -9,6 +9,16 @@ class ResPartner(models.Model):
         help="Enable this option when the contact is a hotel guest.",
     )
 
+    is_travel_agent = fields.Boolean(
+        string="Travel Agent",
+        help="Enable this option if this contact operates as a travel agency or agent.",
+    )
+
+    agent_commission_percentage = fields.Float(
+        string="Commission (%)",
+        help="Default commission percentage applied to this travel agent.",
+    )
+
     guest_code = fields.Char(
         string="Guest Code",
         readonly=True,

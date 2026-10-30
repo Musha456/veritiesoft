@@ -62,6 +62,7 @@ access_hotel_maintenance_maint_manager,hotel.maintenance.maint.manager,hotel.mai
 access_hotel_maintenance_room_user,hotel.maintenance.room.user,hotel.maintenance,vs_hotel_management.group_hotel_room_user,r,
 access_hotel_task_assignment_wizard,hotel.task.assignment.wizard,hotel.task.assignment.wizard,base.group_user,crud,
 access_hotel_task_completion_wizard,hotel.task.completion.wizard,hotel.task.completion.wizard,base.group_user,crud,
+access_hotel_guest_id_wizard,hotel.guest.id.wizard,hotel.guest.id.wizard,base.group_user,crud,
 access_hotel_whatsapp_template_system,hotel.whatsapp.template system,hotel.whatsapp.template,base.group_system,crud,
 access_hotel_whatsapp_template_manager,hotel.whatsapp.template manager,hotel.whatsapp.template,vs_hotel_management.group_hotel_room_manager,crud,
 access_hotel_whatsapp_template_user,hotel.whatsapp.template user,hotel.whatsapp.template,vs_hotel_management.group_hotel_reservation_user,r,

@@ -202,265 +202,179 @@
                         </block>
 
                         <!-- ================================================= -->
-                        <!-- 6. NOTIFICATION CHANNELS (MASTER SWITCHES)        -->
-                        <!-- ================================================= -->
-                        <block title="Communication Channels (Master Controls)" id="block_notification_channels">
-
-                            <setting id="setting_email_enabled"
-                                     string="Email Notifications"
-                                     help="Master switch to enable or disable automated email dispatches across all hotel workflows.">
-                                <field name="email_notifications_enabled"/>
-                            </setting>
-
-                            <setting id="setting_whatsapp_enabled"
-                                     string="WhatsApp Notifications"
-                                     help="Master switch to enable or disable Meta WhatsApp Cloud API messaging across hotel workflows.">
-                                <field name="whatsapp_notifications_enabled"/>
-                            </setting>
-
-                            <setting id="setting_sms_enabled"
-                                     string="SMS Notifications"
-                                     help="Master switch to enable or disable automated SMS notifications across hotel workflows.">
-                                <field name="sms_notifications_enabled"/>
-                            </setting>
-
-                            <div class="text-muted small mt-2">
-                                <i class="fa fa-info-circle text-primary me-1"/>
-                                All notifications (Email, WhatsApp, SMS) are automatically queued when actions are triggered to guarantee an instant, smooth user experience without waiting, and dispatched asynchronously via background cron jobs.
-                            </div>
-
-                        </block>
-
-                        <!-- ================================================= -->
-                        <!-- 7. RESERVATION NOTIFICATIONS                      -->
+                        <!-- 6. RESERVATION NOTIFICATIONS                      -->
                         <!-- ================================================= -->
                         <block title="Reservation Notifications" id="block_reservation_notifications">
 
                             <setting id="setting_reservation_email_notifications"
-                                     string="Reservation Email Notifications"
-                                     help="Configure automatic email notifications sent to guests during reservation lifecycle."
-                                     invisible="not email_notifications_enabled">
-                                <div class="content-group">
-                                    <div class="row mt16">
-                                        <div class="col-12">
-                                            <field name="email_reservation_confirmed" class="oe_inline"/>
-                                            <label for="email_reservation_confirmed" class="oe_inline ms-2" string="Send Email on Reservation Confirmation"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="email_reservation_cancelled" class="oe_inline"/>
-                                            <label for="email_reservation_cancelled" class="oe_inline ms-2" string="Send Email on Reservation Cancellation"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="email_reservation_checkout" class="oe_inline"/>
-                                            <label for="email_reservation_checkout" class="oe_inline ms-2" string="Send Email on Checkout (Thank You &amp; Folio Charges)"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="email_reservation_noshow" class="oe_inline"/>
-                                            <label for="email_reservation_noshow" class="oe_inline ms-2" string="Send Email on Reservation No-Show"/>
-                                        </div>
-                                    </div>
-                                </div>
+                                     string="Email Notifications"
+                                     help="Automatically send email confirmations, cancellations, checkouts, and no-shows to guests.">
+                                <field name="notify_reservation_email"/>
                             </setting>
 
                             <setting id="setting_reservation_whatsapp_notifications"
-                                     string="Reservation WhatsApp Notifications"
-                                     help="Configure automatic WhatsApp messages sent to guests during reservation lifecycle."
-                                     invisible="not whatsapp_notifications_enabled">
-                                <div class="content-group">
-                                    <div class="row mt16">
-                                        <div class="col-12">
-                                            <field name="whatsapp_reservation_confirmed" class="oe_inline"/>
-                                            <label for="whatsapp_reservation_confirmed" class="oe_inline ms-2" string="Send WhatsApp on Reservation Confirmation"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="whatsapp_reservation_cancelled" class="oe_inline"/>
-                                            <label for="whatsapp_reservation_cancelled" class="oe_inline ms-2" string="Send WhatsApp on Reservation Cancellation"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="whatsapp_reservation_checkout" class="oe_inline"/>
-                                            <label for="whatsapp_reservation_checkout" class="oe_inline ms-2" string="Send WhatsApp on Checkout (Thank You &amp; Folio Charges)"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="whatsapp_reservation_noshow" class="oe_inline"/>
-                                            <label for="whatsapp_reservation_noshow" class="oe_inline ms-2" string="Send WhatsApp on Reservation No-Show"/>
-                                        </div>
-                                    </div>
-                                </div>
+                                     string="WhatsApp Notifications"
+                                     help="Automatically send WhatsApp updates for reservation lifecycle events to guests.">
+                                <field name="notify_reservation_whatsapp"/>
                             </setting>
 
                             <setting id="setting_reservation_sms_notifications"
-                                     string="Reservation SMS Notifications"
-                                     help="Configure automatic SMS notifications sent to guests during reservation lifecycle."
-                                     invisible="not sms_notifications_enabled">
-                                <div class="content-group">
-                                    <div class="row mt16">
-                                        <div class="col-12">
-                                            <field name="sms_reservation_confirmed" class="oe_inline"/>
-                                            <label for="sms_reservation_confirmed" class="oe_inline ms-2" string="Send SMS on Reservation Confirmation"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="sms_reservation_cancelled" class="oe_inline"/>
-                                            <label for="sms_reservation_cancelled" class="oe_inline ms-2" string="Send SMS on Reservation Cancellation"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="sms_reservation_checkout" class="oe_inline"/>
-                                            <label for="sms_reservation_checkout" class="oe_inline ms-2" string="Send SMS on Checkout (Thank You &amp; Folio Balance)"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="sms_reservation_noshow" class="oe_inline"/>
-                                            <label for="sms_reservation_noshow" class="oe_inline ms-2" string="Send SMS on Reservation No-Show"/>
-                                        </div>
+                                     string="SMS Notifications"
+                                     help="Automatically send SMS alerts for reservation lifecycle events to guests.">
+                                <field name="notify_reservation_sms"/>
+                            </setting>
+
+                        </block>
+
+                        <!-- ================================================= -->
+                        <!-- 7. HOUSEKEEPING TASK NOTIFICATIONS                -->
+                        <!-- ================================================= -->
+                        <block title="Housekeeping Task Notifications" id="block_housekeeping_notifications">
+
+                            <setting id="setting_housekeeping_email"
+                                     string="Email Notifications"
+                                     help="Send email alerts to assigned housekeepers upon task assignment and cancellation.">
+                                <field name="notify_housekeeping_email"/>
+                            </setting>
+
+                            <setting id="setting_housekeeping_whatsapp"
+                                     string="WhatsApp Notifications"
+                                     help="Send Meta WhatsApp messages to assigned housekeepers upon task assignment and cancellation.">
+                                <field name="notify_housekeeping_whatsapp"/>
+                            </setting>
+
+                            <setting id="setting_housekeeping_sms"
+                                     string="SMS Notifications"
+                                     help="Send SMS alerts to assigned housekeepers upon task assignment and cancellation.">
+                                <field name="notify_housekeeping_sms"/>
+                            </setting>
+
+                        </block>
+
+                        <!-- ================================================= -->
+                        <!-- 8. MAINTENANCE TASK NOTIFICATIONS                 -->
+                        <!-- ================================================= -->
+                        <block title="Maintenance Task Notifications" id="block_maintenance_notifications">
+
+                            <setting id="setting_maintenance_email"
+                                     string="Email Notifications"
+                                     help="Send email alerts to technicians upon maintenance task assignment and cancellation.">
+                                <field name="notify_maintenance_email"/>
+                            </setting>
+
+                            <setting id="setting_maintenance_whatsapp"
+                                     string="WhatsApp Notifications"
+                                     help="Send Meta WhatsApp messages to technicians upon task assignment and cancellation.">
+                                <field name="notify_maintenance_whatsapp"/>
+                            </setting>
+
+                            <setting id="setting_maintenance_sms"
+                                     string="SMS Notifications"
+                                     help="Send SMS alerts to technicians upon task assignment and cancellation.">
+                                <field name="notify_maintenance_sms"/>
+                            </setting>
+
+                        </block>
+
+                        <!-- ================================================= -->
+                        <!-- 9. TRAVEL AGENTS & PRICING DEFAULTS               -->
+                        <!-- ================================================= -->
+                        <block title="Travel Agents &amp; Pricing Defaults" id="block_travel_agent_pricing">
+
+                            <setting id="setting_travel_agent_commission"
+                                     string="Travel Agent Commission"
+                                     help="Enable travel agent commission calculation and tracking on reservations.">
+                                <field name="enable_travel_agent_commission"/>
+                                <div class="content-group mt-2" invisible="not enable_travel_agent_commission">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <label for="hotel_default_agent_commission_percentage" string="Default Commission (%)" class="fw-bold"/>
+                                        <field name="hotel_default_agent_commission_percentage" class="oe_inline"/>
                                     </div>
+                                </div>
+                            </setting>
+
+                            <setting id="setting_default_rate_plan"
+                                     string="Default Rate Plan"
+                                     help="Default rate plan pre-selected when booking rooms.">
+                                <div class="content-group">
+                                    <field name="hotel_default_rate_plan_id" class="w-100"/>
+                                </div>
+                            </setting>
+
+                            <setting id="setting_default_room_discount"
+                                     string="Default Room Discount"
+                                     help="Default discount pre-selected for room bookings.">
+                                <div class="content-group">
+                                    <field name="hotel_default_room_discount_id" class="w-100"/>
+                                </div>
+                            </setting>
+
+                            <setting id="setting_default_service_discount"
+                                     string="Default Service Discount"
+                                     help="Default discount pre-selected for hotel service lines.">
+                                <div class="content-group">
+                                    <field name="hotel_default_service_discount_id" class="w-100"/>
                                 </div>
                             </setting>
 
                         </block>
 
                         <!-- ================================================= -->
-                        <!-- 8. TASK NOTIFICATIONS                             -->
-                        <!-- ================================================= -->
-                        <block title="Task Notifications (Housekeeping &amp; Maintenance)" id="block_task_notifications">
-
-                            <setting id="setting_task_email_notifications"
-                                     string="Staff Email Task Notifications"
-                                     help="Send automated email notifications to staff when tasks are assigned or cancelled."
-                                     invisible="not email_notifications_enabled">
-                                <div class="content-group">
-                                    <div class="row mt16">
-                                        <div class="col-12">
-                                            <field name="email_housekeeping_assigned" class="oe_inline"/>
-                                            <label for="email_housekeeping_assigned" class="oe_inline ms-2" string="Housekeeping Task Assignment"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="email_housekeeping_cancelled" class="oe_inline"/>
-                                            <label for="email_housekeeping_cancelled" class="oe_inline ms-2" string="Housekeeping Task Cancellation"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="email_maintenance_assigned" class="oe_inline"/>
-                                            <label for="email_maintenance_assigned" class="oe_inline ms-2" string="Maintenance Task Assignment"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="email_maintenance_cancelled" class="oe_inline"/>
-                                            <label for="email_maintenance_cancelled" class="oe_inline ms-2" string="Maintenance Task Cancellation"/>
-                                        </div>
-                                    </div>
-                                </div>
-                            </setting>
-
-                            <setting id="setting_task_whatsapp_notifications"
-                                     string="Staff WhatsApp Task Notifications"
-                                     help="Send automated WhatsApp messages to staff when tasks are assigned or cancelled."
-                                     invisible="not whatsapp_notifications_enabled">
-                                <div class="content-group">
-                                    <div class="row mt16">
-                                        <div class="col-12">
-                                            <field name="whatsapp_housekeeping_assigned" class="oe_inline"/>
-                                            <label for="whatsapp_housekeeping_assigned" class="oe_inline ms-2" string="Housekeeping Task Assignment"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="whatsapp_housekeeping_cancelled" class="oe_inline"/>
-                                            <label for="whatsapp_housekeeping_cancelled" class="oe_inline ms-2" string="Housekeeping Task Cancellation"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="whatsapp_maintenance_assigned" class="oe_inline"/>
-                                            <label for="whatsapp_maintenance_assigned" class="oe_inline ms-2" string="Maintenance Task Assignment"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="whatsapp_maintenance_cancelled" class="oe_inline"/>
-                                            <label for="whatsapp_maintenance_cancelled" class="oe_inline ms-2" string="Maintenance Task Cancellation"/>
-                                        </div>
-                                    </div>
-                                </div>
-                            </setting>
-
-                            <setting id="setting_task_sms_notifications"
-                                     string="Staff SMS Task Notifications"
-                                     help="Send automated SMS alerts to staff when tasks are assigned."
-                                     invisible="not sms_notifications_enabled">
-                                <div class="content-group">
-                                    <div class="row mt16">
-                                        <div class="col-12">
-                                            <field name="sms_housekeeping_assigned" class="oe_inline"/>
-                                            <label for="sms_housekeeping_assigned" class="oe_inline ms-2" string="Housekeeping Task Assignment"/>
-                                        </div>
-                                        <div class="col-12 mt8">
-                                            <field name="sms_maintenance_assigned" class="oe_inline"/>
-                                            <label for="sms_maintenance_assigned" class="oe_inline ms-2" string="Maintenance Task Assignment"/>
-                                        </div>
-                                    </div>
-                                </div>
-                            </setting>
-
-                        </block>
-
-                        <!-- ================================================= -->
-                        <!-- 9. COMPANY WHATSAPP CLOUD API INTEGRATION         -->
+                        <!-- 10. COMPANY WHATSAPP CLOUD API INTEGRATION        -->
                         <!-- ================================================= -->
                         <block title="Company WhatsApp Integration (Meta Cloud API)" id="block_whatsapp_credentials">
 
-                            <div class="alert alert-info d-flex align-items-center mb-3 mx-3" role="status">
-                                <i class="fa fa-info-circle fa-2x me-3"/>
-                                <div>
-                                    <strong>Meta WhatsApp Cloud API Configuration</strong><br/>
-                                    Active Company: <strong><field name="company_id" readonly="1" class="oe_inline"/></strong>.
-                                    These credentials configure Meta WhatsApp Cloud API messaging for this company.
-                                </div>
-                            </div>
-
-                            <setting id="setting_whatsapp_company_credentials"
-                                     string="Meta WhatsApp Cloud API Settings"
-                                     help="Direct integration with Meta Graph API for automated guest and staff notifications.">
+                            <setting id="setting_whatsapp_credentials"
+                                     string="Meta Cloud API Credentials"
+                                     help="Connect your WhatsApp Business Account using Meta Developer credentials.">
                                 <div class="content-group w-100">
-                                    <div class="row g-3">
-                                        <div class="col-12 col-md-6">
-                                            <label for="whatsapp_access_token" class="fw-bold d-block mb-1" string="Meta Access Token"/>
-                                            <field name="whatsapp_access_token" password="True" class="w-100" placeholder="EAAB..."/>
-                                            <div class="text-muted small mt-1">Permanent or System User access token from Meta App Dashboard.</div>
+                                    <div class="mb-2">
+                                        <label for="whatsapp_access_token" class="fw-bold d-block mb-1" string="Meta Access Token"/>
+                                        <field name="whatsapp_access_token" password="True" class="w-100" placeholder="EAAB..."/>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="whatsapp_phone_number_id" class="fw-bold d-block mb-1" string="Phone Number ID"/>
+                                        <field name="whatsapp_phone_number_id" class="w-100" placeholder="e.g. 1223822660794927"/>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="whatsapp_business_account_id" class="fw-bold d-block mb-1" string="WhatsApp Business Account ID"/>
+                                        <field name="whatsapp_business_account_id" class="w-100" placeholder="e.g. 2101618547113454"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="whatsapp_api_version" class="fw-bold d-block mb-1" string="Graph API Version"/>
+                                        <field name="whatsapp_api_version" class="w-100" placeholder="v25.0"/>
+                                    </div>
+                                    <div>
+                                        <button name="action_test_whatsapp_connection"
+                                                type="object"
+                                                string="Test WhatsApp Connection"
+                                                class="btn-primary"
+                                                icon="link"/>
+                                    </div>
+                                </div>
+                            </setting>
+
+                            <setting id="setting_whatsapp_templates_webhooks"
+                                     string="Templates &amp; Webhook Setup"
+                                     help="Template parameters and Meta Webhook callback configuration.">
+                                <div class="content-group w-100">
+                                    <div class="mb-2">
+                                        <label for="whatsapp_template_name" class="fw-bold d-block mb-1" string="Task Notification Template Name"/>
+                                        <field name="whatsapp_template_name" class="w-100" placeholder="hotel_task_notification"/>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="whatsapp_template_language" class="fw-bold d-block mb-1" string="Template Language Code"/>
+                                        <field name="whatsapp_template_language" class="w-100" placeholder="en"/>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="whatsapp_webhook_url" class="fw-bold d-block mb-1" string="Webhook Callback URL"/>
+                                        <div class="p-2 bg-light border rounded font-monospace small text-dark">
+                                            <field name="whatsapp_webhook_url" readonly="1" class="w-100"/>
                                         </div>
-                                        <div class="col-12 col-md-6">
-                                            <label for="whatsapp_phone_number_id" class="fw-bold d-block mb-1" string="Phone Number ID"/>
-                                            <field name="whatsapp_phone_number_id" class="w-100" placeholder="e.g. 1223822660794927"/>
-                                            <div class="text-muted small mt-1">Found in Meta WhatsApp App Dashboard &gt; API Setup.</div>
-                                        </div>
-                                        <div class="col-12 col-md-6">
-                                            <label for="whatsapp_business_account_id" class="fw-bold d-block mb-1" string="WhatsApp Business Account ID"/>
-                                            <field name="whatsapp_business_account_id" class="w-100" placeholder="e.g. 2101618547113454"/>
-                                            <div class="text-muted small mt-1">Meta WABA ID linked to your business account.</div>
-                                        </div>
-                                        <div class="col-12 col-md-6">
-                                            <label for="whatsapp_api_version" class="fw-bold d-block mb-1" string="Graph API Version"/>
-                                            <field name="whatsapp_api_version" class="w-100" placeholder="v23.0"/>
-                                            <div class="text-muted small mt-1">Meta Graph API version (default: v23.0).</div>
-                                        </div>
-                                        <div class="col-12 col-md-6">
-                                            <label for="whatsapp_template_name" class="fw-bold d-block mb-1" string="Task Notification Template Name"/>
-                                            <field name="whatsapp_template_name" class="w-100" placeholder="hotel_task_notification"/>
-                                            <div class="text-muted small mt-1">Approved template name in Meta WhatsApp Manager.</div>
-                                        </div>
-                                        <div class="col-12 col-md-6">
-                                            <label for="whatsapp_template_language" class="fw-bold d-block mb-1" string="Template Language Code"/>
-                                            <field name="whatsapp_template_language" class="w-100" placeholder="en"/>
-                                            <div class="text-muted small mt-1">Template language code (e.g. en, en_US).</div>
-                                        </div>
-                                        <div class="col-12 col-md-6">
-                                            <label for="whatsapp_webhook_verify_token" class="fw-bold d-block mb-1" string="Webhook Verify Token"/>
-                                            <field name="whatsapp_webhook_verify_token" class="w-100" placeholder="hotel_whatsapp_secret"/>
-                                            <div class="text-muted small mt-1">Token configured in Meta Developer Portal &gt; Configuration &gt; Webhook.</div>
-                                        </div>
-                                        <div class="col-12 col-md-6">
-                                            <label for="whatsapp_webhook_url" class="fw-bold d-block mb-1" string="Webhook Callback URL"/>
-                                            <div class="p-2 bg-light border rounded font-monospace small text-dark">
-                                                <field name="whatsapp_webhook_url" readonly="1" class="w-100"/>
-                                            </div>
-                                            <div class="text-muted small mt-1">Enter this URL in Meta Developer Portal Webhook Callback URL.</div>
-                                        </div>
-                                        <div class="col-12 mt-3">
-                                            <button name="action_test_whatsapp_connection"
-                                                    type="object"
-                                                    string="Test WhatsApp Connection"
-                                                    class="btn-primary"
-                                                    icon="fa-plug"/>
-                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="whatsapp_webhook_verify_token" class="fw-bold d-block mb-1" string="Webhook Verify Token"/>
+                                        <field name="whatsapp_webhook_verify_token" class="w-100" placeholder="hotel_whatsapp_secret"/>
                                     </div>
                                 </div>
                             </setting>

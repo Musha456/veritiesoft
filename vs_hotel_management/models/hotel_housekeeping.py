@@ -150,6 +150,11 @@ class HotelHousekeeping(models.Model):
         compute="_compute_duration_seconds",
     )
 
+    whatsapp_log_count = fields.Integer(
+        string="WhatsApp Logs",
+        compute="_compute_whatsapp_log_count",
+    )
+
     @api.depends("started_at", "completed_at", "state")
     def _compute_duration_seconds(self):
         now = fields.Datetime.now()
@@ -172,6 +177,28 @@ class HotelHousekeeping(models.Model):
                 int((end_time - task.started_at).total_seconds()),
             )
 
+    def _compute_whatsapp_log_count(self):
+        Log = self.env["hotel.whatsapp.log"]
+        for task in self:
+            task.whatsapp_log_count = Log.search_count([
+                ("task_reference", "=", f"{task._name},{task.id}")
+            ])
+
+    def action_view_whatsapp_logs(self):
+        self.ensure_one()
+        return {
+            "name": _("WhatsApp Notifications"),
+            "type": "ir.actions.act_window",
+            "res_model": "hotel.whatsapp.log",
+            "view_mode": "list,form",
+            "domain": [("task_reference", "=", f"{self._name},{self.id}")],
+            "context": {
+                "default_task_reference": f"{self._name},{self.id}",
+                "default_task_type": "housekeeping",
+                "default_company_id": self.company_id.id,
+            },
+        }
+
     @api.depends()
     def _compute_assigned_to_domain(self):
         group = self.env.ref(
@@ -179,7 +206,7 @@ class HotelHousekeeping(models.Model):
             raise_if_not_found=False,
         )
 
-        users = group.users.filtered(lambda u: u.active) if group else self.env["res.users"]
+        users = group.user_ids.filtered(lambda u: u.active) if group else self.env["res.users"]
 
         for record in self:
             record.assigned_to_domain = users

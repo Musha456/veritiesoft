@@ -118,6 +118,14 @@ class HotelReservationServiceLine(models.Model):
             line.price_unit = line.product_id.list_price
             line.tax_ids = line.product_id.taxes_id
 
+            if not line.discount_id:
+                ICP = self.env["ir.config_parameter"].sudo()
+                def_disc_id = int(ICP.get_param("vs_hotel_management.default_service_discount_id", 0) or 0)
+                if def_disc_id:
+                    disc = self.env["hotel.discount"].browse(def_disc_id)
+                    if disc.exists() and disc.state == "active":
+                        line.discount_id = disc
+
     @api.onchange("quantity")
     def _onchange_quantity(self):
         for line in self:

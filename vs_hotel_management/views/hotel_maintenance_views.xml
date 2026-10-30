@@ -133,6 +133,20 @@
                 </header>
 
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+
+                        <button name="action_view_whatsapp_logs"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-whatsapp"
+                                invisible="whatsapp_log_count == 0">
+                            <field name="whatsapp_log_count"
+                                   widget="statinfo"
+                                   string="WhatsApp"/>
+                        </button>
+
+                    </div>
+
                     <div class="oe_title">
                         <label for="name" string="Task Reference"/>
                         <h1>

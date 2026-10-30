@@ -63,6 +63,7 @@
         'views/res_users_views.xml',
         'views/hotel_guest_folio_views.xml',
         'wizards/hotel_task_assignment_wizard_views.xml',
+        'wizards/hotel_guest_id_wizard_views.xml',
         'views/hotel_menus.xml',
     ],
     'assets': {

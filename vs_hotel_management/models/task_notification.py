@@ -17,22 +17,29 @@ class HotelNotificationMixin(models.AbstractModel):
     _name = "hotel.notification.mixin"
     _description = "Hotel Notification Mixin"
 
-    def _get_local_timezone(self):
-        """Determine effective timezone: hotel -> user -> company -> UTC."""
+    def _get_local_timezone(self, partner=None):
+        """Determine effective timezone: recipient partner -> hotel -> user -> company -> UTC."""
+        partner = partner or getattr(self, "partner_id", False)
         hotel = getattr(self, "hotel_id", False)
         if not hotel and hasattr(self, "room_id") and self.room_id:
             hotel = getattr(self.room_id, "hotel_id", False)
-        tz_name = (hotel and hotel.timezone) or self.env.user.tz or self.env.company.partner_id.tz or "UTC"
+        tz_name = (
+            (partner and partner.tz)
+            or (hotel and hotel.timezone)
+            or self.env.user.tz
+            or self.env.company.partner_id.tz
+            or "UTC"
+        )
         try:
             return pytz.timezone(tz_name)
         except Exception:
             return pytz.UTC
 
-    def _format_datetime_local(self, dt, dt_format="%d %b %Y, %I:%M %p"):
-        """Convert UTC datetime into the hotel/user local timezone formatted string."""
+    def _format_datetime_local(self, dt, partner=None, dt_format="%d %b %Y, %I:%M %p"):
+        """Convert UTC datetime into the recipient/hotel local timezone formatted string."""
         if not dt:
             return ""
-        tz = self._get_local_timezone()
+        tz = self._get_local_timezone(partner=partner)
         if not dt.tzinfo:
             dt = pytz.UTC.localize(dt)
         return dt.astimezone(tz).strftime(dt_format)
@@ -68,6 +75,55 @@ class HotelNotificationMixin(models.AbstractModel):
         return token, phone_number_id, api_version, template_name, template_lang
 
     # ---------------------------------------------------------
+    # Channel Activation Helpers
+    # ---------------------------------------------------------
+
+    @api.model
+    def _is_whatsapp_channel_enabled(self):
+        """Check if WhatsApp is enabled globally or in any operational module."""
+        ICP = self.env["ir.config_parameter"].sudo()
+        if ICP.get_param("vs_hotel_management.whatsapp_enabled", "False").lower() in ("true", "1", "yes"):
+            return True
+        for key in (
+            "vs_hotel_management.notify_reservation_whatsapp",
+            "vs_hotel_management.notify_housekeeping_whatsapp",
+            "vs_hotel_management.notify_maintenance_whatsapp",
+        ):
+            if ICP.get_param(key, "False").lower() in ("true", "1", "yes"):
+                return True
+        return False
+
+    @api.model
+    def _is_email_channel_enabled(self):
+        """Check if Email is enabled globally or in any operational module."""
+        ICP = self.env["ir.config_parameter"].sudo()
+        if ICP.get_param("vs_hotel_management.email_enabled", "True").lower() in ("true", "1", "yes"):
+            return True
+        for key in (
+            "vs_hotel_management.notify_reservation_email",
+            "vs_hotel_management.notify_housekeeping_email",
+            "vs_hotel_management.notify_maintenance_email",
+        ):
+            if ICP.get_param(key, "False").lower() in ("true", "1", "yes"):
+                return True
+        return False
+
+    @api.model
+    def _is_sms_channel_enabled(self):
+        """Check if SMS is enabled globally or in any operational module."""
+        ICP = self.env["ir.config_parameter"].sudo()
+        if ICP.get_param("vs_hotel_management.sms_enabled", "False").lower() in ("true", "1", "yes"):
+            return True
+        for key in (
+            "vs_hotel_management.notify_reservation_sms",
+            "vs_hotel_management.notify_housekeeping_sms",
+            "vs_hotel_management.notify_maintenance_sms",
+        ):
+            if ICP.get_param(key, "False").lower() in ("true", "1", "yes"):
+                return True
+        return False
+
+    # ---------------------------------------------------------
     # WhatsApp Dispatcher
     # ---------------------------------------------------------
 
@@ -82,9 +138,7 @@ class HotelNotificationMixin(models.AbstractModel):
         Log = self.env["hotel.whatsapp.log"].sudo()
         company = getattr(self, "company_id", False) or self.env.company
 
-        whatsapp_enabled = ICP.get_param(
-            "vs_hotel_management.whatsapp_enabled", "False"
-        ).lower() in ("true", "1", "yes")
+        whatsapp_enabled = self._is_whatsapp_channel_enabled()
 
         phone = "".join(char for char in str(recipient or "") if char.isdigit())
 
@@ -131,9 +185,7 @@ class HotelNotificationMixin(models.AbstractModel):
         Log = self.env["hotel.whatsapp.log"].sudo()
         company = getattr(self, "company_id", False) or self.env.company
 
-        whatsapp_enabled = ICP.get_param(
-            "vs_hotel_management.whatsapp_enabled", "False"
-        ).lower() in ("true", "1", "yes")
+        whatsapp_enabled = self._is_whatsapp_channel_enabled()
 
         phone = "".join(char for char in str(recipient or "") if char.isdigit())
 
@@ -197,9 +249,7 @@ class HotelNotificationMixin(models.AbstractModel):
         """
         self.ensure_one()
         ICP = self.env["ir.config_parameter"].sudo()
-        email_enabled = ICP.get_param(
-            "vs_hotel_management.email_enabled", "True"
-        ).lower() in ("true", "1", "yes")
+        email_enabled = self._is_email_channel_enabled()
 
         if not email_enabled:
             return False
@@ -270,9 +320,7 @@ class HotelNotificationMixin(models.AbstractModel):
         """
         self.ensure_one()
         ICP = self.env["ir.config_parameter"].sudo()
-        sms_enabled = ICP.get_param(
-            "vs_hotel_management.sms_enabled", "False"
-        ).lower() in ("true", "1", "yes")
+        sms_enabled = self._is_sms_channel_enabled()
 
         if not sms_enabled or not recipient:
             return False
@@ -319,13 +367,6 @@ class HotelTaskNotificationMixin(models.AbstractModel):
     def _notify_assigned_user(self, event="assigned"):
         """Send HTML email notification to assigned user when task is assigned or cancelled."""
         ICP = self.env["ir.config_parameter"].sudo()
-        email_enabled = ICP.get_param(
-            "vs_hotel_management.email_enabled", "True"
-        ).lower() in ("true", "1", "yes")
-
-        if not email_enabled:
-            return
-
         base_url = ICP.get_param("web.base.url", "").rstrip("/")
 
         for task in self:
@@ -334,7 +375,7 @@ class HotelTaskNotificationMixin(models.AbstractModel):
                 if task._name == "hotel.housekeeping"
                 else "maintenance"
             )
-            config_key = f"vs_hotel_management.email_{task_type}_{event}"
+            config_key = f"vs_hotel_management.notify_{task_type}_email"
             if ICP.get_param(config_key, "True").lower() not in ("true", "1", "yes"):
                 continue
 
@@ -497,7 +538,7 @@ class HotelTaskNotificationMixin(models.AbstractModel):
                 else "maintenance"
             )
 
-            config_key = f"vs_hotel_management.whatsapp_{task_type}_{event}"
+            config_key = f"vs_hotel_management.notify_{task_type}_whatsapp"
             if ICP.get_param(config_key, "False").lower() not in ("true", "1", "yes"):
                 continue
 
@@ -568,12 +609,6 @@ class HotelTaskNotificationMixin(models.AbstractModel):
     def _notify_sms_task(self, event="assigned"):
         """Send SMS notification to assigned staff member if enabled."""
         ICP = self.env["ir.config_parameter"].sudo()
-        sms_enabled = ICP.get_param(
-            "vs_hotel_management.sms_enabled", "False"
-        ).lower() in ("true", "1", "yes")
-
-        if not sms_enabled:
-            return
 
         for task in self:
             task_type = (
@@ -581,7 +616,7 @@ class HotelTaskNotificationMixin(models.AbstractModel):
                 if task._name == "hotel.housekeeping"
                 else "maintenance"
             )
-            config_key = f"vs_hotel_management.sms_{task_type}_{event}"
+            config_key = f"vs_hotel_management.notify_{task_type}_sms"
             if ICP.get_param(config_key, "False").lower() not in ("true", "1", "yes"):
                 continue
 
@@ -595,9 +630,15 @@ class HotelTaskNotificationMixin(models.AbstractModel):
 
             room_name = task.room_id.display_name if task.room_id else _("Room")
             task_type_label = _("Checkout Cleaning") if getattr(task, "housekeeping_type", "") == "checkout" else _("Task")
-            msg = _("Hotel Task: New %s assigned for %s. Instructions: %s") % (
-                task_type_label,
-                room_name,
-                getattr(task, "instruction_notes", False) or _("Please clean the room."),
-            )
+            if event == "cancelled":
+                msg = _("Hotel Task Cancelled: %s for %s has been cancelled.") % (
+                    task_type_label,
+                    room_name,
+                )
+            else:
+                msg = _("Hotel Task: New %s assigned for %s. Instructions: %s") % (
+                    task_type_label,
+                    room_name,
+                    getattr(task, "instruction_notes", False) or _("Please clean the room."),
+                )
             task._send_notification_sms(recipient=phone, message_text=msg)

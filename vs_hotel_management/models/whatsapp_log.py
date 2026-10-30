@@ -224,15 +224,28 @@ class HotelWhatsAppLog(models.Model):
 
         return log
 
+    @api.model
+    def _is_whatsapp_channel_enabled(self):
+        """Check if WhatsApp is enabled globally or in any operational module."""
+        ICP = self.env["ir.config_parameter"].sudo()
+        if ICP.get_param("vs_hotel_management.whatsapp_enabled", "False").lower() in ("true", "1", "yes"):
+            return True
+        for key in (
+            "vs_hotel_management.notify_reservation_whatsapp",
+            "vs_hotel_management.notify_housekeeping_whatsapp",
+            "vs_hotel_management.notify_maintenance_whatsapp",
+        ):
+            if ICP.get_param(key, "False").lower() in ("true", "1", "yes"):
+                return True
+        return False
+
     def _send_meta_whatsapp_message(self):
         """Send a single WhatsApp message via Meta Graph API."""
         self.ensure_one()
         ICP = self.env["ir.config_parameter"].sudo()
         company = self.company_id or self.env.company
 
-        whatsapp_enabled = ICP.get_param(
-            "vs_hotel_management.whatsapp_enabled", "False"
-        ).lower() in ("true", "1", "yes")
+        whatsapp_enabled = self._is_whatsapp_channel_enabled()
 
         if not whatsapp_enabled:
             err = _("WhatsApp notifications are disabled in settings.")
