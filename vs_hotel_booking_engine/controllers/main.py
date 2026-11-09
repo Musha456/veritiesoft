@@ -9,10 +9,14 @@ _logger = logging.getLogger(__name__)
 
 class HotelBookingEngineController(http.Controller):
 
+    @property
+    def env(self):
+        return self._get_env()
+
     def _get_env(self):
         try:
             return request.env
-        except RuntimeError:
+        except (RuntimeError, Exception):
             return getattr(self, "_test_env", None)
 
     @http.route(["/hotel", "/hotel/book", "/hotel/booking"], type="http", auth="public", website=True, sitemap=True)
@@ -120,6 +124,10 @@ class HotelBookingEngineController(http.Controller):
             )
             return round(converted, 2)
 
+        req_adults = int(adults or 1)
+        req_children = int(children or 0)
+        req_total_guests = req_adults + req_children
+
         # Operational rooms in this hotel
         Room = env["hotel.room"].sudo()
         rooms = Room.search([
@@ -134,6 +142,18 @@ class HotelBookingEngineController(http.Controller):
                 continue
 
             cat = room.room_category_id
+            if not cat:
+                continue
+
+            # Proper Occupancy & Guest Capacity Filtering
+            cat_max_occ = cat.max_occupancy or (cat.max_adults + cat.max_children)
+            if cat.max_adults and req_adults > cat.max_adults:
+                continue
+            if cat_max_occ and req_total_guests > cat_max_occ:
+                continue
+            if req_children > 0 and hasattr(cat, "max_children") and req_children > cat.max_children:
+                continue
+
             if cat.id not in categories:
                 # Get default rate plan
                 rate_plan = env["hotel.rate.plan"].sudo().search([
@@ -141,7 +161,10 @@ class HotelBookingEngineController(http.Controller):
                     ("room_category_ids", "in", [cat.id]),
                     ("state", "=", "active"),
                 ], limit=1, order="id asc")
-                base_nightly = rate_plan.base_price if rate_plan else cat.base_price
+                base_nightly = (
+                    rate_plan.base_price if (rate_plan and rate_plan.base_price)
+                    else (cat.product_id.list_price if (cat.product_id and cat.product_id.list_price) else 100.0)
+                )
                 converted_nightly = convert_price(base_nightly)
 
                 amenities = []
@@ -151,8 +174,24 @@ class HotelBookingEngineController(http.Controller):
                         "type": a.amenity_type_id.name if a.amenity_type_id else "",
                     })
 
-                # Category images
-                img_url = f"/web/image/hotel.room.category/{cat.id}/image" if cat.image else "/web/static/img/placeholder.png"
+                # Category image resolution:
+                # 1. Direct category image
+                # 2. Cover image of any room in this category
+                # 3. First room image of any room in this category
+                # 4. Fallback luxury image
+                img_url = ""
+                if cat.image:
+                    img_url = f"/web/image/hotel.room.category/{cat.id}/image"
+                else:
+                    for r in rooms.filtered(lambda rm: rm.room_category_id.id == cat.id):
+                        if r.cover_image:
+                            img_url = f"/web/image/hotel.room/{r.id}/cover_image"
+                            break
+                        elif r.image_ids:
+                            img_url = f"/web/image/hotel.room.image/{r.image_ids[0].id}/image"
+                            break
+                if not img_url:
+                    img_url = "/vs_hotel_booking_engine/static/src/img/luxury_hero.jpg"
 
                 categories[cat.id] = {
                     "id": cat.id,
@@ -161,6 +200,7 @@ class HotelBookingEngineController(http.Controller):
                     "description": cat.description or "",
                     "max_adults": cat.max_adults or 2,
                     "max_children": cat.max_children or 0,
+                    "max_occupancy": cat_max_occ,
                     "room_size": cat.room_size or "",
                     "bed_type": cat.bed_type_id.name if cat.bed_type_id else "",
                     "bed_type_icon": f"/web/image/hotel.bed.type/{cat.bed_type_id.id}/icon" if cat.bed_type_id and cat.bed_type_id.icon else "",
@@ -177,7 +217,9 @@ class HotelBookingEngineController(http.Controller):
                 }
 
             # Room image thumbnail
-            room_img = f"/web/image/hotel.room/{room.id}/cover_image" if hasattr(room, "cover_image") and room.cover_image else categories[cat.id]["image_url"]
+            room_img = f"/web/image/hotel.room/{room.id}/cover_image" if hasattr(room, "cover_image") and room.cover_image else (
+                f"/web/image/hotel.room.image/{room.image_ids[0].id}/image" if hasattr(room, "image_ids") and room.image_ids else categories[cat.id]["image_url"]
+            )
 
             categories[cat.id]["available_rooms"].append({
                 "id": room.id,

@@ -12,6 +12,137 @@
         </t>
     </template>
 
+    <!-- Website Homepage Dynamic Hotel Hero Banner & Booking Search Card -->
+    <record id="hotel_homepage_hero_banner" model="ir.ui.view">
+        <field name="name">Hotel Homepage Hero Banner</field>
+        <field name="inherit_id" ref="website.homepage"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='wrap']" position="inside">
+                <t t-set="all_hotels" t-value="request.env['hotel.hotel'].sudo().search([])"/>
+                <t t-if="all_hotels">
+                    <t t-set="home_hotel" t-value="all_hotels[0]"/>
+                    <t t-set="home_hero_img" t-value="'/web/image/hotel.hotel/%s/hero_image' % home_hotel.id if home_hotel.hero_image else ('/web/image/hotel.hotel/%s/cover_image' % home_hotel.id if home_hotel.cover_image else '/vs_hotel_booking_engine/static/src/img/luxury_hero.jpg')"/>
+                    <section class="o_hotel_home_hero position-relative overflow-hidden"
+                             t-att-style="'background: linear-gradient(rgba(15, 23, 42, 0.60), rgba(15, 23, 42, 0.78)), url(' + home_hero_img + ') center/cover no-repeat; min-height: 520px; ' + (home_hotel.theme_style or '')">
+                        <div class="container py-5 text-white position-relative" style="z-index: 2;">
+                            <div class="row justify-content-center text-center pt-4 pb-4">
+                                <div class="col-12 col-lg-9">
+                                    <t t-if="home_hotel.logo">
+                                        <img t-att-src="'/web/image/hotel.hotel/%s/logo' % home_hotel.id"
+                                             class="o_hotel_hero_logo shadow-sm mb-3"
+                                             alt="Hotel Logo"
+                                             style="max-height: 70px; background: white; padding: 6px 16px; border-radius: 8px;"/>
+                                    </t>
+                                    <h1 class="display-4 fw-bold text-white mb-2 text-shadow-sm">
+                                        <t t-out="home_hotel.hero_title or home_hotel.name or 'Experience Luxury &amp; Authentic Comfort'"/>
+                                    </h1>
+                                    <p class="lead text-white-50 mb-0 mx-auto" style="max-width: 700px;">
+                                        <t t-out="home_hotel.hero_subtitle or 'Book your stay directly for exclusive best-rate guarantees, personalized service, and flexible check-in.'"/>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Advanced Floating Booking Filter Card -->
+                            <div class="card border-0 shadow-lg rounded-4 p-3 p-md-4 o_hero_search_card mx-auto mt-2"
+                                 style="max-width: 1050px; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px);">
+                                <form id="hotel_home_search_form" action="/hotel/book" method="GET">
+                                    <div class="row g-3 align-items-end">
+                                        <!-- Destination / Hotel Property Selector -->
+                                        <div class="col-12 col-md-3">
+                                            <label class="form-label text-dark fw-bold small text-uppercase tracking-wider mb-1">
+                                                <i class="fa fa-map-marker text-hotel-primary me-1"/> Destination / Hotel
+                                            </label>
+                                            <select class="form-select border-1 rounded-3 shadow-none fw-semibold" name="hotel_id" id="home_booking_hotel_id">
+                                                <t t-foreach="all_hotels" t-as="h">
+                                                    <option t-att-value="h.id" t-att-selected="h.id == home_hotel.id">
+                                                        <t t-out="h.name"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+
+                                        <!-- Check-in Date -->
+                                        <div class="col-6 col-md-2">
+                                            <label class="form-label text-dark fw-bold small text-uppercase tracking-wider mb-1">
+                                                <i class="fa fa-calendar-check-o text-hotel-primary me-1"/> Check-In
+                                            </label>
+                                            <input type="date" class="form-control rounded-3 shadow-none fw-semibold"
+                                                   name="check_in" id="home_booking_check_in" required="required"/>
+                                        </div>
+
+                                        <!-- Check-out Date -->
+                                        <div class="col-6 col-md-2">
+                                            <label class="form-label text-dark fw-bold small text-uppercase tracking-wider mb-1">
+                                                <i class="fa fa-calendar-times-o text-hotel-primary me-1"/> Departure
+                                            </label>
+                                            <input type="date" class="form-control rounded-3 shadow-none fw-semibold"
+                                                   name="check_out" id="home_booking_check_out" required="required"/>
+                                        </div>
+
+                                        <!-- Guests Selector -->
+                                        <div class="col-6 col-md-3">
+                                            <label class="form-label text-dark fw-bold small text-uppercase tracking-wider mb-1">
+                                                <i class="fa fa-users text-hotel-primary me-1"/> Guests
+                                            </label>
+                                            <select class="form-select border-1 rounded-3 shadow-none fw-semibold" id="home_booking_guests_select">
+                                                <option value="1_0">1 Adult</option>
+                                                <option value="2_0" selected="selected">2 Adults</option>
+                                                <option value="2_1">2 Adults, 1 Child</option>
+                                                <option value="2_2">2 Adults, 2 Children</option>
+                                                <option value="3_0">3 Adults</option>
+                                                <option value="4_0">4 Adults</option>
+                                            </select>
+                                            <input type="hidden" name="adults" id="home_booking_adults" value="2"/>
+                                            <input type="hidden" name="children" id="home_booking_children" value="0"/>
+                                        </div>
+
+                                        <!-- Search Stays Action Button -->
+                                        <div class="col-6 col-md-2">
+                                            <button type="submit" class="btn btn-hotel-primary w-100 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2"
+                                                    id="btn_home_search_stays">
+                                                <i class="fa fa-search"/>
+                                                <span>Search Stays</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Value Highlights -->
+                            <div class="row g-3 justify-content-center mt-4 text-center">
+                                <div class="col-6 col-md-3">
+                                    <div class="d-flex align-items-center justify-content-center gap-2 text-white-50">
+                                        <i class="fa fa-shield text-hotel-accent fa-lg"/>
+                                        <span class="small fw-semibold text-white">Best Rate Guarantee</span>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="d-flex align-items-center justify-content-center gap-2 text-white-50">
+                                        <i class="fa fa-coffee text-hotel-accent fa-lg"/>
+                                        <span class="small fw-semibold text-white">Complimentary Breakfast</span>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="d-flex align-items-center justify-content-center gap-2 text-white-50">
+                                        <i class="fa fa-wifi text-hotel-accent fa-lg"/>
+                                        <span class="small fw-semibold text-white">High-Speed Wi-Fi</span>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="d-flex align-items-center justify-content-center gap-2 text-white-50">
+                                        <i class="fa fa-exchange text-hotel-accent fa-lg"/>
+                                        <span class="small fw-semibold text-white">Flexible Room Upgrade</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </t>
+            </xpath>
+        </field>
+    </record>
+
     <!-- Main Dynamic Online Booking Engine Page -->
     <template id="booking_page" name="Hotel Online Booking Engine">
         <t t-call="website.layout">
@@ -178,7 +309,22 @@
 
                         <!-- Room Types Grid -->
                         <div class="row g-4" id="room_categories_container">
-                            <!-- Populated dynamically via JS -->
+                            <div class="col-12 text-center py-5">
+                                <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mx-auto bg-white" style="max-width: 650px;">
+                                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 72px; height: 72px;">
+                                        <i class="fa fa-calendar-check-o fa-2x text-hotel-primary"/>
+                                    </div>
+                                    <h4 class="fw-bold text-dark mb-2">Find Your Ideal Room</h4>
+                                    <p class="text-muted mb-4 small" style="max-width: 480px; margin: 0 auto; line-height: 1.6;">
+                                        Please select your destination hotel, check-in and departure dates, and number of guests in the search bar above, then click <strong>Search Stays</strong> to discover available luxury rooms and rates.
+                                    </p>
+                                    <div>
+                                        <button type="button" class="btn btn-hotel-primary rounded-pill px-4 py-2 fw-semibold shadow-sm" onclick="document.getElementById('btn_search_availability').click()">
+                                            <i class="fa fa-search me-1"/> Search Stays Now
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

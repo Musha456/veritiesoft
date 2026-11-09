@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-document.addEventListener("DOMContentLoaded", function () {
+function initBookingEngine() {
     const bookingWrapper = document.querySelector(".o_hotel_booking_engine");
     const reviewForm = document.getElementById("submit_review_form");
 
@@ -49,6 +49,35 @@ document.addEventListener("DOMContentLoaded", function () {
                 btn.innerHTML = 'Submit Review';
             }
         });
+    }
+
+    // Homepage Hero Search Form handler (if on website homepage)
+    const homeForm = document.getElementById("hotel_home_search_form");
+    if (homeForm) {
+        const homeCi = document.getElementById("home_booking_check_in");
+        const homeCo = document.getElementById("home_booking_check_out");
+        const homeGuests = document.getElementById("home_booking_guests_select");
+        const homeAdults = document.getElementById("home_booking_adults");
+        const homeChildren = document.getElementById("home_booking_children");
+
+        if (homeCi && !homeCi.value) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            homeCi.value = tomorrow.toISOString().split("T")[0];
+        }
+        if (homeCo && !homeCo.value) {
+            const dep = new Date();
+            dep.setDate(dep.getDate() + 3);
+            homeCo.value = dep.toISOString().split("T")[0];
+        }
+
+        if (homeGuests && homeAdults && homeChildren) {
+            homeGuests.addEventListener("change", function () {
+                const parts = this.value.split("_");
+                homeAdults.value = parts[0] || "2";
+                homeChildren.value = parts[1] || "0";
+            });
+        }
     }
 
     if (!bookingWrapper) {
@@ -105,12 +134,104 @@ document.addEventListener("DOMContentLoaded", function () {
     const submitSpinner = document.getElementById("submit_spinner");
     const bookingErrorAlert = document.getElementById("booking_error_alert");
 
-    // Modal References
+    // Modal References & Bulletproof Show/Hide Controllers
     const roomModalEl = document.getElementById("room_selection_modal");
-    let roomModal = null;
-    if (roomModalEl && typeof bootstrap !== "undefined") {
-        roomModal = new bootstrap.Modal(roomModalEl);
+
+    function showModal(modalEl) {
+        if (!modalEl) {
+            console.error("[BookingEngine] Modal element not found!");
+            return;
+        }
+        // 1. Try window.bootstrap
+        if (typeof window.bootstrap !== "undefined" && window.bootstrap.Modal) {
+            try {
+                const inst = window.bootstrap.Modal.getOrCreateInstance ? window.bootstrap.Modal.getOrCreateInstance(modalEl) : new window.bootstrap.Modal(modalEl);
+                inst.show();
+                return;
+            } catch (e) {
+                console.warn("[BookingEngine] window.bootstrap.Modal show error:", e);
+            }
+        }
+        // 2. Try window.Modal
+        if (typeof window.Modal !== "undefined") {
+            try {
+                const inst = window.Modal.getOrCreateInstance ? window.Modal.getOrCreateInstance(modalEl) : new window.Modal(modalEl);
+                inst.show();
+                return;
+            } catch (e) {
+                console.warn("[BookingEngine] window.Modal show error:", e);
+            }
+        }
+        // 3. Try jQuery plugin
+        if (typeof window.$ !== "undefined" && typeof window.$.fn.modal === "function") {
+            try {
+                window.$(modalEl).modal("show");
+                return;
+            } catch (e) {
+                console.warn("[BookingEngine] jQuery modal show error:", e);
+            }
+        }
+        // 4. Native CSS/DOM Fallback
+        modalEl.classList.add("show");
+        modalEl.style.display = "block";
+        modalEl.removeAttribute("aria-hidden");
+        modalEl.setAttribute("aria-modal", "true");
+        let backdrop = document.querySelector(".modal-backdrop");
+        if (!backdrop) {
+            backdrop = document.createElement("div");
+            backdrop.className = "modal-backdrop fade show";
+            document.body.appendChild(backdrop);
+        }
+        document.body.classList.add("modal-open");
     }
+
+    function hideModal(modalEl) {
+        if (!modalEl) return;
+        // 1. Try window.bootstrap
+        if (typeof window.bootstrap !== "undefined" && window.bootstrap.Modal) {
+            try {
+                const inst = window.bootstrap.Modal.getInstance ? window.bootstrap.Modal.getInstance(modalEl) : null;
+                if (inst) { inst.hide(); return; }
+            } catch (e) {}
+        }
+        // 2. Try window.Modal
+        if (typeof window.Modal !== "undefined") {
+            try {
+                const inst = window.Modal.getInstance ? window.Modal.getInstance(modalEl) : null;
+                if (inst) { inst.hide(); return; }
+            } catch (e) {}
+        }
+        // 3. Try jQuery
+        if (typeof window.$ !== "undefined" && typeof window.$.fn.modal === "function") {
+            try {
+                window.$(modalEl).modal("hide");
+                return;
+            } catch (e) {}
+        }
+        // 4. Native CSS/DOM Fallback
+        modalEl.classList.remove("show");
+        modalEl.style.display = "none";
+        modalEl.setAttribute("aria-hidden", "true");
+        modalEl.removeAttribute("aria-modal");
+        document.querySelectorAll(".modal-backdrop").forEach(b => b.remove());
+        document.body.classList.remove("modal-open");
+    }
+
+    // Attach native close handlers for dismiss buttons and backdrop
+    if (roomModalEl) {
+        roomModalEl.querySelectorAll('[data-bs-dismiss="modal"], .btn-close').forEach(btn => {
+            btn.addEventListener("click", function (e) {
+                e.preventDefault();
+                hideModal(roomModalEl);
+            });
+        });
+        roomModalEl.addEventListener("click", function (e) {
+            if (e.target === roomModalEl) {
+                hideModal(roomModalEl);
+            }
+        });
+    }
+
     const modalCategoryTitle = document.getElementById("modal_category_title");
     const modalCategorySubtitle = document.getElementById("modal_category_subtitle");
     const modalCategoryPrice = document.getElementById("modal_category_price");
@@ -176,7 +297,9 @@ document.addEventListener("DOMContentLoaded", function () {
     if (currencySelect) {
         currencySelect.addEventListener("change", function () {
             currencyId = this.value;
-            fetchAvailability();
+            if (availableCategories.length > 0) {
+                fetchAvailability();
+            }
         });
     }
 
@@ -184,14 +307,21 @@ document.addEventListener("DOMContentLoaded", function () {
         hotelSelect.addEventListener("change", function () {
             selectedRooms = [];
             selectedServices = [];
-            fetchAvailability();
+            if (availableCategories.length > 0) {
+                fetchAvailability();
+            }
         });
     }
 
     if (searchBtn) {
         searchBtn.addEventListener("click", function (e) {
             e.preventDefault();
+            console.log("[BookingEngine] Search Stays button clicked");
             fetchAvailability();
+            const showcase = document.getElementById("step1_room_showcase");
+            if (showcase) {
+                showcase.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
         });
     }
 
@@ -202,8 +332,16 @@ document.addEventListener("DOMContentLoaded", function () {
         const checkIn = checkInInput.value;
         const checkOut = checkOutInput.value;
 
-        if (!hotelId || !checkIn || !checkOut) {
-            showError("Please select check-in and check-out dates.");
+        if (!hotelId) {
+            showError("Please select a destination / hotel.");
+            return;
+        }
+        if (!checkIn || !checkOut) {
+            showError("Please select both check-in and departure dates.");
+            return;
+        }
+        if (checkIn >= checkOut) {
+            showError("Departure date must be after check-in date.");
             return;
         }
 
@@ -271,9 +409,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (availableCategories.length === 0) {
             categoriesContainer.innerHTML = `
                 <div class="col-12 text-center py-5">
-                    <i class="fa fa-bed fa-3x text-muted mb-3"></i>
-                    <h5 class="fw-bold text-dark">No Rooms Available for Selected Dates</h5>
-                    <p class="text-muted">Please adjust your check-in/departure dates or choose another property.</p>
+                    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mx-auto bg-white" style="max-width: 600px;">
+                        <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 72px; height: 72px;">
+                            <i class="fa fa-bed fa-2x text-muted"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-2">No Rooms Available for Selected Criteria</h5>
+                        <p class="text-muted small mb-0">No accommodations were found matching your travel dates and guest occupancy (${adultsInput ? adultsInput.value : 2} Adults, ${childrenInput ? childrenInput.value : 0} Children). Please adjust your dates or guest count and click Search Stays again.</p>
+                    </div>
                 </div>
             `;
             return;
@@ -281,45 +423,75 @@ document.addEventListener("DOMContentLoaded", function () {
 
         availableCategories.forEach(cat => {
             const availCount = cat.available_rooms.length;
-            const starsHtml = '<i class="fa fa-star"></i>'.repeat(Math.round(cat.rating_avg || 5));
+            const starsHtml = '<i class="fa fa-star text-warning"></i>'.repeat(Math.round(cat.rating_avg || 5));
             const selectedForThisCat = selectedRooms.filter(r => r.category_id === cat.id).length;
+            const maxGuests = cat.max_occupancy || (cat.max_adults + cat.max_children);
 
             let amenitiesHtml = "";
-            (cat.amenities || []).slice(0, 4).forEach(am => {
-                amenitiesHtml += `<span class="o_amenity_pill"><i class="fa fa-check text-success"></i> ${am.name}</span>`;
+            (cat.amenities || []).slice(0, 3).forEach(am => {
+                amenitiesHtml += `<span class="o_amenity_pill small"><i class="fa fa-check text-success me-1"></i>${am.name}</span>`;
             });
 
             const col = document.createElement("div");
             col.className = "col-12 col-md-6 col-lg-4";
             col.innerHTML = `
-                <div class="o_room_category_card h-100 d-flex flex-column shadow-sm position-relative">
-                    <div class="position-relative overflow-hidden">
+                <div class="o_room_category_card h-100 d-flex flex-column shadow-sm rounded-4 overflow-hidden border bg-white position-relative">
+                    <!-- Top Image Area -->
+                    <div class="position-relative overflow-hidden" style="height: 220px; background-color: #f1f5f9;">
                         <img src="${cat.image_url}" class="o_room_card_img" alt="${cat.name}"/>
-                        <span class="o_available_badge">
-                            <i class="fa fa-door-open me-1"></i> ${availCount} Available
-                        </span>
-                    </div>
-                    <div class="p-3 d-flex flex-column flex-grow-1">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="small fw-semibold text-muted">${cat.bed_type || 'King Bed'}</span>
-                            <div class="o_rating_stars small">${starsHtml} <span class="text-muted fw-bold ms-1">(${cat.review_count || 0})</span></div>
+                        
+                        <!-- Top Left: Availability Badge -->
+                        <div class="position-absolute top-0 start-0 m-3">
+                            <span class="badge bg-white bg-opacity-95 text-dark shadow-sm px-2.5 py-1.5 rounded-pill fw-semibold small">
+                                <i class="fa fa-circle text-success me-1" style="font-size: 0.55rem;"></i>${availCount} Available
+                            </span>
                         </div>
-                        <h5 class="fw-bold text-dark mb-1">${cat.name}</h5>
-                        <p class="small text-muted mb-2 flex-grow-1">${cat.description ? cat.description.slice(0, 95) + '...' : 'Spacious comfort with premium bedding and modern amenities.'}</p>
 
+                        <!-- Top Right: Max Guests Badge -->
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge bg-dark bg-opacity-75 text-white shadow-sm px-2.5 py-1.5 rounded-pill small fw-normal">
+                                <i class="fa fa-users me-1 text-white-50"></i>Up to ${maxGuests} Guests
+                            </span>
+                        </div>
+
+                        <!-- Bottom Image Info Bar -->
+                        <div class="position-absolute bottom-0 start-0 end-0 p-2.5 bg-gradient-dark-bottom d-flex justify-content-between align-items-center text-white small">
+                            <span><i class="fa fa-bed me-1 text-hotel-accent"></i>${cat.bed_type || 'King Bed'}</span>
+                            <span><i class="fa fa-expand me-1 text-hotel-accent"></i>${cat.room_size || '35'} sq.m</span>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="p-3.5 p-lg-4 d-flex flex-column flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <h5 class="fw-bold text-dark mb-0">${cat.name}</h5>
+                            <div class="o_rating_stars small" title="Rated ${cat.rating_avg} / 5">
+                                ${starsHtml}
+                                <span class="text-muted fw-bold ms-1">(${cat.review_count || 0})</span>
+                            </div>
+                        </div>
+
+                        <p class="small text-muted mb-3 flex-grow-1" style="line-height: 1.5;">
+                            ${cat.description ? (cat.description.length > 90 ? cat.description.slice(0, 90) + '...' : cat.description) : 'Premium comfort with tailored hospitality and modern amenities.'}
+                        </p>
+
+                        <!-- Amenities -->
                         <div class="d-flex flex-wrap gap-1 mb-3">
                             ${amenitiesHtml}
                         </div>
 
-                        <div class="d-flex align-items-baseline justify-content-between pt-2 border-top mt-auto">
+                        <!-- Footer: Minimized Price & Select Rooms Button -->
+                        <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-auto">
                             <div>
-                                <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.72rem;">Starting from</small>
-                                <h4 class="mb-0 fw-bold text-hotel-primary">${currencySymbol}${cat.nightly_price.toFixed(2)}</h4>
-                                <small class="text-muted">/ night</small>
+                                <span class="text-muted text-uppercase fw-semibold d-block" style="font-size: 0.65rem; letter-spacing: 0.5px;">Starting from</span>
+                                <div class="d-flex align-items-baseline gap-1">
+                                    <span class="fw-bold text-hotel-primary" style="font-size: 1.15rem;">${currencySymbol}${cat.nightly_price.toFixed(2)}</span>
+                                    <span class="text-muted" style="font-size: 0.78rem;">/night</span>
+                                </div>
                             </div>
-                            <button type="button" class="btn btn-hotel-primary rounded-3 px-3 py-2 fw-semibold btn_open_room_modal"
+                            <button type="button" class="btn btn-hotel-primary rounded-pill px-3 py-1.5 fw-semibold shadow-sm btn_open_room_modal"
                                     data-category-id="${cat.id}">
-                                ${selectedForThisCat > 0 ? `<i class="fa fa-check me-1"></i> ${selectedForThisCat} Selected` : 'Select Rooms'}
+                                ${selectedForThisCat > 0 ? `<i class="fa fa-check-circle me-1"></i> ${selectedForThisCat} Selected` : '<i class="fa fa-plus-circle me-1"></i> Select Rooms'}
                             </button>
                         </div>
                     </div>
@@ -344,8 +516,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!cat) return;
 
         modalCategoryTitle.textContent = `${cat.name} — Room Selection`;
-        modalCategorySubtitle.textContent = `Select one or multiple rooms (${cat.bed_type}, ${cat.room_size || '35'} sq.m)`;
-        modalCategoryPrice.textContent = `${currencySymbol}${cat.nightly_price.toFixed(2)} / night`;
+        modalCategorySubtitle.textContent = `Select one or multiple rooms (${cat.bed_type}, ${cat.room_size || '35'} sq.m) · Up to ${cat.max_occupancy || (cat.max_adults + cat.max_children)} guests per room`;
+        modalCategoryPrice.innerHTML = `<span style="font-size: 1.1rem; font-weight: 700;">${currencySymbol}${cat.nightly_price.toFixed(2)}</span> <span class="text-muted" style="font-size: 0.8rem;">/night</span>`;
         modalViewDetailsBtn.href = `/hotel/room_type/${cat.id}`;
 
         modalRoomsListContainer.innerHTML = "";
@@ -391,9 +563,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
 
-        if (roomModal) {
-            roomModal.show();
-        }
+        showModal(roomModalEl);
     }
 
     function updateModalSelectionCounter() {
@@ -424,9 +594,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             });
 
-            if (roomModal) {
-                roomModal.hide();
-            }
+            hideModal(roomModalEl);
 
             renderRoomCategories();
             updateSelectedRoomsUI();
@@ -730,8 +898,52 @@ document.addEventListener("DOMContentLoaded", function () {
         return Math.round((num + Number.EPSILON) * 100) / 100;
     }
 
-    // Auto-fetch on initial page load if inputs are populated
-    if (checkInInput && checkOutInput && hotelSelect) {
-        fetchAvailability();
+    function renderInitialPrompt() {
+        if (!categoriesContainer) return;
+        categoriesContainer.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mx-auto bg-white" style="max-width: 650px;">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 72px; height: 72px;">
+                        <i class="fa fa-calendar-check-o fa-2x text-hotel-primary"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-2">Find Your Ideal Room</h4>
+                    <p class="text-muted mb-4 small" style="max-width: 480px; margin: 0 auto; line-height: 1.6;">
+                        Please select your destination hotel, check-in and departure dates, and number of guests in the search bar above, then click <strong>Search Stays</strong> to discover available luxury rooms and rates.
+                    </p>
+                    <div>
+                        <button type="button" class="btn btn-hotel-primary rounded-pill px-4 py-2 fw-semibold shadow-sm" id="btn_prompt_search_stays">
+                            <i class="fa fa-search me-1"></i> Search Stays Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        const promptBtn = document.getElementById("btn_prompt_search_stays");
+        if (promptBtn && searchBtn) {
+            promptBtn.addEventListener("click", () => searchBtn.click());
+        }
     }
-});
+
+    // Only query room types when search parameters are present in URL or Search button is clicked
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasSearchQuery = urlParams.has("check_in") || urlParams.has("check_out");
+
+    if (hasSearchQuery && checkInInput && checkOutInput && hotelSelect && hotelSelect.value) {
+        console.log("[BookingEngine] Initializing availability fetch from URL parameters for hotel", hotelSelect.value);
+        fetchAvailability();
+        setTimeout(() => {
+            const showcase = document.getElementById("step1_room_showcase");
+            if (showcase) {
+                showcase.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }, 500);
+    } else {
+        renderInitialPrompt();
+    }
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initBookingEngine);
+} else {
+    initBookingEngine();
+}
