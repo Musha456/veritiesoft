@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Client Action for Hotel Operations Dashboard -->
+    <record id="action_hotel_dashboard" model="ir.actions.client">
+        <field name="name">Hotel Operations Dashboard</field>
+        <field name="tag">hotel_dashboard_main</field>
+        <field name="target">current</field>
+    </record>
+
+    <!-- Top-Level Default Menu for Hotel Management -->
+    <menuitem id="menu_hotel_dashboard_root"
+              name="Dashboard"
+              parent="vs_hotel_management.menu_hotel_main"
+              action="action_hotel_dashboard"
+              sequence="1"
+              groups="vs_hotel_management.group_hotel_reservation_user,vs_hotel_management.group_hotel_manager"/>
+
+</odoo>

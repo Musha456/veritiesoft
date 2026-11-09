@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========================================================== -->
+    <!-- Hotel Management Report Wizard Form View (Smart & Enhanced)-->
+    <!-- ========================================================== -->
+    <record id="view_hotel_report_wizard_form" model="ir.ui.view">
+        <field name="name">hotel.report.wizard.form</field>
+        <field name="model">hotel.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Hotel Management Reports">
+                <sheet>
+                    <div class="alert alert-light border d-flex align-items-center mb-3 py-2 px-3 rounded shadow-sm" role="alert">
+                        <i class="fa fa-line-chart fa-2x text-primary me-3"/>
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0 fw-bold text-dark">Intelligent Hotel Reporting Center</h4>
+                            <div class="text-muted small">Select your analytics category, fine-tune date/time windows, and choose high-fidelity export formats.</div>
+                        </div>
+                    </div>
+
+                    <group>
+                        <group string="1. Report Selection">
+                            <field name="report_category" widget="radio" options="{'horizontal': false}"/>
+                            <field name="report_type"/>
+                        </group>
+                        <group string="2. Output Format">
+                            <field name="output_format" widget="radio"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- TAB 1: FILTERS & PARAMETERS -->
+                        <page string="Filter Parameters" name="filters">
+                            <group>
+                                <group string="Hotel Hierarchy Filters">
+                                    <field name="hotel_id" options="{'no_create': True}"/>
+                                    <field name="building_id" options="{'no_create': True}" invisible="report_type == 'agent_commissions'"/>
+                                    <field name="floor_id" options="{'no_create': True}" invisible="report_type == 'agent_commissions'"/>
+                                    <field name="room_category_id" options="{'no_create': True}" invisible="report_type in ('agent_commissions', 'financial_revenue')"/>
+                                    <field name="room_id" options="{'no_create': True}" invisible="report_type in ('agent_commissions', 'financial_revenue')"/>
+                                </group>
+
+                                <group string="Date Range Configuration">
+                                    <field name="date_preset"/>
+                                    <field name="date_from"/>
+                                    <field name="date_to" invisible="report_type == 'frontdesk_movements'"/>
+                                    <field name="date_filter_type" invisible="report_type != 'reservation_register'"/>
+                                </group>
+                            </group>
+
+                            <!-- Smart Time & Shift Range Window -->
+                            <group string="Time &amp; Shift Window" col="4">
+                                <field name="use_time_filter" widget="boolean_toggle"/>
+                                <field name="time_preset" invisible="not use_time_filter"/>
+                                <field name="time_from" widget="float_time" invisible="not use_time_filter"/>
+                                <field name="time_to" widget="float_time" invisible="not use_time_filter"/>
+                            </group>
+
+                            <!-- Dynamic Context-Specific Criteria -->
+                            <group string="Contextual Criteria" invisible="report_type not in ('reservation_register', 'financial_revenue', 'agent_commissions', 'operations_summary')">
+                                <group>
+                                    <field name="reservation_status" invisible="report_type != 'reservation_register'"/>
+                                    <field name="booking_source" invisible="report_type != 'reservation_register'"/>
+                                    <field name="folio_state" invisible="report_type != 'financial_revenue'"/>
+                                </group>
+                                <group>
+                                    <field name="agent_id" options="{'no_create': True}" invisible="report_type not in ('agent_commissions', 'reservation_register')"/>
+                                    <field name="commission_status" invisible="report_type != 'agent_commissions'"/>
+                                    <field name="operations_scope" invisible="report_type != 'operations_summary'"/>
+                                    <field name="staff_id" options="{'no_create': True}" invisible="report_type != 'operations_summary'"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <footer>
+                    <button name="action_generate_report" string="Generate Report" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button name="action_print_pdf" string="PDF Report" type="object" icon="fa-file-pdf-o" class="btn-secondary"/>
+                    <button name="action_export_xlsx" string="Excel (.xlsx)" type="object" icon="fa-file-excel-o" class="btn-secondary"/>
+                    <button name="action_view_records" string="Interactive View" type="object" icon="fa-table" class="btn-secondary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- Action to Open Wizard                                      -->
+    <!-- ========================================================== -->
+    <record id="action_hotel_report_wizard" model="ir.actions.act_window">
+        <field name="name">Hotel Reports</field>
+        <field name="res_model">hotel.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

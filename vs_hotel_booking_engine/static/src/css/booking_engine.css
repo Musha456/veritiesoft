@@ -1,0 +1,268 @@
+/* =========================================================
+   Hotel Online Booking Engine & Guest Portal Theme
+   Dynamic Logo-Driven Color System
+========================================================= */
+
+:root {
+    --hotel-primary: #1e3a8a;
+    --hotel-secondary: #2563eb;
+    --hotel-accent: #f59e0b;
+    --hotel-primary-rgb: 30, 58, 138;
+}
+
+.o_hotel_booking_engine {
+    font-family: inherit;
+    color: #1e293b;
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+/* Dynamic Brand Colors */
+.bg-hotel-primary {
+    background-color: var(--hotel-primary) !important;
+    color: #ffffff !important;
+}
+
+.text-hotel-primary {
+    color: var(--hotel-primary) !important;
+}
+
+.border-hotel-primary {
+    border-color: var(--hotel-primary) !important;
+}
+
+.btn-hotel-primary {
+    background-color: var(--hotel-primary);
+    border-color: var(--hotel-primary);
+    color: #ffffff;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-hotel-primary:hover, .btn-hotel-primary:focus {
+    background-color: var(--hotel-secondary);
+    border-color: var(--hotel-secondary);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(var(--hotel-primary-rgb), 0.25);
+}
+
+.btn-hotel-outline {
+    background-color: transparent;
+    border-color: var(--hotel-primary);
+    color: var(--hotel-primary);
+    font-weight: 600;
+}
+
+.btn-hotel-outline:hover {
+    background-color: var(--hotel-primary);
+    color: #ffffff;
+}
+
+/* =========================================================
+   1. HERO BANNER & FLOATING SEARCH CARD
+========================================================= */
+.o_hotel_hero_container {
+    box-shadow: inset 0 -30px 40px rgba(0, 0, 0, 0.4);
+}
+
+.text-shadow-sm {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.o_hero_search_card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+}
+
+.o_hero_search_card:hover {
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.15) !important;
+}
+
+.tracking-wider {
+    letter-spacing: 0.05em;
+}
+
+/* Stepper Wizard */
+.o_booking_stepper {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.o_step_item {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    cursor: default;
+}
+
+.o_step_item::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: -50%;
+    width: 100%;
+    height: 3px;
+    background-color: #e2e8f0;
+    z-index: 1;
+}
+
+.o_step_item:first-child::before {
+    display: none;
+}
+
+.o_step_circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e2e8f0;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.o_step_item.active .o_step_circle {
+    background-color: var(--hotel-primary);
+    color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(var(--hotel-primary-rgb), 0.2);
+}
+
+.o_step_item.completed .o_step_circle {
+    background-color: #10b981;
+    color: #ffffff;
+}
+
+.o_step_item.completed::before {
+    background-color: #10b981;
+}
+
+.o_step_label {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.o_step_item.active .o_step_label {
+    color: var(--hotel-primary);
+}
+
+/* =========================================================
+   2. ROOM CATEGORY CARDS
+========================================================= */
+.o_room_category_card {
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    background: #ffffff;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.o_room_category_card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.08);
+}
+
+.o_room_card_img {
+    height: 230px;
+    object-fit: cover;
+    width: 100%;
+    transition: transform 0.35s ease;
+}
+
+.o_room_category_card:hover .o_room_card_img {
+    transform: scale(1.03);
+}
+
+.o_available_badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(16, 185, 129, 0.95);
+    color: #ffffff;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.o_rating_stars {
+    color: #f59e0b;
+}
+
+.o_amenity_pill {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* =========================================================
+   3. MODAL ROOM SELECTION
+========================================================= */
+.o_modal_room_card {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.o_modal_room_card.selected {
+    border-color: var(--hotel-primary);
+    background-color: rgba(var(--hotel-primary-rgb), 0.04);
+}
+
+.o_modal_room_card:hover {
+    border-color: #cbd5e1;
+}
+
+/* =========================================================
+   4. ADD-ON SERVICES CHECKBOX CARDS
+========================================================= */
+.o_service_card {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.o_service_card:hover {
+    border-color: #cbd5e1;
+}
+
+.o_service_card.selected {
+    border-color: var(--hotel-primary);
+    background-color: rgba(var(--hotel-primary-rgb), 0.04);
+}
+
+/* Payment Option Card */
+.o_payment_choice_card {
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.o_payment_choice_card:hover {
+    border-color: var(--hotel-primary);
+}
+
+/* Portal Customizations */
+.o_portal_hotel_card {
+    border-left: 4px solid var(--hotel-primary) !important;
+}

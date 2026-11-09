@@ -1,4 +1,5 @@
-from odoo import api, fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class HotelBuilding(models.Model):
@@ -168,6 +169,23 @@ class HotelBuilding(models.Model):
     @api.depends("floor_ids.room_ids")
     def _compute_capacity(self):
         self.capacity = 100
+
+    def write(self, vals):
+        if "status" in vals and vals["status"] != "operational":
+            for building in self:
+                active_lines = self.env["hotel.reservation.line"].search([
+                    "|", ("building_id", "=", building.id), ("room_id.building_id", "=", building.id),
+                    ("reservation_id.state", "in", ("confirmed", "reserved", "checked_in")),
+                ], limit=1)
+                if active_lines:
+                    raise ValidationError(
+                        _("Cannot change Building '%(name)s' status to %(status)s because there are active reservations (e.g. %(res)s). Please reassign or conclude those reservations first.") % {
+                            "name": building.name,
+                            "status": dict(self._fields["status"].selection).get(vals["status"], vals["status"]),
+                            "res": active_lines.reservation_id.name,
+                        }
+                    )
+        return super().write(vals)
 
     def action_set_operational(self):
         self.write({"status": "operational"})

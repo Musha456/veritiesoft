@@ -40,4 +40,29 @@
         <field name="binding_type">report</field>
     </record>
 
+    <!-- ========================================================== -->
+    <!-- Travel Agent Commission Report Action                     -->
+    <!-- ========================================================== -->
+    <record id="action_report_hotel_agent_commission" model="ir.actions.report">
+        <field name="name">Agent Commission Statement</field>
+        <field name="model">hotel.agent.commission</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">vs_hotel_management.report_hotel_agent_commission_document</field>
+        <field name="print_report_name">'Commission - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_hotel_agent_commission"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- Hotel Management Master Report Action                      -->
+    <!-- ========================================================== -->
+    <record id="action_report_hotel_management" model="ir.actions.report">
+        <field name="name">Hotel Management Report</field>
+        <field name="model">hotel.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">vs_hotel_management.report_hotel_management_document</field>
+        <field name="print_report_name">'Hotel_Report_%s' % (object.report_type)</field>
+    </record>
+
+
 </odoo>

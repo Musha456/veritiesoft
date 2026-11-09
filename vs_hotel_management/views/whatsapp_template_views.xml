@@ -15,8 +15,8 @@
                 <field name="task_type"/>
                 <field name="event"/>
                 <field name="parameter_count"/>
+                <field name="company_id" groups="base.group_multi_company"/>
                 <field name="meta_status" widget="badge"/>
-                <field name="active" widget="boolean_toggle"/>
             </list>
         </field>
     </record>
@@ -65,7 +65,7 @@
                             <field name="category"/>
                             <field name="task_type"/>
                             <field name="event"/>
-                            <field name="active"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
                         </group>
                         <group string="Meta Template Details">
                             <field name="parameter_count" readonly="1"/>
@@ -95,6 +95,15 @@
         <field name="name">WhatsApp Templates</field>
         <field name="res_model">hotel.whatsapp.template</field>
         <field name="view_mode">list,form</field>
+            <field name="group_ids" eval="[(6, 0, [
+            ref('vs_hotel_management.group_hotel_reservation_manager'),
+            ref('vs_hotel_management.group_hotel_gm_user'),
+            ref('vs_hotel_management.group_hotel_manager'),
+            ref('vs_hotel_management.group_hotel_gm_bridge'),
+            ref('vs_hotel_management.group_hotel_admin_user'),
+            ref('vs_hotel_management.group_hotel_admin'),
+            ref('vs_hotel_management.group_hotel_admin_bridge'),
+        ])]"/>
     </record>
 
 </odoo>

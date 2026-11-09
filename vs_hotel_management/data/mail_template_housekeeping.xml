@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- ========================================================== -->
+        <!-- 1. Housekeeping Assignment Notification                    -->
+        <!-- ========================================================== -->
+        <record id="mail_template_housekeeping_assigned" model="mail.template">
+            <field name="name">Hotel Housekeeping: Task Assigned</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_housekeeping"/>
+            <field name="subject">{{ object.hotel_id.name }} - Housekeeping Task Assigned: {{ object.name }} (Room {{ object.room_id.display_name }})</field>
+            <field name="email_from">{{ (object.hotel_id.email or object.company_id.email or user.email_formatted or 'hotel@veritiesoft.com') }}</field>
+            <field name="partner_to">{{ object.assigned_to.id }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; color: #2d3748;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <tr>
+                            <td style="padding: 24px 32px; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #ffffff; text-align: center;">
+                                <h1 style="margin: 0; font-size: 22px; font-weight: 700;" t-out="object.hotel_id.name or 'Hotel'"/>
+                                <p style="margin: 6px 0 0; font-size: 14px; opacity: 0.9;">Housekeeping Task Assignment</p>
+                                <div style="margin-top: 10px; display: inline-block; padding: 3px 12px; background: rgba(255,255,255,0.2); border-radius: 16px; font-size: 12px;" t-out="object.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 24px 32px;">
+                                <p style="margin: 0; font-size: 15px;">Hello <strong t-out="object.assigned_to.name or 'Staff'"/>,</p>
+                                <p style="margin: 8px 0 0; font-size: 13px; color: #4a5568;">
+                                    A housekeeping cleaning task has been assigned to you.
+                                </p>
+                                <div style="margin: 18px 0; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px 20px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px;">
+                                        <tr>
+                                            <td style="padding: 5px 0; color: #64748b; width: 40%;">Room:</td>
+                                            <td style="padding: 5px 0; font-weight: 600; color: #0f172a;" t-out="object.room_id.display_name"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 5px 0; color: #64748b;">Building / Floor:</td>
+                                            <td style="padding: 5px 0; font-weight: 600; color: #0f172a;"><span t-out="object.building_id.name"/> / <span t-out="object.floor_id.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 5px 0; color: #64748b;">Type:</td>
+                                            <td style="padding: 5px 0; font-weight: 600; color: #0f172a;" t-out="dict(object._fields['housekeeping_type'].selection).get(object.housekeeping_type, object.housekeeping_type)"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 5px 0; color: #64748b;">Scheduled Time:</td>
+                                            <td style="padding: 5px 0; font-weight: 600; color: #0f172a;" t-out="object.scheduled_date"/>
+                                        </tr>
+                                        <tr t-if="object.instruction_notes">
+                                            <td style="padding: 5px 0; color: #64748b; vertical-align: top;">Instructions:</td>
+                                            <td style="padding: 5px 0; color: #0f172a;" t-out="object.instruction_notes"/>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- 2. Housekeeping Inspection Required (To Manager)           -->
+        <!-- ========================================================== -->
+        <record id="mail_template_housekeeping_inspection_required" model="mail.template">
+            <field name="name">Hotel Housekeeping: Inspection Required</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_housekeeping"/>
+            <field name="subject">{{ object.hotel_id.name }} - Inspection Required: Housekeeping {{ object.name }} (Room {{ object.room_id.display_name }})</field>
+            <field name="email_from">{{ (object.hotel_id.email or object.company_id.email or user.email_formatted or 'hotel@veritiesoft.com') }}</field>
+            <field name="partner_to">{{ object.inspector_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; color: #2d3748;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <tr>
+                            <td style="padding: 24px 32px; background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); color: #ffffff; text-align: center;">
+                                <h1 style="margin: 0; font-size: 22px; font-weight: 700;" t-out="object.hotel_id.name or 'Hotel'"/>
+                                <p style="margin: 6px 0 0; font-size: 14px; opacity: 0.9;">Housekeeping Inspection Required</p>
+                                <div style="margin-top: 10px; display: inline-block; padding: 3px 12px; background: rgba(255,255,255,0.2); border-radius: 16px; font-size: 12px;" t-out="object.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 24px 32px;">
+                                <p style="margin: 0; font-size: 15px;">Hello <strong t-out="object.inspector_id.name or 'Manager'"/>,</p>
+                                <p style="margin: 8px 0 0; font-size: 13px; color: #4a5568;">
+                                    A housekeeping cleaning task has been completed and is awaiting your quality inspection before Room <strong t-out="object.room_id.display_name"/> can be marked as available.
+                                </p>
+                                <div style="margin: 18px 0; background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 6px; padding: 16px 20px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px;">
+                                        <tr>
+                                            <td style="padding: 5px 0; color: #92400e; width: 40%;">Room:</td>
+                                            <td style="padding: 5px 0; font-weight: 600; color: #0f172a;" t-out="object.room_id.display_name"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 5px 0; color: #92400e;">Staff Member:</td>
+                                            <td style="padding: 5px 0; font-weight: 600; color: #0f172a;" t-out="object.assigned_to.name"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 5px 0; color: #92400e;">Completed At:</td>
+                                            <td style="padding: 5px 0; font-weight: 600; color: #0f172a;" t-out="object.completed_at"/>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ========================================================== -->
+        <!-- Travel Agent Commission Payment Statement Email Template   -->
+        <!-- ========================================================== -->
+        <record id="mail_template_hotel_agent_commission" model="mail.template">
+            <field name="name">Hotel: Agent Commission Payment Statement</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_agent_commission"/>
+            <field name="subject">{{ object.company_id.name }} - Agent Commission Statement {{ object.name }}</field>
+            <field name="email_from">{{ (object.company_id.email or user.email_formatted or 'accounts@hotel.com') }}</field>
+            <field name="partner_to">{{ object.agent_id.id }}</field>
+            <field name="report_template_ids" eval="[(4, ref('vs_hotel_management.action_report_hotel_agent_commission'))]"/>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; color: #2d3748;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        
+                        <!-- Header Banner -->
+                        <tr>
+                            <td style="padding: 28px 32px; background: linear-gradient(135deg, #0f766e 0%, #115e59 100%); color: #ffffff; text-align: center;">
+                                <h1 style="margin: 0; font-size: 22px; font-weight: 700;" t-out="object.company_id.name or 'Hotel'"/>
+                                <p style="margin: 6px 0 0; font-size: 15px; opacity: 0.95;">Agent Commission Payment Statement</p>
+                                <div style="margin-top: 10px; display: inline-block; padding: 4px 14px; background: rgba(255,255,255,0.2); border-radius: 16px; font-size: 12px; font-weight: 600;" t-out="object.name"/>
+                            </td>
+                        </tr>
+
+                        <!-- Body Content -->
+                        <tr>
+                            <td style="padding: 28px 32px;">
+                                <p style="margin: 0; font-size: 15px;">Dear <strong t-out="object.agent_id.name or 'Travel Agent'"/>,</p>
+                                
+                                <p style="margin: 12px 0 0; font-size: 14px; color: #4a5568; line-height: 1.5;">
+                                    We are pleased to inform you that your commission payment for reference <strong t-out="object.name"/> has been processed. Please find below the commission details and the attached detailed statement.
+                                </p>
+
+                                <!-- Commission Summary Card -->
+                                <div style="margin: 20px 0; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 20px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px;">
+                                        <tr>
+                                            <td style="padding: 5px 0; color: #64748b;">Commission Reference:</td>
+                                            <td style="padding: 5px 0; font-weight: 600; color: #0f172a;" t-out="object.name"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 5px 0; color: #64748b;">Commission Date:</td>
+                                            <td style="padding: 5px 0; color: #0f172a;" t-out="object.date"/>
+                                        </tr>
+                                        <tr t-if="object.reservation_id">
+                                            <td style="padding: 5px 0; color: #64748b;">Linked Reservation:</td>
+                                            <td style="padding: 5px 0; font-weight: 600; color: #0f172a;" t-out="object.reservation_id.name"/>
+                                        </tr>
+                                        <tr t-if="object.folio_id">
+                                            <td style="padding: 5px 0; color: #64748b;">Guest Folio:</td>
+                                            <td style="padding: 5px 0; font-weight: 600; color: #0f172a;" t-out="object.folio_id.name"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 5px 0; color: #64748b;">Net Room Revenue:</td>
+                                            <td style="padding: 5px 0; font-weight: 600; color: #0f172a;" t-out="format_amount(object.total_room_amount, object.currency_id)"/>
+                                        </tr>
+                                        <tr style="border-top: 2px solid #0f766e;">
+                                            <td style="padding: 10px 0; font-size: 14px; font-weight: 700; color: #0f766e;">Total Commission Paid:</td>
+                                            <td style="padding: 10px 0; font-size: 16px; font-weight: 700; color: #0f766e;" t-out="format_amount(object.total_commission_amount, object.currency_id)"/>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <!-- Paid Vendor Bill Callout Box -->
+                                <div t-if="object.invoice_id" style="margin: 20px 0; background-color: #f0fdf4; border: 1px solid #86efac; border-radius: 6px; padding: 16px 20px;">
+                                    <div style="font-size: 13px; font-weight: 700; color: #166534; margin-bottom: 8px;">
+                                        Paid Vendor Bill Information
+                                    </div>
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 12.5px;">
+                                        <tr>
+                                            <td style="padding: 4px 0; color: #15803d; width: 40%;">Bill Number:</td>
+                                            <td style="padding: 4px 0; font-weight: 600; color: #166534;" t-out="object.invoice_id.name"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 4px 0; color: #15803d;">Bill Date:</td>
+                                            <td style="padding: 4px 0; color: #166534;" t-out="object.invoice_id.invoice_date"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 4px 0; color: #15803d;">Bill Amount:</td>
+                                            <td style="padding: 4px 0; font-weight: 600; color: #166534;" t-out="format_amount(object.invoice_id.amount_total, object.currency_id)"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 4px 0; color: #15803d;">Payment Status:</td>
+                                            <td style="padding: 4px 0;">
+                                                <span style="background-color: #dcfce7; color: #15803d; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px;">
+                                                    PAID / SETTLED
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <!-- Room Breakdown Table -->
+                                <div t-if="object.commission_line_ids" style="margin: 20px 0;">
+                                    <div style="font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 8px;">
+                                        Room Commission Breakdown
+                                    </div>
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 12px; border-collapse: collapse;">
+                                        <tr style="background-color: #f1f5f9; border-bottom: 1px solid #cbd5e1; font-weight: 600; color: #475569;">
+                                            <th style="padding: 6px 8px; text-align: left;">Room</th>
+                                            <th style="padding: 6px 8px; text-align: right;">Net Amount</th>
+                                            <th style="padding: 6px 8px; text-align: center;">Rate</th>
+                                            <th style="padding: 6px 8px; text-align: right;">Commission</th>
+                                        </tr>
+                                        <t t-foreach="object.commission_line_ids" t-as="l">
+                                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                                <td style="padding: 6px 8px; color: #1e293b;">
+                                                    <span t-if="l.room_id" t-out="l.room_id.display_name"/>
+                                                    <span t-elif="l.room_name" t-out="l.room_name"/>
+                                                    <span t-else="">Room Charge</span>
+                                                </td>
+                                                <td style="padding: 6px 8px; text-align: right; color: #475569;" t-out="format_amount(l.room_amount, object.currency_id)"/>
+                                                <td style="padding: 6px 8px; text-align: center; color: #475569;"><span t-out="l.commission_percentage"/>%</td>
+                                                <td style="padding: 6px 8px; text-align: right; font-weight: 600; color: #0f766e;" t-out="format_amount(l.commission_amount, object.currency_id)"/>
+                                            </tr>
+                                        </t>
+                                    </table>
+                                </div>
+
+                                <p style="margin: 20px 0 0; font-size: 13px; color: #64748b; line-height: 1.5;">
+                                    A copy of the detailed commission statement and paid vendor bill is attached. If you have any inquiries, please contact our accounts department.
+                                </p>
+
+                                <p style="margin: 16px 0 0; font-size: 13px; color: #334155;">
+                                    Sincerely,<br/>
+                                    <strong><span t-out="object.company_id.name or 'Hotel Management'"/> Accounts Team</strong>
+                                </p>
+                            </td>
+                        </tr>
+
+                        <!-- Footer -->
+                        <tr>
+                            <td style="padding: 16px 32px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center;">
+                                This is an automated notification from <span t-out="object.company_id.name"/>.
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+    </data>
+</odoo>

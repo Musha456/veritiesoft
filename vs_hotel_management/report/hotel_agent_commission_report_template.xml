@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_hotel_agent_commission_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+
+                    <div class="page"
+                         style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                                font-size: 12px;
+                                color: #374151;
+                                line-height: 1.45;">
+
+                        <!-- ================================================= -->
+                        <!-- REPORT HEADER / TITLE                             -->
+                        <!-- ================================================= -->
+                        <div class="row align-items-start mb-4">
+                            <div class="col-8">
+                                <div style="border-left: 4px solid #0f766e; padding-left: 12px;">
+                                    <div style="font-size: 22px; font-weight: 700; color: #0f766e; line-height: 1.2;">
+                                        AGENT COMMISSION STATEMENT
+                                    </div>
+                                    <div style="font-size: 12px; color: #6b7280; margin-top: 3px;">
+                                        TRAVEL AGENT COMMISSION &amp; PAYMENT DETAILS
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-4 text-end">
+                                <div style="font-size: 12px; color: #6b7280;">Commission Ref:</div>
+                                <div style="font-size: 15px; font-weight: 700; color: #1f2937;">
+                                    <span t-field="o.name"/>
+                                </div>
+                                <div style="margin-top: 4px; font-size: 11px; color: #6b7280;">
+                                    <span>Date: </span><span t-field="o.date"/>
+                                    <span style="margin: 0 4px;">•</span>
+                                    <span t-field="o.state" style="text-transform: uppercase; font-weight: 600;"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ================================================= -->
+                        <!-- AGENT & RESERVATION DETAILS                       -->
+                        <!-- ================================================= -->
+                        <div class="row mb-4">
+                            <!-- Left: Agent Details -->
+                            <div class="col-6">
+                                <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px;">
+                                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.5px; margin-bottom: 8px;">
+                                        Travel Agent Information
+                                    </div>
+                                    <div style="font-size: 14px; font-weight: 700; color: #111827;">
+                                        <span t-field="o.agent_id.name"/>
+                                    </div>
+                                    <div t-if="o.agent_id.contact_address" style="color: #4b5563; font-size: 12px; margin-top: 4px;">
+                                        <span t-field="o.agent_id.contact_address"/>
+                                    </div>
+                                    <div t-if="o.agent_id.phone" style="color: #4b5563; font-size: 12px; margin-top: 2px;">
+                                        <strong>Phone: </strong><span t-field="o.agent_id.phone"/>
+                                    </div>
+                                    <div t-if="o.agent_id.email" style="color: #4b5563; font-size: 12px; margin-top: 2px;">
+                                        <strong>Email: </strong><span t-field="o.agent_id.email"/>
+                                    </div>
+                                    <div t-if="o.agent_id.vat" style="color: #4b5563; font-size: 12px; margin-top: 2px;">
+                                        <strong>Tax ID / VAT: </strong><span t-field="o.agent_id.vat"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Booking & Billing Details -->
+                            <div class="col-6">
+                                <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px;">
+                                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.5px; margin-bottom: 8px;">
+                                        Reference &amp; Payment Status
+                                    </div>
+                                    <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+                                        <tr t-if="o.reservation_id">
+                                            <td style="color: #6b7280; padding: 2px 0; width: 45%;">Reservation:</td>
+                                            <td style="font-weight: 600; color: #111827;"><span t-field="o.reservation_id.name"/></td>
+                                        </tr>
+                                        <tr t-if="o.folio_id">
+                                            <td style="color: #6b7280; padding: 2px 0;">Guest Folio:</td>
+                                            <td style="font-weight: 600; color: #111827;"><span t-field="o.folio_id.name"/></td>
+                                        </tr>
+                                        <tr t-if="o.reservation_id and o.reservation_id.partner_id">
+                                            <td style="color: #6b7280; padding: 2px 0;">Guest Name:</td>
+                                            <td style="color: #111827;"><span t-field="o.reservation_id.partner_id.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color: #6b7280; padding: 2px 0;">Vendor Bill:</td>
+                                            <td style="font-weight: 600; color: #111827;">
+                                                <span t-if="o.invoice_id" t-field="o.invoice_id.name"/>
+                                                <span t-else="" style="color: #9ca3af; font-style: italic;">Not Billed Yet</span>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="o.invoice_id">
+                                            <td style="color: #6b7280; padding: 2px 0;">Bill Date:</td>
+                                            <td style="color: #111827;"><span t-field="o.invoice_id.invoice_date"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color: #6b7280; padding: 2px 0;">Bill Payment State:</td>
+                                            <td>
+                                                <t t-if="o.invoice_id and o.invoice_id.payment_state in ('paid', 'in_payment')">
+                                                    <span style="background-color: #dcfce7; color: #15803d; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px;">
+                                                        PAID
+                                                    </span>
+                                                </t>
+                                                <t t-elif="o.invoice_id">
+                                                    <span style="background-color: #fef3c7; color: #b45309; font-weight: 600; padding: 2px 8px; border-radius: 4px; font-size: 11px;">
+                                                        <span t-field="o.invoice_id.payment_state"/>
+                                                    </span>
+                                                </t>
+                                                <t t-else="">
+                                                    <span style="color: #9ca3af;">-</span>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ================================================= -->
+                        <!-- PAID BILL DETAIL CALLOUT (When Bill is Paid)      -->
+                        <!-- ================================================= -->
+                        <div t-if="o.invoice_id and o.invoice_id.payment_state in ('paid', 'in_payment')"
+                             class="mb-4"
+                             style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 6px; padding: 12px 16px;">
+                            <div style="display: flex; align-items: center;">
+                                <div style="font-size: 13px; font-weight: 700; color: #166534;">
+                                    ✓ Vendor Bill Paid: <span t-field="o.invoice_id.name"/>
+                                </div>
+                            </div>
+                            <div style="font-size: 12px; color: #15803d; margin-top: 4px;">
+                                Total Bill Amount: <strong><span t-field="o.invoice_id.amount_total" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></strong>
+                                | Payment Date: <strong><span t-out="o.invoice_id.invoice_date"/></strong>
+                                | Payment Status: <strong>PAID / RECONCILED</strong>
+                            </div>
+                        </div>
+
+                        <!-- ================================================= -->
+                        <!-- COMMISSION LINE ITEMS TABLE                       -->
+                        <!-- ================================================= -->
+                        <div style="margin-top: 15px;">
+                            <div style="font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 8px;">
+                                Commission Breakdown
+                            </div>
+
+                            <table class="table table-sm"
+                                   style="width: 100%; border-collapse: collapse; font-size: 11.5px;">
+                                <thead>
+                                    <tr style="background-color: #f3f4f6; border-bottom: 2px solid #d1d5db; color: #374151;">
+                                        <th style="padding: 8px 6px; text-align: left;">Room / Item</th>
+                                        <th style="padding: 8px 6px; text-align: left;">Reservation Ref</th>
+                                        <th style="padding: 8px 6px; text-align: right;">Base Amount</th>
+                                        <th style="padding: 8px 6px; text-align: right;">Discount</th>
+                                        <th style="padding: 8px 6px; text-align: right;">Net Room Amount</th>
+                                        <th style="padding: 8px 6px; text-align: center;">Rate (%)</th>
+                                        <th style="padding: 8px 6px; text-align: right;">Commission</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.commission_line_ids" t-as="line">
+                                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                                            <td style="padding: 7px 6px;">
+                                                <strong t-if="line.room_id" t-field="line.room_id.display_name"/>
+                                                <strong t-elif="line.room_name" t-field="line.room_name"/>
+                                                <strong t-else="">Room Charge</strong>
+                                                <div t-if="line.notes" style="font-size: 10.5px; color: #6b7280;" t-field="line.notes"/>
+                                            </td>
+                                            <td style="padding: 7px 6px;">
+                                                <span t-if="line.reservation_id" t-field="line.reservation_id.name"/>
+                                                <span t-else="" style="color: #9ca3af;">-</span>
+                                            </td>
+                                            <td style="padding: 7px 6px; text-align: right;">
+                                                <span t-field="line.base_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                            <td style="padding: 7px 6px; text-align: right; color: #dc2626;">
+                                                <span t-field="line.discount_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                            <td style="padding: 7px 6px; text-align: right; font-weight: 600;">
+                                                <span t-field="line.room_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                            <td style="padding: 7px 6px; text-align: center;">
+                                                <span t-field="line.commission_percentage"/>%
+                                            </td>
+                                            <td style="padding: 7px 6px; text-align: right; font-weight: 700; color: #0f766e;">
+                                                <span t-field="line.commission_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- ================================================= -->
+                        <!-- TOTALS SUMMARY SECTION                            -->
+                        <!-- ================================================= -->
+                        <div class="row justify-content-end mt-3">
+                            <div class="col-5">
+                                <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding: 4px 6px; color: #4b5563;">Total Base Amount:</td>
+                                        <td style="padding: 4px 6px; text-align: right; font-weight: 600;">
+                                            <span t-field="o.total_base_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="o.total_discount_amount">
+                                        <td style="padding: 4px 6px; color: #dc2626;">Total Discounts:</td>
+                                        <td style="padding: 4px 6px; text-align: right; color: #dc2626; font-weight: 600;">
+                                            -<span t-field="o.total_discount_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 4px 6px; color: #4b5563;">Total Net Room Amount:</td>
+                                        <td style="padding: 4px 6px; text-align: right; font-weight: 600;">
+                                            <span t-field="o.total_room_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                    <tr style="border-top: 2px solid #0f766e; background-color: #f0fdfa;">
+                                        <td style="padding: 8px 6px; font-size: 13px; font-weight: 700; color: #0f766e;">
+                                            Total Commission:
+                                        </td>
+                                        <td style="padding: 8px 6px; text-align: right; font-size: 14px; font-weight: 700; color: #0f766e;">
+                                            <span t-field="o.total_commission_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ================================================= -->
+                        <!-- NOTES / REMARKS                                   -->
+                        <!-- ================================================= -->
+                        <div t-if="o.notes" class="mt-4"
+                             style="border-top: 1px solid #e5e7eb; padding-top: 10px; font-size: 11.5px; color: #4b5563;">
+                            <strong>Notes &amp; Remarks:</strong>
+                            <p style="margin: 4px 0 0;" t-field="o.notes"/>
+                        </div>
+
+                        <!-- ================================================= -->
+                        <!-- FOOTER SIGNATURE & ACKNOWLEDGEMENT                -->
+                        <!-- ================================================= -->
+                        <div class="row mt-5" style="border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                            <div class="col-6">
+                                <div style="font-size: 11px; color: #9ca3af;">Prepared By:</div>
+                                <div style="margin-top: 30px; border-top: 1px dashed #d1d5db; width: 70%;"></div>
+                                <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Hotel Accounts Department</div>
+                            </div>
+                            <div class="col-6 text-end">
+                                <div style="font-size: 11px; color: #9ca3af;">Agent Acknowledged:</div>
+                                <div style="margin-top: 30px; border-top: 1px dashed #d1d5db; width: 70%; margin-left: auto;"></div>
+                                <div style="font-size: 11px; color: #6b7280; margin-top: 4px;"><span t-field="o.agent_id.name"/></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

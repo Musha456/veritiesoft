@@ -1,0 +1,81 @@
+.o_hotel_dashboard {
+    background-color: #f8fafc;
+    min-height: 100%;
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .o_hotel_icon_badge {
+        width: 48px;
+        height: 48px;
+    }
+
+    /* KPI Cards */
+    .o_kpi_card {
+        border-top: 4px solid transparent !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+        }
+
+        &.o_card_occupancy {
+            border-top-color: #3b82f6 !important;
+        }
+        &.o_card_adr {
+            border-top-color: #10b981 !important;
+        }
+        &.o_card_revpar {
+            border-top-color: #8b5cf6 !important;
+        }
+        &.o_card_revenue {
+            border-top-color: #f59e0b !important;
+        }
+        &.o_card_balance {
+            border-top-color: #ef4444 !important;
+        }
+    }
+
+    .o_kpi_icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+
+    /* Action Cards */
+    .o_action_card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+        }
+
+        .o_action_avatar {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    /* Purple color helper classes */
+    .bg-purple-subtle {
+        background-color: #f3e8ff !important;
+    }
+    .text-purple {
+        color: #8b5cf6 !important;
+    }
+    .border-purple-subtle {
+        border-color: #e9d5ff !important;
+    }
+    .text-purple-emphasis {
+        color: #6b21a8 !important;
+    }
+}

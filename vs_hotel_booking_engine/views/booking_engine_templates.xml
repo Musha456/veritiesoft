@@ -1,0 +1,766 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Fallback if No Hotel is Available -->
+    <template id="no_hotels_available" name="No Hotels Available">
+        <t t-call="website.layout">
+            <div class="container py-5 text-center">
+                <i class="fa fa-hotel fa-4x text-muted mb-3"/>
+                <h3>No Hotel Properties Available</h3>
+                <p class="text-muted">Please contact front desk administration or check back shortly.</p>
+            </div>
+        </t>
+    </template>
+
+    <!-- Main Dynamic Online Booking Engine Page -->
+    <template id="booking_page" name="Hotel Online Booking Engine">
+        <t t-call="website.layout">
+            <div class="o_hotel_booking_engine" t-att-style="theme_style">
+
+                <!-- =========================================================
+                     1. HERO BANNER WITH DYNAMIC IMAGERY & ADVANCED SEARCH CARD
+                ========================================================== -->
+                <div class="o_hotel_hero_container position-relative overflow-hidden"
+                     t-att-style="'background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.75)), url(' + (hero_img_url or '/vs_hotel_booking_engine/static/src/img/luxury_hero.jpg') + ') center/cover no-repeat; min-height: 480px;'">
+                    <div class="container py-5 text-white position-relative" style="z-index: 2;">
+                        <!-- Hotel Identity Header -->
+                        <div class="row justify-content-center text-center pt-3 pb-4">
+                            <div class="col-12 col-lg-9">
+                                <t t-if="hotel.logo">
+                                    <img t-att-src="'/web/image/hotel.hotel/%s/logo' % hotel.id"
+                                         class="o_hotel_hero_logo shadow-sm mb-3"
+                                         alt="Hotel Logo"
+                                         style="max-height: 70px; background: white; padding: 6px 16px; border-radius: 8px;"/>
+                                </t>
+                                <h1 class="display-5 fw-bold text-white mb-2 text-shadow-sm">
+                                    <t t-out="hero_title"/>
+                                </h1>
+                                <p class="lead text-white-50 mb-0 mx-auto" style="max-width: 680px;">
+                                    <t t-out="hero_subtitle"/>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Floating Booking Filter Card -->
+                        <div class="card border-0 shadow-lg rounded-4 p-3 p-md-4 o_hero_search_card mx-auto mt-2"
+                             style="max-width: 1050px; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px);">
+                            <div class="row g-3 align-items-end">
+                                <!-- Hotel Property Selector -->
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label text-dark fw-bold small text-uppercase tracking-wider mb-1">
+                                        <i class="fa fa-map-marker text-hotel-primary me-1"/> Destination / Hotel
+                                    </label>
+                                    <select class="form-select border-1 rounded-3 shadow-none fw-semibold" id="booking_hotel_id">
+                                        <t t-foreach="hotels" t-as="h">
+                                            <option t-att-value="h.id" t-att-selected="h.id == hotel.id">
+                                                <t t-out="h.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <!-- Check-in Date -->
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label text-dark fw-bold small text-uppercase tracking-wider mb-1">
+                                        <i class="fa fa-calendar-check-o text-hotel-primary me-1"/> Check-In
+                                    </label>
+                                    <input type="date" class="form-control rounded-3 shadow-none fw-semibold"
+                                           id="booking_check_in" t-att-value="default_check_in"/>
+                                </div>
+
+                                <!-- Check-out Date -->
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label text-dark fw-bold small text-uppercase tracking-wider mb-1">
+                                        <i class="fa fa-calendar-times-o text-hotel-primary me-1"/> Departure
+                                    </label>
+                                    <input type="date" class="form-control rounded-3 shadow-none fw-semibold"
+                                           id="booking_check_out" t-att-value="default_check_out"/>
+                                </div>
+
+                                <!-- Guests (Adults & Children) -->
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label text-dark fw-bold small text-uppercase tracking-wider mb-1">
+                                        <i class="fa fa-users text-hotel-primary me-1"/> Guests
+                                    </label>
+                                    <div class="input-group">
+                                        <select class="form-select border-1 rounded-3 shadow-none fw-semibold" id="booking_guests_select">
+                                            <option value="1_0" t-att-selected="default_adults == 1">1 Adult</option>
+                                            <option value="2_0" t-att-selected="default_adults == 2 and default_children == 0">2 Adults</option>
+                                            <option value="2_1" t-att-selected="default_adults == 2 and default_children == 1">2 Adults, 1 Child</option>
+                                            <option value="2_2" t-att-selected="default_adults == 2 and default_children == 2">2 Adults, 2 Children</option>
+                                            <option value="3_0" t-att-selected="default_adults == 3">3 Adults</option>
+                                            <option value="4_0" t-att-selected="default_adults == 4">4 Adults</option>
+                                        </select>
+                                    </div>
+                                    <input type="hidden" id="booking_adults" t-att-value="default_adults"/>
+                                    <input type="hidden" id="booking_children" t-att-value="default_children"/>
+                                </div>
+
+                                <!-- Currency Switcher -->
+                                <div class="col-6 col-md-1">
+                                    <label class="form-label text-dark fw-bold small text-uppercase tracking-wider mb-1">
+                                        <i class="fa fa-money text-hotel-primary me-1"/> Curr.
+                                    </label>
+                                    <select class="form-select border-1 rounded-3 shadow-none fw-semibold px-2" id="booking_currency_select">
+                                        <t t-foreach="currencies" t-as="c">
+                                            <option t-att-value="c.id" t-att-selected="c.id == current_currency.id">
+                                                <t t-out="c.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <!-- Search Action Button -->
+                                <div class="col-12 col-md-2">
+                                    <button class="btn btn-hotel-primary w-100 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2"
+                                            id="btn_search_availability">
+                                        <i class="fa fa-search"/>
+                                        <span>Search Stays</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- =========================================================
+                     2. PROGRESSIVE BOOKING WIZARD
+                ========================================================== -->
+                <div class="container py-4">
+
+                    <!-- Progress Stepper -->
+                    <div class="o_booking_stepper px-2 px-md-5 mb-4">
+                        <div class="o_step_item active" id="step_indicator_1">
+                            <div class="o_step_circle">1</div>
+                            <div class="o_step_label">Available Rooms</div>
+                        </div>
+                        <div class="o_step_item" id="step_indicator_2">
+                            <div class="o_step_circle">2</div>
+                            <div class="o_step_label">Guest Details &amp; Services</div>
+                        </div>
+                        <div class="o_step_item" id="step_indicator_3">
+                            <div class="o_step_circle">3</div>
+                            <div class="o_step_label">Terms &amp; Confirmation</div>
+                        </div>
+                    </div>
+
+                    <!-- Global Error Alert -->
+                    <div class="alert alert-danger d-none shadow-sm rounded-3" id="booking_error_alert" role="alert"/>
+
+                    <!-- STEP 1: ROOM TYPES SHOWCASE & ROOM SELECTOR -->
+                    <div id="step1_room_showcase">
+                        <!-- Loading State -->
+                        <div class="text-center py-5 d-none" id="categories_loading_spinner">
+                            <div class="spinner-border text-hotel-primary" role="status">
+                                <span class="visually-hidden">Loading available rooms...</span>
+                            </div>
+                            <div class="mt-2 text-muted fw-semibold">Checking operational room inventory &amp; best rates...</div>
+                        </div>
+
+                        <!-- Sticky Cart Bar if Rooms Selected -->
+                        <div class="card border-0 shadow-sm rounded-3 p-3 mb-4 bg-light d-none" id="selected_rooms_summary_bar">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                                <div>
+                                    <span class="badge bg-hotel-primary fs-6 me-2" id="selected_rooms_count_badge">0 Rooms Selected</span>
+                                    <span class="text-muted fw-semibold" id="selected_rooms_nights_label">for stay</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="text-end">
+                                        <small class="text-muted text-uppercase fw-bold d-block">Estimated Total</small>
+                                        <h4 class="mb-0 fw-bold text-hotel-primary" id="selected_rooms_total_display">$0.00</h4>
+                                    </div>
+                                    <button class="btn btn-hotel-primary px-4 py-2 rounded-3 fw-bold shadow-sm" id="btn_goto_step2">
+                                        Proceed to Guest Details &#8594;
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Room Types Grid -->
+                        <div class="row g-4" id="room_categories_container">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: GUEST DETAILS & ADD-ON SERVICES -->
+                    <div class="d-none" id="step2_guest_and_services">
+                        <div class="row g-4">
+                            <!-- Left: Guest Information & Add-on Services -->
+                            <div class="col-12 col-lg-8">
+                                <!-- Guest Contact Info Card -->
+                                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                                    <h4 class="fw-bold text-dark mb-3">
+                                        <i class="fa fa-user-circle text-hotel-primary me-2"/>Primary Guest Information
+                                    </h4>
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label fw-semibold">Full Legal Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control rounded-3" id="guest_name"
+                                                   t-att-value="partner.name if partner else ''" placeholder="John Doe" required="required"/>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                                            <input type="email" class="form-control rounded-3" id="guest_email"
+                                                   t-att-value="partner.email if partner else ''" placeholder="john@example.com" required="required"/>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label fw-semibold">Mobile / WhatsApp Number <span class="text-danger">*</span></label>
+                                            <input type="tel" class="form-control rounded-3" id="guest_phone"
+                                                   t-att-value="partner.phone if partner else ''" placeholder="+1 555-0199" required="required"/>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label fw-semibold">Country of Residence</label>
+                                            <select class="form-select rounded-3" id="guest_country_id">
+                                                <t t-foreach="countries" t-as="c">
+                                                    <option t-att-value="c.id" t-att-selected="partner and partner.country_id.id == c.id">
+                                                        <t t-out="c.name"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label fw-semibold">Identification Document Type <span class="text-danger">*</span></label>
+                                            <select class="form-select rounded-3" id="guest_id_type">
+                                                <option value="national_id" t-att-selected="not partner or not partner.id_type or partner.id_type == 'national_id'">National ID / CNIC</option>
+                                                <option value="passport" t-att-selected="partner and partner.id_type == 'passport'">Passport</option>
+                                                <option value="driving_license" t-att-selected="partner and partner.id_type == 'driving_license'">Driving License</option>
+                                                <option value="other" t-att-selected="partner and partner.id_type == 'other'">Other Official ID</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label fw-semibold">ID / Passport Number <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control rounded-3" id="guest_id_number"
+                                                   t-att-value="partner.id_number if partner else ''"
+                                                   placeholder="e.g. 42101-1234567-1 or P1234567" required="required"/>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold">Special Requests / Preferences</label>
+                                            <textarea class="form-control rounded-3" id="guest_special_requests" rows="2"
+                                                      placeholder="High floor, quiet room, late check-in notice, dietary preferences..."/>
+                                        </div>
+                                    </div>
+
+                                    <!-- Accompanying Guests Dynamic Accordion -->
+                                    <div class="mt-4 pt-3 border-top">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <h6 class="mb-0 fw-bold">Accompanying Guests (Optional)</h6>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="btn_add_accompanying_guest">
+                                                <i class="fa fa-plus me-1"/> Add Guest
+                                            </button>
+                                        </div>
+                                        <div id="accompanying_guests_container"/>
+                                    </div>
+                                </div>
+
+                                <!-- Add-on Services Checklist Card -->
+                                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" id="addon_services_card">
+                                    <h4 class="fw-bold text-dark mb-1">
+                                        <i class="fa fa-plus-circle text-hotel-primary me-2"/>Enhance Your Stay (Add-on Services)
+                                    </h4>
+                                    <p class="text-muted small mb-3">Optional amenities and bespoke hospitality services charged to your room folio.</p>
+                                    
+                                    <div class="row g-3" id="addon_services_container">
+                                        <!-- Dynamically populated from active hotel services -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Sticky Order Summary & Price Breakdown -->
+                            <div class="col-12 col-lg-4">
+                                <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 20px;">
+                                    <h5 class="fw-bold text-dark mb-3">Stay Summary</h5>
+
+                                    <!-- Selected Rooms Preview -->
+                                    <div class="border-bottom pb-3 mb-3" id="order_summary_rooms_list"/>
+
+                                    <!-- Selected Services Preview -->
+                                    <div class="border-bottom pb-3 mb-3 d-none" id="order_summary_services_list">
+                                        <small class="text-muted fw-bold text-uppercase d-block mb-2">Selected Services</small>
+                                        <div id="order_summary_services_items"/>
+                                    </div>
+
+                                    <!-- Calculations -->
+                                    <div class="d-flex justify-content-between mb-2 text-muted small">
+                                        <span>Stay Duration:</span>
+                                        <span class="fw-semibold text-dark" id="summary_nights_count">0 Nights</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2 text-muted small">
+                                        <span>Accommodation:</span>
+                                        <span class="fw-semibold text-dark" id="summary_rooms_subtotal">$0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2 text-muted small">
+                                        <span>Add-on Services:</span>
+                                        <span class="fw-semibold text-dark" id="summary_services_subtotal">$0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-3 text-muted small">
+                                        <span>Taxes &amp; Tourism Levies:</span>
+                                        <span class="fw-semibold text-dark">Included</span>
+                                    </div>
+
+                                    <div class="border-top pt-3 d-flex justify-content-between align-items-baseline mb-4">
+                                        <span class="fs-5 fw-bold text-dark">Estimated Total:</span>
+                                        <h3 class="fw-bold text-hotel-primary mb-0" id="summary_grand_total">$0.00</h3>
+                                    </div>
+
+                                    <!-- Cancellation Policy Alert Badge -->
+                                    <div class="p-3 bg-light rounded-3 mb-3 border">
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <i class="fa fa-shield text-success"/>
+                                            <span class="fw-bold small text-dark">Cancellation Policy</span>
+                                        </div>
+                                        <small class="text-muted d-block" id="summary_cancellation_text">
+                                            Flexible cancellation available through your self-service guest portal up to 24 hours prior to arrival.
+                                        </small>
+                                    </div>
+
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-hotel-primary py-2 rounded-3 fw-bold" id="btn_goto_step3">
+                                            Review Terms &amp; Confirm &#8594;
+                                        </button>
+                                        <button class="btn btn-outline-secondary py-2 rounded-3 btn-sm" id="btn_backto_step1">
+                                            &#8592; Back to Room Selection
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: TERMS & CONFIRMATION / ADVANCE PAYMENT -->
+                    <div class="d-none" id="step3_review_and_confirm">
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-lg-8">
+                                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                                    <h4 class="fw-bold text-dark mb-3">
+                                        <i class="fa fa-check-square-o text-hotel-primary me-2"/>Confirm Reservation Request
+                                    </h4>
+
+                                    <!-- Review Notice -->
+                                    <div class="alert alert-info rounded-3 mb-4">
+                                        <i class="fa fa-info-circle me-1"/>
+                                        Your booking will be placed as a <strong>Confirmed Stay Request</strong>. Our front desk team will prepare your room allocation and send your final welcome voucher.
+                                    </div>
+
+                                    <!-- Payment Options (Conditional based on hotel advance deposit policy) -->
+                                    <div class="mb-4" id="advance_payment_options_block">
+                                        <h6 class="fw-bold text-dark mb-2">Payment Policy &amp; Options</h6>
+                                        <div class="row g-3">
+                                            <div class="col-12 col-md-6">
+                                                <div class="form-check p-3 border rounded-3 h-100 o_payment_choice_card cursor-pointer">
+                                                    <input class="form-check-input ms-0 me-2" type="radio" name="payment_choice_radio" id="pay_choice_hotel" value="pay_at_hotel" checked="checked"/>
+                                                    <label class="form-check-label fw-bold text-dark" for="pay_choice_hotel">
+                                                        Pay Full at Hotel (Upon Arrival)
+                                                    </label>
+                                                    <small class="text-muted d-block mt-1">No upfront charge today. Settle your room and services bill at check-in or check-out.</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-6" id="advance_deposit_card_wrapper">
+                                                <div class="form-check p-3 border rounded-3 h-100 o_payment_choice_card cursor-pointer">
+                                                    <input class="form-check-input ms-0 me-2" type="radio" name="payment_choice_radio" id="pay_choice_advance" value="advance"/>
+                                                    <label class="form-check-label fw-bold text-dark" for="pay_choice_advance">
+                                                        Pay Advance Deposit Online (<span id="advance_percentage_label">30%</span>)
+                                                    </label>
+                                                    <small class="text-muted d-block mt-1">
+                                                        Deposit amount: <strong class="text-hotel-primary" id="advance_deposit_amount_display">$0.00</strong>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Terms & Agreement Checkbox -->
+                                    <div class="form-check mb-4 p-3 bg-light rounded-3 border">
+                                        <input class="form-check-input ms-0 me-2" type="checkbox" id="terms_agree_checkbox"/>
+                                        <label class="form-check-label fw-semibold text-dark small" for="terms_agree_checkbox">
+                                            I agree to the hotel check-in/check-out policies, room damage conditions, and cancellation terms. I confirm all guest identification details provided are accurate.
+                                        </label>
+                                    </div>
+
+                                    <!-- Final Action Buttons -->
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <button class="btn btn-outline-secondary rounded-3" id="btn_backto_step2">
+                                            &#8592; Back to Guest Details
+                                        </button>
+                                        <button class="btn btn-hotel-primary px-5 py-3 rounded-3 fw-bold shadow" id="btn_submit_final_booking">
+                                            <span class="spinner-border spinner-border-sm me-2 d-none" id="submit_spinner"/>
+                                            <span>Confirm Booking Request</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- =========================================================
+                     MODAL POPUP: SPECIFIC ROOM SELECTION WINDOW
+                ========================================================== -->
+                <div class="modal fade" id="room_selection_modal" tabindex="-1" aria-labelledby="roomSelectionModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content rounded-4 border-0 shadow">
+                            <div class="modal-header border-bottom py-3">
+                                <div>
+                                    <h5 class="modal-title fw-bold text-dark" id="modal_category_title">Select Room(s)</h5>
+                                    <small class="text-muted" id="modal_category_subtitle">Choose one or multiple specific available rooms</small>
+                                </div>
+                                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"/>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="alert alert-light border rounded-3 mb-3 d-flex align-items-center justify-content-between">
+                                    <span class="small text-muted">Nightly Rate: <strong class="text-hotel-primary" id="modal_category_price">$0.00</strong></span>
+                                    <a href="#" class="btn btn-sm btn-outline-primary rounded-pill fw-semibold" id="modal_view_details_btn" target="_blank">
+                                        <i class="fa fa-external-link me-1"/> View Room Details &amp; Gallery
+                                    </a>
+                                </div>
+
+                                <div class="row g-3" id="modal_rooms_list_container">
+                                    <!-- Populated dynamically with room checkboxes -->
+                                </div>
+                            </div>
+                            <div class="modal-footer border-top py-3 justify-content-between">
+                                <span class="small fw-semibold text-muted" id="modal_selection_counter">0 room(s) selected</span>
+                                <div>
+                                    <button type="button" class="btn btn-secondary rounded-3 me-2" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-hotel-primary px-4 rounded-3 fw-bold" id="btn_modal_confirm_rooms">
+                                        Done / Add Selected Rooms
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+    <!-- Dedicated Room Details, Carousel Gallery & Reviews Page (Opens in New Tab) -->
+    <template id="room_detail_showcase_page" name="Hotel Room Details &amp; Gallery">
+        <t t-call="website.layout">
+            <div class="o_hotel_room_showcase py-4" t-att-style="theme_style">
+                <div class="container">
+                    
+                    <!-- Breadcrumbs -->
+                    <nav aria-label="breadcrumb" class="mb-3">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/hotel">Home</a></li>
+                            <li class="breadcrumb-item"><a href="/hotel/book">Rooms</a></li>
+                            <li class="breadcrumb-item active" aria-current="page"><t t-out="category.name"/></li>
+                        </ol>
+                    </nav>
+
+                    <div class="row g-4 mb-5">
+                        <!-- Left: High-Resolution Carousel Image Gallery -->
+                        <div class="col-12 col-lg-7">
+                            <div id="roomCarousel" class="carousel slide rounded-4 overflow-hidden shadow-sm" data-bs-ride="carousel">
+                                <div class="carousel-indicators">
+                                    <t t-foreach="images" t-as="img">
+                                        <button type="button" data-bs-target="#roomCarousel"
+                                                t-att-data-bs-slide-to="img_index"
+                                                t-att-class="'active' if img_index == 0 else ''"
+                                                t-att-aria-label="'Slide ' + str(img_index + 1)"/>
+                                    </t>
+                                </div>
+                                <div class="carousel-inner" style="height: 440px; background-color: #0f172a;">
+                                    <t t-foreach="images" t-as="img">
+                                        <div t-att-class="'carousel-item h-100 ' + ('active' if img_index == 0 else '')">
+                                            <img t-att-src="img['url']" class="d-block w-100 h-100" style="object-fit: cover;" t-att-alt="img['caption']"/>
+                                            <t t-if="img['caption']">
+                                                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-3 py-1 px-3">
+                                                    <p class="mb-0 small"><t t-out="img['caption']"/></p>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </t>
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#roomCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"/>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#roomCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"/>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Right: Specifications & Key Attributes -->
+                        <div class="col-12 col-lg-5">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge bg-hotel-primary px-3 py-2 fs-6 rounded-pill">
+                                        <t t-out="category.name"/>
+                                    </span>
+                                    <div class="d-flex align-items-center gap-1 text-warning">
+                                        <i class="fa fa-star"/>
+                                        <strong class="text-dark"><t t-out="rating_avg"/></strong>
+                                        <small class="text-muted">(<t t-out="review_count"/> reviews)</small>
+                                    </div>
+                                </div>
+
+                                <h2 class="fw-bold text-dark mt-2 mb-3">
+                                    <t t-if="room"><t t-out="room.display_name"/></t>
+                                    <t t-else=""><t t-out="category.name"/></t>
+                                </h2>
+
+                                <div class="mb-3">
+                                    <span class="text-muted small">Standard Rate from:</span>
+                                    <h3 class="fw-bold text-hotel-primary mb-0">
+                                        <t t-out="hotel.currency_id.symbol"/><t t-out="category.base_price"/>
+                                        <small class="text-muted fs-6 fw-normal">/ night</small>
+                                    </h3>
+                                </div>
+
+                                <p class="text-muted mb-4"><t t-out="category.description or 'Experience the finest comfort and luxury hospitality with our premium room design and modern amenities.'"/></p>
+
+                                <!-- Technical Attributes Grid -->
+                                <div class="row g-2 mb-4">
+                                    <div class="col-6">
+                                        <div class="p-2 border rounded-3 bg-light text-center">
+                                            <i class="fa fa-arrows-alt text-muted mb-1 d-block"/>
+                                            <small class="text-muted d-block">Room Size</small>
+                                            <strong class="text-dark"><t t-out="category.room_size or '35'"/> sq.m</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-2 border rounded-3 bg-light text-center">
+                                            <i class="fa fa-bed text-muted mb-1 d-block"/>
+                                            <small class="text-muted d-block">Bed Type</small>
+                                            <strong class="text-dark"><t t-out="category.bed_type_id.name if category.bed_type_id else 'King Size'"/></strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-2 border rounded-3 bg-light text-center">
+                                            <i class="fa fa-user text-muted mb-1 d-block"/>
+                                            <small class="text-muted d-block">Max Adults</small>
+                                            <strong class="text-dark"><t t-out="category.max_adults or 2"/> Persons</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-2 border rounded-3 bg-light text-center">
+                                            <i class="fa fa-child text-muted mb-1 d-block"/>
+                                            <small class="text-muted d-block">Max Children</small>
+                                            <strong class="text-dark"><t t-out="category.max_children or 0"/> Children</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <a href="/hotel/book" class="btn btn-hotel-primary py-3 rounded-3 fw-bold text-center">
+                                    Book This Room Type Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Amenities Section -->
+                    <div class="card border-0 shadow-sm rounded-4 p-4 mb-5">
+                        <h4 class="fw-bold text-dark mb-3">Room Amenities &amp; Features</h4>
+                        <div class="row g-3">
+                            <t t-foreach="category.amenity_ids" t-as="am">
+                                <div class="col-6 col-md-4 col-lg-3">
+                                    <div class="d-flex align-items-center gap-2 p-2 border rounded-3">
+                                        <i class="fa fa-check text-success"/>
+                                        <span class="text-dark small fw-semibold"><t t-out="am.name"/></span>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Customer Reviews & Ratings System -->
+                    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3">
+                            <div>
+                                <h4 class="fw-bold text-dark mb-0">Guest Reviews &amp; Ratings</h4>
+                                <small class="text-muted">Verified feedback from guests who stayed in this room</small>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <h2 class="mb-0 fw-bold text-hotel-primary"><t t-out="rating_avg"/></h2>
+                                <div>
+                                    <div class="text-warning small">
+                                        <i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/>
+                                    </div>
+                                    <small class="text-muted"><t t-out="review_count"/> verified reviews</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reviews List -->
+                        <div class="row g-3 mb-4">
+                            <t t-if="not reviews">
+                                <div class="col-12 text-center py-4 text-muted">
+                                    <i class="fa fa-comments-o fa-2x mb-2 d-block opacity-50"/>
+                                    No reviews submitted yet. Be the first to share your experience!
+                                </div>
+                            </t>
+                            <t t-foreach="reviews" t-as="rev">
+                                <div class="col-12 col-md-6">
+                                    <div class="p-3 border rounded-3 bg-light h-100">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <strong class="text-dark"><t t-out="rev.guest_name"/></strong>
+                                            <div class="text-warning small">
+                                                <t t-foreach="range(rev.rating)" t-as="star">
+                                                    <i class="fa fa-star"/>
+                                                </t>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted d-block mb-2"><t t-out="rev.review_date"/></small>
+                                        <h6 class="fw-bold mb-1 text-dark"><t t-out="rev.name"/></h6>
+                                        <p class="small text-muted mb-0"><t t-out="rev.comment"/></p>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- Write a Review Form -->
+                        <div class="border-top pt-4">
+                            <h5 class="fw-bold text-dark mb-3">Leave a Review</h5>
+                            <form id="submit_review_form" t-att-data-category-id="category.id">
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label small fw-semibold">Your Name *</label>
+                                        <input type="text" class="form-control form-control-sm rounded-3" id="rev_author_name" required="required"/>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label small fw-semibold">Your Email</label>
+                                        <input type="email" class="form-control form-control-sm rounded-3" id="rev_author_email"/>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label small fw-semibold">Rating (1 to 5 Stars) *</label>
+                                        <select class="form-select form-select-sm rounded-3" id="rev_rating_stars">
+                                            <option value="5" selected="selected">5 Stars - Outstanding</option>
+                                            <option value="4">4 Stars - Very Good</option>
+                                            <option value="3">3 Stars - Average</option>
+                                            <option value="2">2 Stars - Disappointing</option>
+                                            <option value="1">1 Star - Poor</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label small fw-semibold">Review Headline</label>
+                                        <input type="text" class="form-control form-control-sm rounded-3" id="rev_title" placeholder="Wonderful ocean view and superb comfort"/>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label small fw-semibold">Your Feedback / Comments *</label>
+                                        <textarea class="form-control form-control-sm rounded-3" id="rev_comment" rows="3" required="required" placeholder="Share your experience regarding cleanliness, amenities, and service..."/>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-hotel-primary btn-sm px-4 rounded-3 fw-bold" id="btn_submit_review">
+                                            Submit Review
+                                        </button>
+                                        <span class="ms-2 small text-success d-none" id="review_success_msg">
+                                            <i class="fa fa-check-circle"/> Review submitted!
+                                        </span>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Booking Confirmation & Success Voucher Screen -->
+    <template id="booking_confirmation_page" name="Hotel Booking Confirmation">
+        <t t-call="website.layout">
+            <div class="o_hotel_confirmation_page py-5" t-att-style="theme_style">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-lg-8">
+                            
+                            <!-- Success Banner -->
+                            <div class="card border-0 shadow rounded-4 overflow-hidden mb-4 text-center">
+                                <div class="bg-hotel-primary text-white p-4">
+                                    <div class="rounded-circle bg-white text-hotel-primary d-inline-flex align-items-center justify-content-center mb-3 shadow"
+                                         style="width: 72px; height: 72px;">
+                                        <i class="fa fa-check fa-2x"/>
+                                    </div>
+                                    <h2 class="fw-bold mb-1">Thank You for Staying With Us!</h2>
+                                    <p class="mb-0 text-white-50">We have received your booking request and are preparing your stay.</p>
+                                </div>
+
+                                <div class="card-body p-4 text-start">
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-6 col-md-3">
+                                            <small class="text-muted d-block text-uppercase fw-bold">Reservation Code</small>
+                                            <h5 class="fw-bold text-dark mb-0"><t t-out="reservation.name"/></h5>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <small class="text-muted d-block text-uppercase fw-bold">Status</small>
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fs-6">
+                                                <t t-out="reservation.state.capitalize()"/>
+                                            </span>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <small class="text-muted d-block text-uppercase fw-bold">Check-In</small>
+                                            <span class="fw-semibold text-dark"><t t-out="reservation.check_in"/></span>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <small class="text-muted d-block text-uppercase fw-bold">Check-Out</small>
+                                            <span class="fw-semibold text-dark"><t t-out="reservation.check_out"/></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Booked Rooms Table -->
+                                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Booked Rooms Allocation</h6>
+                                    <div class="table-responsive mb-4">
+                                        <table class="table table-sm align-middle">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Room</th>
+                                                    <th>Category</th>
+                                                    <th>Nights</th>
+                                                    <th class="text-end">Room Rate</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="reservation.line_ids" t-as="l">
+                                                    <tr>
+                                                        <td>
+                                                            <strong class="text-hotel-primary"><t t-out="l.room_id.room_number"/></strong>
+                                                            <small class="text-muted d-block"><t t-out="l.building_id.name if l.building_id else ''"/></small>
+                                                        </td>
+                                                        <td><t t-out="l.room_category_id.name"/></td>
+                                                        <td><t t-out="l.night_count"/> Nights</td>
+                                                        <td class="text-end fw-bold">
+                                                            <t t-out="reservation.currency_id.symbol"/><t t-out="l.room_price"/>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Stay Instructions Notice -->
+                                    <div class="p-3 bg-light rounded-3 border mb-4">
+                                        <h6 class="fw-bold text-dark mb-1"><i class="fa fa-info-circle text-hotel-primary me-1"/> Next Steps &amp; Stay Instructions</h6>
+                                        <p class="small text-muted mb-0">
+                                            A confirmation summary email has been queued to your email address (<strong><t t-out="reservation.partner_id.email"/></strong>).
+                                            Please present your identification document (<strong><t t-out="reservation.partner_id.id_type or 'National ID'"/>: <t t-out="reservation.partner_id.id_number or ''"/></strong>) at reception during check-in.
+                                        </p>
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                        <a t-attf-href="/my/reservation/{{ reservation.id }}" class="btn btn-hotel-primary px-4 py-2 rounded-3 fw-bold">
+                                            <i class="fa fa-user me-1"/> View in Guest Portal
+                                        </a>
+                                        <a t-attf-href="/my/reservation/{{ reservation.id }}/voucher" class="btn btn-outline-secondary px-4 py-2 rounded-3 fw-semibold">
+                                            <i class="fa fa-file-pdf-o me-1"/> Download PDF Voucher
+                                        </a>
+                                        <a href="/hotel" class="btn btn-link text-decoration-none">Return to Homepage</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

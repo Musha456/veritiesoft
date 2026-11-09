@@ -154,4 +154,26 @@
         <field name="company_id" eval="False"/>
     </record>
 
+
+    <!-- ================= Task Inspection Sequence ================= -->
+
+    <record id="seq_hotel_task_inspection" model="ir.sequence">
+        <field name="name">Hotel Task Inspection</field>
+        <field name="code">hotel.task.inspection</field>
+        <field name="prefix">INSP/%(year)s-</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- ================= Agent Commission Sequence ================= -->
+
+    <record id="seq_hotel_agent_commission" model="ir.sequence">
+        <field name="name">Hotel Agent Commission</field>
+        <field name="code">hotel.agent.commission</field>
+        <field name="prefix">COMM/%(year)s-</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
 </odoo>

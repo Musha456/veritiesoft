@@ -197,6 +197,13 @@ class HotelBedType(models.Model):
         default=True,
     )
 
+    icon = fields.Image(
+        string="Icon",
+        max_width=128,
+        max_height=128,
+        help="Compact icon representation of the bed type for room cards.",
+    )
+
     image = fields.Image(
         string="Image",
         max_width=256,

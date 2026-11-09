@@ -76,6 +76,7 @@ class HotelRoom(models.Model):
     )
 
     bed_type_id = fields.Many2one(related='room_category_id.bed_type_id')
+    bed_type_icon = fields.Image(related='room_category_id.bed_type_id.icon', string="Bed Type Icon")
     bed_count = fields.Integer(related='room_category_id.bed_count')
     room_size = fields.Float(related='room_category_id.room_size')
     room_size_uom = fields.Selection(related='room_category_id.room_size_uom')
@@ -179,21 +180,21 @@ class HotelRoom(models.Model):
             ])
 
     def _compute_housekeeping_count(self):
-        Housekeeping = self.env["hotel.housekeeping"]
+        Housekeeping = self.env["hotel.housekeeping"].sudo()
 
         for room in self:
             room.housekeeping_count = Housekeeping.search_count([
                 ("room_id", "=", room.id),
-                ("state", "in", ("pending", "in_progress")),
+                ("state", "not in", ("done", "cancelled")),
             ])
 
     def _compute_maintenance_count(self):
-        Maintenance = self.env["hotel.maintenance"]
+        Maintenance = self.env["hotel.maintenance"].sudo()
 
         for room in self:
             room.maintenance_count = Maintenance.search_count([
                 ("room_id", "=", room.id),
-                ("state", "in", ("pending", "in_progress")),
+                ("state", "not in", ("done", "cancelled")),
             ])
 
     @api.depends("room_number", "room_category_id")
@@ -384,8 +385,47 @@ class HotelRoom(models.Model):
     # MARK AVAILABLE
     # ---------------------------------------------------------
 
+    def write(self, vals):
+        if "status" in vals and vals["status"] == "available":
+            for room in self:
+                # 1. Prevent available if occupied or reserved
+                if room.status in ("reserved", "occupied"):
+                    active_bookings = self.env["hotel.room.booking"].sudo().search_count([
+                        ("room_id", "=", room.id),
+                        ("state", "in", ("reserved", "check_in")),
+                    ])
+                    if active_bookings > 0:
+                        raise ValidationError(
+                            _("Room %s cannot be marked available because it is currently reserved or occupied.")
+                            % room.display_name
+                        )
+
+                # 2. Prevent available if active maintenance exists
+                active_maint = self.env["hotel.maintenance"].sudo().search_count([
+                    ("room_id", "=", room.id),
+                    ("state", "in", ("pending", "in_progress", "inspection_required", "revision_required")),
+                ])
+                if active_maint > 0:
+                    raise ValidationError(
+                        _("Room %s cannot be marked available while active maintenance tasks exist.")
+                        % room.display_name
+                    )
+
+                # 3. Prevent available if active housekeeping exists
+                active_hk = self.env["hotel.housekeeping"].sudo().search_count([
+                    ("room_id", "=", room.id),
+                    ("state", "in", ("pending", "in_progress", "inspection_required", "revision_required")),
+                ])
+                if active_hk > 0:
+                    raise ValidationError(
+                        _("Room %s cannot be marked available while active housekeeping tasks exist.")
+                        % room.display_name
+                    )
+
+        return super().write(vals)
+
     def action_mark_available(self):
-        Housekeeping = self.env["hotel.housekeeping"]
+        Housekeeping = self.env["hotel.housekeeping"].sudo()
 
         for room in self:
 
@@ -415,7 +455,7 @@ class HotelRoom(models.Model):
                 task = Housekeeping.search(
                     [
                         ("room_id", "=", room.id),
-                        ("state", "=", "in_progress"),
+                        ("state", "in", ("in_progress", "revision_required")),
                     ],
                     order="id desc",
                     limit=1,
@@ -433,14 +473,6 @@ class HotelRoom(models.Model):
                 return task.action_done()
 
             room.status = "available"
-
-            if room.status == "dirty":
-                raise UserError(
-                    _(
-                        "Room %s cannot be marked available because its current status is Dirty."
-                    )
-                    % room.display_name
-                )
 
         return True
 
@@ -523,7 +555,7 @@ class HotelRoom(models.Model):
     # ---------------------------------------------------------
 
     def action_finish_maintenance(self):
-        Maintenance = self.env["hotel.maintenance"]
+        Maintenance = self.env["hotel.maintenance"].sudo()
 
         for room in self:
             if room.status != "maintenance":
@@ -581,7 +613,7 @@ class HotelRoom(models.Model):
             "view_mode": "kanban,list,form",
             "domain": [
                 ("room_id", "=", self.id),
-                ("state", "in", ("pending", "in_progress")),
+                ("state", "not in", ("done", "cancelled")),
             ],
             "context": {
                 "default_room_id": self.id,
@@ -598,7 +630,7 @@ class HotelRoom(models.Model):
             "view_mode": "kanban,list,form",
             "domain": [
                 ("room_id", "=", self.id),
-                ("state", "in", ("pending", "in_progress")),
+                ("state", "not in", ("done", "cancelled")),
             ],
             "context": {
                 "default_room_id": self.id,

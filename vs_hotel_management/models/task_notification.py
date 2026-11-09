@@ -329,6 +329,17 @@ class HotelNotificationMixin(models.AbstractModel):
         if not phone or len(phone) < 8:
             return False
 
+        company = getattr(self, "company_id", False) or self.env.company
+        if "hotel.sms.service" in self.env:
+            try:
+                return self.env["hotel.sms.service"].send_sms(
+                    to_number=phone,
+                    body=message_text,
+                    company=company,
+                )
+            except Exception as e:
+                _logger.warning("hotel.sms.service failed for %s: %s", self.display_name, e)
+
         # If Odoo SMS module is installed, use sms.sms
         if "sms.sms" in self.env:
             try:
@@ -380,7 +391,7 @@ class HotelTaskNotificationMixin(models.AbstractModel):
                 continue
 
             user = task.assigned_to
-            if not user or not user.partner_id:
+            if not user:
                 continue
 
             room = task.room_id
@@ -523,7 +534,7 @@ class HotelTaskNotificationMixin(models.AbstractModel):
                 message_type="comment",
                 subtype_xmlid="mail.mt_comment",
                 email_layout_xmlid="mail.mail_notification_light",
-                partner_ids=[user.partner_id.id],
+                partner_ids=[user.id],
                 subject=subject,
             )
 
@@ -542,7 +553,7 @@ class HotelTaskNotificationMixin(models.AbstractModel):
             if ICP.get_param(config_key, "False").lower() not in ("true", "1", "yes"):
                 continue
 
-            partner = task.assigned_to.partner_id
+            partner = task.assigned_to
             phone = getattr(partner, "mobile", False) or partner.phone
 
             if not phone:
@@ -620,7 +631,7 @@ class HotelTaskNotificationMixin(models.AbstractModel):
             if ICP.get_param(config_key, "False").lower() not in ("true", "1", "yes"):
                 continue
 
-            partner = task.assigned_to.partner_id if task.assigned_to else False
+            partner = task.assigned_to if task.assigned_to else False
             if not partner:
                 continue
 
@@ -642,3 +653,259 @@ class HotelTaskNotificationMixin(models.AbstractModel):
                     getattr(task, "instruction_notes", False) or _("Please clean the room."),
                 )
             task._send_notification_sms(recipient=phone, message_text=msg)
+
+    def _notify_assigned_partner(self, event="assigned"):
+        """Alias for _notify_assigned_user — used when assigned_to is already a partner."""
+        return self._notify_assigned_user(event=event)
+
+    def _notify_inspection_required(self, inspector_partner):
+        """Notify inspector that a task requires their inspection."""
+        self.ensure_one()
+        ICP = self.env["ir.config_parameter"].sudo()
+        base_url = ICP.get_param("web.base.url", "").rstrip("/")
+
+        task_type = (
+            "housekeeping" if self._name == "hotel.housekeeping" else "maintenance"
+        )
+        task_label = (
+            _("Housekeeping Task") if task_type == "housekeeping"
+            else _("Maintenance Task")
+        )
+
+        if not inspector_partner:
+            return
+
+        room = self.room_id
+        hotel = getattr(self, "hotel_id", False)
+        if not hotel and room:
+            hotel = getattr(room, "hotel_id", False)
+
+        task_url = f"{base_url}/web#id={self.id}&model={self._name}&view_type=form"
+        subject = _("%s — Inspection Required") % task_label
+
+        body = Markup(
+            '<div style="font-family:Arial,sans-serif;max-width:600px;color:#334155;">'
+            '<div style="padding:20px;background:#fef9c3;border-bottom:3px solid #ca8a04;">'
+            '<h2 style="margin:0;color:#0f172a;">🔍 {title}</h2>'
+            '</div>'
+            '<div style="padding:20px;">'
+            '<p>{intro}</p>'
+            '<table style="width:100%;border-collapse:collapse;">'
+            '<tr><td style="padding:9px;border-bottom:1px solid #e2e8f0;"><strong>Room</strong></td>'
+            '<td style="padding:9px;border-bottom:1px solid #e2e8f0;">{room}</td></tr>'
+            '<tr><td style="padding:9px;border-bottom:1px solid #e2e8f0;"><strong>Hotel</strong></td>'
+            '<td style="padding:9px;border-bottom:1px solid #e2e8f0;">{hotel}</td></tr>'
+            '<tr><td style="padding:9px;"><strong>Assigned Staff</strong></td>'
+            '<td style="padding:9px;">{staff}</td></tr>'
+            '</table>'
+            '<div style="margin-top:26px;text-align:center;">'
+            '<a href="{url}" style="display:inline-block;background:#ca8a04;color:#ffffff;'
+            'font-family:Arial,sans-serif;font-size:14px;font-weight:600;line-height:20px;'
+            'padding:12px 28px;text-decoration:none;border-radius:6px;">'
+            'View &amp; Inspect Task &#8594;'
+            '</a></div></div></div>'
+        ).format(
+            title=escape(subject),
+            intro=escape(_("A task is ready for your inspection.")),
+            room=escape(room.display_name if room else _("Not specified")),
+            hotel=escape(hotel.name if hotel else _("Hotel")),
+            staff=escape(self.assigned_to.name if self.assigned_to else _("Not assigned")),
+            url=escape(task_url),
+        )
+
+        config_key = f"vs_hotel_management.notify_{task_type}_email"
+        if ICP.get_param(config_key, "True").lower() in ("true", "1", "yes"):
+            self.with_context(
+                mail_post_autofollow=True,
+                mail_notify_force_send=False,
+            ).message_post(
+                author_id=self.env.user.partner_id.id,
+                body=body,
+                message_type="comment",
+                subtype_xmlid="mail.mt_comment",
+                email_layout_xmlid="mail.mail_notification_light",
+                partner_ids=[inspector_partner.id],
+                subject=subject,
+            )
+
+        # WhatsApp to inspector
+        config_wa = f"vs_hotel_management.notify_{task_type}_whatsapp"
+        if ICP.get_param(config_wa, "False").lower() in ("true", "1", "yes"):
+            phone = getattr(inspector_partner, "mobile", False) or inspector_partner.phone
+            if phone:
+                recipient = "".join(c for c in phone if c.isdigit())
+                msg = _(
+                    "Inspection Required: %s for Room %s is ready for your inspection. "
+                    "Assigned staff: %s"
+                ) % (
+                    task_label,
+                    room.display_name if room else "-",
+                    self.assigned_to.name if self.assigned_to else "-",
+                )
+                self._send_whatsapp_message(
+                    recipient=recipient,
+                    message_text=msg,
+                    log_values={
+                        "recipient_id": inspector_partner.id,
+                        "task_type": task_type,
+                        "event": "inspection_required",
+                        "task_reference": f"{self._name},{self.id}",
+                    },
+                )
+
+    def _notify_inspection_passed(self):
+        """Notify assigned staff that inspection passed."""
+        self.ensure_one()
+        ICP = self.env["ir.config_parameter"].sudo()
+        base_url = ICP.get_param("web.base.url", "").rstrip("/")
+
+        task_type = (
+            "housekeeping" if self._name == "hotel.housekeeping" else "maintenance"
+        )
+        task_label = (
+            _("Housekeeping Task") if task_type == "housekeeping"
+            else _("Maintenance Task")
+        )
+
+        if not self.assigned_to:
+            return
+
+        room = self.room_id
+        task_url = f"{base_url}/web#id={self.id}&model={self._name}&view_type=form"
+        subject = _("%s — Inspection Passed ✅") % task_label
+
+        body = Markup(
+            '<div style="font-family:Arial,sans-serif;max-width:600px;color:#334155;">'
+            '<div style="padding:20px;background:#dcfce7;border-bottom:3px solid #16a34a;">'
+            '<h2 style="margin:0;color:#0f172a;">✅ {title}</h2>'
+            '</div>'
+            '<div style="padding:20px;">'
+            '<p>{intro}</p>'
+            '<p><strong>Room:</strong> {room}</p>'
+            '<div style="margin-top:20px;text-align:center;">'
+            '<a href="{url}" style="display:inline-block;background:#16a34a;color:#ffffff;'
+            'font-family:Arial,sans-serif;font-size:14px;font-weight:600;'
+            'padding:12px 28px;text-decoration:none;border-radius:6px;">'
+            'View Task &#8594;</a></div></div></div>'
+        ).format(
+            title=escape(subject),
+            intro=escape(_("Great work! Your task has passed inspection and is marked as complete.")),
+            room=escape(room.display_name if room else _("Not specified")),
+            url=escape(task_url),
+        )
+
+        config_key = f"vs_hotel_management.notify_{task_type}_email"
+        if ICP.get_param(config_key, "True").lower() in ("true", "1", "yes"):
+            self.with_context(
+                mail_post_autofollow=True,
+                mail_notify_force_send=False,
+            ).message_post(
+                author_id=self.env.user.partner_id.id,
+                body=body,
+                message_type="comment",
+                subtype_xmlid="mail.mt_comment",
+                email_layout_xmlid="mail.mail_notification_light",
+                partner_ids=[self.assigned_to.id],
+                subject=subject,
+            )
+
+        # WhatsApp to assigned staff
+        config_wa = f"vs_hotel_management.notify_{task_type}_whatsapp"
+        if ICP.get_param(config_wa, "False").lower() in ("true", "1", "yes"):
+            phone = getattr(self.assigned_to, "mobile", False) or self.assigned_to.phone
+            if phone:
+                recipient = "".join(c for c in phone if c.isdigit())
+                msg = _("Inspection Passed ✅: Your %s for Room %s has passed inspection and is now complete.") % (
+                    task_label, room.display_name if room else "-"
+                )
+                self._send_whatsapp_message(
+                    recipient=recipient,
+                    message_text=msg,
+                    log_values={
+                        "recipient_id": self.assigned_to.id,
+                        "task_type": task_type,
+                        "event": "inspection_passed",
+                        "task_reference": f"{self._name},{self.id}",
+                    },
+                )
+
+    def _notify_inspection_failed(self, remarks):
+        """Notify assigned staff that inspection failed with revision required."""
+        self.ensure_one()
+        ICP = self.env["ir.config_parameter"].sudo()
+        base_url = ICP.get_param("web.base.url", "").rstrip("/")
+
+        task_type = (
+            "housekeeping" if self._name == "hotel.housekeeping" else "maintenance"
+        )
+        task_label = (
+            _("Housekeeping Task") if task_type == "housekeeping"
+            else _("Maintenance Task")
+        )
+
+        if not self.assigned_to:
+            return
+
+        room = self.room_id
+        task_url = f"{base_url}/web#id={self.id}&model={self._name}&view_type=form"
+        subject = _("%s — Revision Required ⚠️") % task_label
+
+        body = Markup(
+            '<div style="font-family:Arial,sans-serif;max-width:600px;color:#334155;">'
+            '<div style="padding:20px;background:#fee2e2;border-bottom:3px solid #dc2626;">'
+            '<h2 style="margin:0;color:#0f172a;">⚠️ {title}</h2>'
+            '</div>'
+            '<div style="padding:20px;">'
+            '<p>{intro}</p>'
+            '<p><strong>Room:</strong> {room}</p>'
+            '<p><strong>Inspector Remarks:</strong></p>'
+            '<blockquote style="border-left:4px solid #dc2626;margin:0;padding:8px 16px;'
+            'background:#fff1f2;color:#991b1b;">{remarks}</blockquote>'
+            '<div style="margin-top:20px;text-align:center;">'
+            '<a href="{url}" style="display:inline-block;background:#dc2626;color:#ffffff;'
+            'font-family:Arial,sans-serif;font-size:14px;font-weight:600;'
+            'padding:12px 28px;text-decoration:none;border-radius:6px;">'
+            'View Task &amp; Revise &#8594;</a></div></div></div>'
+        ).format(
+            title=escape(subject),
+            intro=escape(_("Your task did not pass inspection. Please address the issues and resubmit.")),
+            room=escape(room.display_name if room else _("Not specified")),
+            remarks=escape(remarks or _("No remarks provided.")),
+            url=escape(task_url),
+        )
+
+        config_key = f"vs_hotel_management.notify_{task_type}_email"
+        if ICP.get_param(config_key, "True").lower() in ("true", "1", "yes"):
+            self.with_context(
+                mail_post_autofollow=True,
+                mail_notify_force_send=False,
+            ).message_post(
+                author_id=self.env.user.partner_id.id,
+                body=body,
+                message_type="comment",
+                subtype_xmlid="mail.mt_comment",
+                email_layout_xmlid="mail.mail_notification_light",
+                partner_ids=[self.assigned_to.id],
+                subject=subject,
+            )
+
+        # WhatsApp to assigned staff
+        config_wa = f"vs_hotel_management.notify_{task_type}_whatsapp"
+        if ICP.get_param(config_wa, "False").lower() in ("true", "1", "yes"):
+            phone = getattr(self.assigned_to, "mobile", False) or self.assigned_to.phone
+            if phone:
+                recipient = "".join(c for c in phone if c.isdigit())
+                msg = _(
+                    "Revision Required ⚠️: Your %s for Room %s requires revision. "
+                    "Remarks: %s"
+                ) % (task_label, room.display_name if room else "-", remarks or "-")
+                self._send_whatsapp_message(
+                    recipient=recipient,
+                    message_text=msg,
+                    log_values={
+                        "recipient_id": self.assigned_to.id,
+                        "task_type": task_type,
+                        "event": "inspection_failed",
+                        "task_reference": f"{self._name},{self.id}",
+                    },
+                )

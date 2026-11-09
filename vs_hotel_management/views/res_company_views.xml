@@ -36,6 +36,83 @@
                                 icon="link"/>
                     </div>
                 </page>
+
+                <page string="Hotel Notifications" name="hotel_notifications" groups="base.group_system">
+                    <group>
+                        <group string="Housekeeping Notifications">
+                            <field name="notify_housekeeping_email"/>
+                            <field name="notify_housekeeping_whatsapp"/>
+                            <field name="notify_housekeeping_sms"/>
+                        </group>
+                        <group string="Maintenance Notifications">
+                            <field name="notify_maintenance_email"/>
+                            <field name="notify_maintenance_whatsapp"/>
+                            <field name="notify_maintenance_sms"/>
+                        </group>
+                    </group>
+                </page>
+
+                <page string="SMS Gateway" name="sms_gateway" groups="base.group_system">
+                    <group>
+                        <group string="SMS Gateway Settings">
+                            <field name="enable_custom_sms"/>
+                            <field name="sms_provider"
+                                   invisible="not enable_custom_sms"/>
+                        </group>
+                    </group>
+
+                    <!-- Twilio -->
+                    <group string="Twilio Credentials"
+                           invisible="not enable_custom_sms or sms_provider != 'twilio'">
+                        <field name="sms_twilio_account_sid"/>
+                        <field name="sms_twilio_auth_token" password="True"/>
+                        <field name="sms_twilio_from_number"/>
+                    </group>
+
+                    <!-- Vonage -->
+                    <group string="Vonage (Nexmo) Credentials"
+                           invisible="not enable_custom_sms or sms_provider != 'vonage'">
+                        <field name="sms_vonage_api_key"/>
+                        <field name="sms_vonage_api_secret" password="True"/>
+                        <field name="sms_vonage_sender_id"/>
+                    </group>
+
+                    <!-- Bird -->
+                    <group string="Bird (MessageBird) Credentials"
+                           invisible="not enable_custom_sms or sms_provider != 'bird'">
+                        <field name="sms_bird_api_key" password="True"/>
+                        <field name="sms_bird_sender_id"/>
+                    </group>
+
+                    <!-- Plivo -->
+                    <group string="Plivo Credentials"
+                           invisible="not enable_custom_sms or sms_provider != 'plivo'">
+                        <field name="sms_plivo_auth_id"/>
+                        <field name="sms_plivo_auth_token" password="True"/>
+                        <field name="sms_plivo_from_number"/>
+                    </group>
+
+                    <!-- Custom HTTP -->
+                    <group string="Custom HTTP API"
+                           invisible="not enable_custom_sms or sms_provider != 'custom_http'">
+                        <field name="sms_custom_url"/>
+                        <field name="sms_custom_http_method"/>
+                        <field name="sms_custom_auth_type"/>
+                        <field name="sms_custom_api_key" password="True"/>
+                        <field name="sms_custom_sender_id"/>
+                        <field name="sms_custom_param_name_to"/>
+                        <field name="sms_custom_param_name_body"/>
+                        <field name="sms_custom_headers"/>
+                    </group>
+
+                    <div class="mt-3" invisible="not enable_custom_sms">
+                        <button name="action_test_sms_connection"
+                                type="object"
+                                string="Test SMS Connection"
+                                class="btn-primary"
+                                icon="link"/>
+                    </div>
+                </page>
             </xpath>
         </field>
     </record>

@@ -58,6 +58,9 @@ class HotelWhatsAppLog(models.Model):
             ("confirmed", "Confirmed"),
             ("checkout", "Checked Out"),
             ("no_show", "No Show"),
+            ("inspection_required", "Inspection Required"),
+            ("inspection_passed", "Inspection Passed"),
+            ("inspection_failed", "Inspection Failed / Revision"),
             ("other", "Other"),
         ],
         string="Event",
@@ -361,20 +364,15 @@ class HotelWhatsAppLog(models.Model):
         _logger.info("Processing %d queued WhatsApp notification(s)...", len(queued_logs))
         for log in queued_logs:
             try:
-                log._send_meta_whatsapp_message()
-                if not config['test_enable']:
-                    self.env.cr.commit()
+                with self.env.cr.savepoint():
+                    log._send_meta_whatsapp_message()
             except Exception as e:
-                if not config['test_enable']:
-                    self.env.cr.rollback()
                 _logger.exception("Error processing WhatsApp log %s: %s", log.name, e)
                 try:
-                    log.write({"status": "failed", "error_details": str(e)[:4000]})
-                    if not config['test_enable']:
-                        self.env.cr.commit()
+                    with self.env.cr.savepoint():
+                        log.write({"status": "failed", "error_details": str(e)[:4000]})
                 except Exception:
-                    if not config['test_enable']:
-                        self.env.cr.rollback()
+                    pass
 
         return True
 
@@ -418,6 +416,9 @@ class HotelWhatsAppLog(models.Model):
         for log in self:
             if log.status not in ("draft", "failed", "queued"):
                 continue
+
+            # Explicitly set state to queued before dispatching
+            log.write({"status": "queued"})
 
             success = log._send_meta_whatsapp_message()
             if success:

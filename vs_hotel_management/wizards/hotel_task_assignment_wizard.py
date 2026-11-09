@@ -35,15 +35,9 @@ class HotelTaskAssignmentWizard(models.TransientModel):
         readonly=True,
     )
 
-    scheduled_date = fields.Datetime(
-        string="Scheduled Start Date",
-        required=True,
-        default=fields.Datetime.now,
-    )
-
     assigned_to = fields.Many2one(
-        "res.users",
-        string="Assign To",
+        "res.partner",
+        string="Assign Staff",
         required=True,
     )
 
@@ -59,6 +53,7 @@ class HotelTaskAssignmentWizard(models.TransientModel):
 
     scheduled_date = fields.Datetime(
         string="Scheduled Start Time",
+        default=fields.Datetime.now,
     )
 
     housekeeping_type = fields.Selection(
@@ -101,58 +96,37 @@ class HotelTaskAssignmentWizard(models.TransientModel):
         string="Instruction Notes",
     )
 
+    @api.onchange("task_type")
+    def _onchange_task_type(self):
+        if self.task_type == "housekeeping":
+            return {"domain": {"assigned_to": [("is_housekeeping_staff", "=", True)]}}
+        elif self.task_type == "maintenance":
+            return {"domain": {"assigned_to": [("is_maintenance_staff", "=", True)]}}
+        return {"domain": {"assigned_to": []}}
+
     def action_assign(self):
         self.ensure_one()
 
-        if not self.assigned_to:
-            raise UserError(_("Please select an employee to assign this task."))
-
-        if not self.room_id:
-            raise UserError(_("Please select a room before assigning the task."))
-
-        if self.start_mode == "schedule":
-
-            if not self.scheduled_date:
-                raise UserError(
-                    _("Please select a scheduled start date and time.")
-                )
-
-            if self.scheduled_date < fields.Datetime.now():
-                raise UserError(
-                    _("The scheduled start time cannot be in the past.")
-                )
-
-
         room = self.room_id
 
-        if self.task_type == "housekeeping":
-            if room.status != "dirty":
-                raise UserError(
-                    _("Room %s must be Dirty before housekeeping can start.")
-                    % room.display_name
-                )
+        if not room:
+            raise UserError(_("Room is required."))
 
+        if not self.assigned_to:
+            raise UserError(_("Please select an operational staff member to assign."))
+
+        if self.task_type == "housekeeping":
             model_name = "hotel.housekeeping"
             task_domain = [
                 ("room_id", "=", room.id),
-                ("state", "in", ("pending", "in_progress")),
+                ("state", "in", ("pending", "in_progress", "revision_required")),
             ]
-
         elif self.task_type == "maintenance":
-            if room.status in (
-                    "reserved", "occupied", "cleaning", "maintenance"
-            ):
-                raise UserError(
-                    _("Room %s is currently %s and cannot start maintenance.")
-                    % (room.display_name, room.status)
-                )
-
             model_name = "hotel.maintenance"
             task_domain = [
                 ("room_id", "=", room.id),
-                ("state", "in", ("pending", "in_progress")),
+                ("state", "in", ("pending", "in_progress", "revision_required")),
             ]
-
         else:
             raise UserError(_("Unsupported task type."))
 
@@ -161,7 +135,7 @@ class HotelTaskAssignmentWizard(models.TransientModel):
         Task = self.env[model_name]
         task = Task.search(task_domain, order="id desc", limit=1)
 
-        if task and task.state != "pending":
+        if task and task.state not in ("pending", "revision_required"):
             raise UserError(
                 _("An active task already exists for room %s.")
                 % room.display_name
@@ -174,49 +148,52 @@ class HotelTaskAssignmentWizard(models.TransientModel):
         )
 
         if not task:
+            vals = {
+                "room_id": room.id,
+                "state": "pending",
+                "scheduled_date": scheduled_date,
+                "assigned_to": self.assigned_to.id,
+                "priority": self.priority,
+                "instruction_notes": self.instruction_notes,
+                "company_id": room.company_id.id,
+            }
             if self.task_type == "housekeeping":
-                task = Task.create({
-                    "room_id": room.id,
-                    "housekeeping_type": self.housekeeping_type,
-                    "state": "pending",
-                    "scheduled_date": scheduled_date,
-                    "assigned_to": self.assigned_to.id,
-                    "priority": self.priority,
-                    "instruction_notes": self.instruction_notes,
-                })
+                vals["housekeeping_type"] = self.housekeeping_type
             else:
-                task = Task.create({
-                    "room_id": room.id,
-                    "maintenance_type": self.maintenance_type,
-                    "state": "pending",
-                    "scheduled_date": scheduled_date,
-                    "assigned_to": self.assigned_to.id,
-                    "priority": self.priority,
-                    "instruction_notes": self.instruction_notes,
-                })
+                vals["maintenance_type"] = self.maintenance_type
+            task = Task.create(vals)
+        else:
+            task.write({
+                "assigned_to": self.assigned_to.id,
+                "scheduled_date": scheduled_date,
+                "instruction_notes": self.instruction_notes or task.instruction_notes,
+            })
 
         if self.start_mode != "schedule":
             task.action_start()
 
         if self.task_type == "housekeeping":
-            room.status = "cleaning"
+            if room.status != "cleaning":
+                room.write({"status": "cleaning"})
+        else:
+            if room.status != "maintenance":
+                room.write({"status": "maintenance"})
 
-        task._notify_assigned_user(event="assigned")
-        task._notify_whatsapp_task(event="assigned")
+        task._notify_assigned_partner(event="assigned")
 
         return {
             "type": "ir.actions.act_window",
-            "name": _("Housekeeping") if self.task_type == "housekeeping"
-            else _("Maintenance"),
+            "name": _("Housekeeping") if self.task_type == "housekeeping" else _("Maintenance"),
             "res_model": model_name,
             "res_id": task.id,
             "view_mode": "form",
             "target": "current",
         }
 
+
 class HotelTaskCompletionWizard(models.TransientModel):
     _name = "hotel.task.completion.wizard"
-    _description = "Task Completion Wizard"
+    _description = "Task Completion & Inspection Submission Wizard"
 
     task_type = fields.Selection(
         [
@@ -258,9 +235,9 @@ class HotelTaskCompletionWizard(models.TransientModel):
         if not task:
             raise UserError(_("No task was selected for completion."))
 
-        if task.state != "in_progress":
+        if task.state not in ("in_progress", "revision_required"):
             raise UserError(
-                _("Only tasks in progress can be completed.")
+                _("Only tasks currently in progress or revision can be submitted for inspection.")
             )
 
         if not self.completed_at:
@@ -269,32 +246,9 @@ class HotelTaskCompletionWizard(models.TransientModel):
         if task.started_at and self.completed_at < task.started_at:
             raise UserError(
                 _(
-                    "The completion time cannot be earlier "
-                    "than the start time (%s)."
+                    "The completion time cannot be earlier than the start time (%s)."
                 ) % task.started_at
             )
 
-        task.write({
-            "completed_at": self.completed_at,
-            "state": "done",
-        })
-
-        if task.room_id.status in ("cleaning", "maintenance"):
-            task.room_id.status = "available"
-
-        return {
-            "type": "ir.actions.act_window",
-            "name": (
-                _("Housekeeping")
-                if self.task_type == "housekeeping"
-                else _("Maintenance")
-            ),
-            "res_model": (
-                "hotel.housekeeping"
-                if self.task_type == "housekeeping"
-                else "hotel.maintenance"
-            ),
-            "res_id": task.id,
-            "view_mode": "form",
-            "target": "current",
-        }
+        # Move to Inspection Required workflow (room status remains cleaning/maintenance until approved)
+        return task.action_submit_inspection(completed_at=self.completed_at)

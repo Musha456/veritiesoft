@@ -52,6 +52,9 @@ class HotelWhatsAppTemplate(models.Model):
             ("cancelled", "Cancelled"),
             ("confirmed", "Confirmed"),
             ("checkout", "Checked Out"),
+            ("inspection_required", "Inspection Required"),
+            ("inspection_passed", "Inspection Passed"),
+            ("inspection_failed", "Inspection Failed / Revision"),
             ("both", "All Events / General"),
         ],
         string="Notification Event",
@@ -82,6 +85,12 @@ class HotelWhatsAppTemplate(models.Model):
         required=True,
     )
     active = fields.Boolean(default=True)
+    company_id = fields.Many2one(
+        "res.company",
+        string="Company",
+        default=lambda self: self.env.company,
+        index=True,
+    )
     notes = fields.Text(string="Internal Notes")
 
     _template_key_language_unique = models.Constraint(

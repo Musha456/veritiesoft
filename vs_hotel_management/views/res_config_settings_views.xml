@@ -11,7 +11,7 @@
                 <xpath expr="//form" position="inside">
 
                     <app data-string="Hotel Management" string="Hotel Management" name="vs_hotel_management"
-                         groups="vs_hotel_management.group_hotel_room_manager"
+                         groups="vs_hotel_management.group_hotel_manager"
                          logo="/vs_hotel_management/static/description/icon.png">
 
                         <!-- ================================================= -->
@@ -290,6 +290,14 @@
                                         <label for="hotel_default_agent_commission_percentage" string="Default Commission (%)" class="fw-bold"/>
                                         <field name="hotel_default_agent_commission_percentage" class="oe_inline"/>
                                     </div>
+                                    <div class="d-flex align-items-center gap-2 mt-2">
+                                        <field name="hotel_auto_create_agent_bill"/>
+                                        <label for="hotel_auto_create_agent_bill" string="Auto-create Vendor Bill on Checkout"/>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2 mt-2">
+                                        <field name="hotel_auto_send_agent_commission_email"/>
+                                        <label for="hotel_auto_send_agent_commission_email" string="Auto-send Commission Email on Bill Payment"/>
+                                    </div>
                                 </div>
                             </setting>
 
@@ -394,7 +402,15 @@
             <field name="res_model">res.config.settings</field>
             <field name="view_mode">form</field>
             <field name="context">{'module' : 'vs_hotel_management', 'bin_size': False}</field>
-        </record>
+                <field name="group_ids" eval="[(6, 0, [
+            ref('vs_hotel_management.group_hotel_gm_user'),
+            ref('vs_hotel_management.group_hotel_manager'),
+            ref('vs_hotel_management.group_hotel_gm_bridge'),
+            ref('vs_hotel_management.group_hotel_admin_user'),
+            ref('vs_hotel_management.group_hotel_admin'),
+            ref('vs_hotel_management.group_hotel_admin_bridge'),
+        ])]"/>
+    </record>
 
     </data>
 </odoo>

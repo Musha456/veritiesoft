@@ -48,6 +48,17 @@ class HotelGuestFolio(models.Model):
         index=True,
     )
 
+    commission_ids = fields.One2many(
+        "hotel.agent.commission",
+        "folio_id",
+        string="Agent Commissions",
+    )
+
+    commission_count = fields.Integer(
+        string="Agent Commission Count",
+        compute="_compute_commission_count",
+    )
+
     company_id = fields.Many2one(
         "res.company",
         string="Company",
@@ -91,6 +102,27 @@ class HotelGuestFolio(models.Model):
         "hotel.guest.folio.line",
         "folio_id",
         string="Folio Lines",
+    )
+
+    room_line_ids = fields.One2many(
+        "hotel.guest.folio.line",
+        "folio_id",
+        domain=[("charge_type", "=", "room")],
+        string="Room Charges",
+    )
+
+    service_line_ids = fields.One2many(
+        "hotel.guest.folio.line",
+        "folio_id",
+        domain=[("charge_type", "=", "service")],
+        string="Service Charges",
+    )
+
+    other_line_ids = fields.One2many(
+        "hotel.guest.folio.line",
+        "folio_id",
+        domain=[("charge_type", "not in", ("room", "service"))],
+        string="Other Charges",
     )
 
     invoice_id = fields.Many2one(
@@ -146,21 +178,15 @@ class HotelGuestFolio(models.Model):
 
     invoice_amount = fields.Monetary(
         string="Invoice Amount",
-        compute="_compute_amounts",
+        related="invoice_id.amount_total",
         currency_field="currency_id",
         store=True,
+        readonly=True,
     )
 
     invoice_state = fields.Selection(
         related="invoice_id.payment_state",
         string="Invoice Payment Status",
-        readonly=True,
-    )
-
-    invoice_amount = fields.Monetary(
-        string="Invoice Amount",
-        related="invoice_id.amount_total",
-        currency_field="currency_id",
         readonly=True,
     )
 
@@ -199,35 +225,63 @@ class HotelGuestFolio(models.Model):
     )
     def _compute_amounts(self):
         for folio in self:
+            currency = folio.currency_id or self.env.company.currency_id
             charge_lines = folio.line_ids.filtered(lambda l: l.charge_type != "payment")
             payment_lines = folio.line_ids.filtered(lambda l: l.charge_type == "payment")
 
-            folio.amount_untaxed = sum(charge_lines.mapped("amount_untaxed"))
-            folio.tax_amount = sum(charge_lines.mapped("tax_amount"))
-            folio.discount_amount = sum(charge_lines.mapped("discount_amount"))
-            folio.total_amount = sum(charge_lines.mapped("total_amount"))
+            raw_untaxed = sum(charge_lines.mapped("amount_untaxed"))
+            raw_tax = sum(charge_lines.mapped("tax_amount"))
+            raw_discount = sum(charge_lines.mapped("discount_amount"))
+            raw_total = sum(charge_lines.mapped("total_amount"))
 
-            invoice_paid = 0.0
+            folio.amount_untaxed = currency.round(raw_untaxed) if currency else raw_untaxed
+            folio.tax_amount = currency.round(raw_tax) if currency else raw_tax
+            folio.discount_amount = currency.round(raw_discount) if currency else raw_discount
+            folio.total_amount = currency.round(raw_total) if currency else raw_total
+
+            # High-accuracy invoice reconciliation
             if folio.invoice_id and folio.invoice_id.state == "posted":
-                invoice_paid = folio.invoice_id.amount_total - folio.invoice_id.amount_residual
+                inv = folio.invoice_id
+                inv_total = inv.amount_total
+                inv_residual = inv.amount_residual
+                is_inv_paid = (
+                    inv.payment_state in ("paid", "in_payment")
+                    or (currency and currency.is_zero(inv_residual))
+                    or inv_residual <= 0.005
+                )
 
-            line_paid = sum(payment_lines.mapped("total_amount")) or sum(folio.line_ids.mapped("paid_amount"))
-            folio.paid_amount = max(invoice_paid, line_paid)
-            folio.balance_amount = max(0.0, folio.total_amount - folio.paid_amount)
-
-            folio.invoice_amount = (
-                folio.invoice_id.amount_total
-                if folio.invoice_id
-                else 0.0
-            )
+                if is_inv_paid:
+                    # Invoice is fully paid -> folio balance is exactly 0.0
+                    folio.paid_amount = folio.total_amount
+                    folio.balance_amount = 0.0
+                elif inv.payment_state == "partial" or (inv_total > inv_residual > 0):
+                    # Invoice is partially paid -> track paid amount accurately
+                    inv_paid_amount = inv_total - inv_residual
+                    folio.paid_amount = currency.round(min(folio.total_amount, max(0.0, inv_paid_amount))) if currency else min(folio.total_amount, max(0.0, inv_paid_amount))
+                    raw_bal = folio.total_amount - folio.paid_amount
+                    if (currency and currency.is_zero(raw_bal)) or raw_bal <= 0.005:
+                        folio.balance_amount = 0.0
+                    else:
+                        folio.balance_amount = currency.round(raw_bal) if currency else raw_bal
+                else:
+                    folio.paid_amount = 0.0
+                    folio.balance_amount = folio.total_amount
+            else:
+                line_paid = sum(payment_lines.mapped("total_amount")) or sum(folio.line_ids.mapped("paid_amount"))
+                folio.paid_amount = currency.round(line_paid) if currency else line_paid
+                raw_bal = folio.total_amount - folio.paid_amount
+                if (currency and currency.is_zero(raw_bal)) or raw_bal <= 0.005:
+                    folio.balance_amount = 0.0
+                else:
+                    folio.balance_amount = currency.round(max(0.0, raw_bal)) if currency else max(0.0, raw_bal)
 
             folio._sync_folio_payment_state()
 
     def _sync_folio_payment_state(self):
         """
         Synchronize folio status with payment amounts:
-        - If payment is partially made and balance is not zero -> 'partially_paid'
-        - If balance is equal to zero (fully paid) -> automatically 'paid'
+        - If invoice or balance is fully paid -> automatically 'paid'
+        - If partially paid -> automatically 'partially_paid'
         - If no payment is made and state was partially_paid/paid -> return to 'open'
         - Closed and Cancelled folios remain untouched.
         """
@@ -239,13 +293,32 @@ class HotelGuestFolio(models.Model):
             if folio.state == "draft" and folio.paid_amount <= 0.001:
                 continue
 
-            # 1. Fully Paid: Balance is zero and either payment is made or folio has 0 total charges
-            if folio.balance_amount <= 0.001 and (folio.paid_amount > 0.001 or folio.total_amount <= 0.001):
+            currency = folio.currency_id or self.env.company.currency_id
+            is_balance_zero = (
+                (currency.is_zero(folio.balance_amount) if currency else folio.balance_amount <= 0.005)
+            )
+            is_inv_paid = bool(
+                folio.invoice_id
+                and folio.invoice_id.state == "posted"
+                and (
+                    folio.invoice_id.payment_state in ("paid", "in_payment")
+                    or (currency and currency.is_zero(folio.invoice_id.amount_residual))
+                    or folio.invoice_id.amount_residual <= 0.005
+                )
+            )
+            is_inv_partial = bool(
+                folio.invoice_id
+                and folio.invoice_id.state == "posted"
+                and folio.invoice_id.payment_state == "partial"
+            )
+
+            # 1. Fully Paid:
+            if is_inv_paid or (is_balance_zero and (folio.paid_amount > 0.001 or folio.total_amount <= 0.001)):
                 if folio.state != "paid":
                     folio.state = "paid"
 
-            # 2. Partially Paid: Payment received (> 0) and balance is not equal to zero (> 0)
-            elif folio.paid_amount > 0.001 and folio.balance_amount > 0.001:
+            # 2. Partially Paid:
+            elif is_inv_partial or (folio.paid_amount > 0.001 and not is_balance_zero):
                 if folio.state != "partially_paid":
                     folio.state = "partially_paid"
 
@@ -322,6 +395,65 @@ class HotelGuestFolio(models.Model):
                 )
 
             folio.state = "cancelled"
+
+    @api.model
+    def get_active_folio_for_room(self, room_id):
+        """
+        Public Integration Hook for Future Addons (Restaurant POS, Laundry, Spa, Transport):
+        Find the currently active open folio for a given room.
+        :param room_id: hotel.room record or integer ID
+        :return: hotel.guest.folio record (single record or empty recordset)
+        """
+        r_id = room_id.id if hasattr(room_id, "id") else room_id
+        if not r_id:
+            return self.browse()
+
+        # 1. Search by open/draft/partially_paid folio on active reservation occupying or confirmed for this room
+        folio = self.search([
+            ("reservation_id.line_ids.room_id", "=", r_id),
+            ("state", "in", ("draft", "open", "partially_paid")),
+            ("reservation_id.state", "in", ("check_in", "confirmed")),
+        ], limit=1, order="id desc")
+        if folio:
+            return folio
+
+        # 2. Search by active room booking
+        booking = self.env["hotel.room.booking"].search([
+            ("room_id", "=", r_id),
+            ("state", "in", ("confirmed", "check_in")),
+            ("reservation_id.state", "in", ("confirmed", "check_in")),
+        ], limit=1, order="id desc")
+        if booking and booking.reservation_id:
+            active_folios = booking.reservation_id.folio_ids.filtered(
+                lambda f: f.state in ("draft", "open", "partially_paid")
+            )
+            if active_folios:
+                return active_folios[:1]
+
+        return self.browse()
+
+    @api.model
+    def get_active_folio_for_guest(self, partner_id, hotel_id=None):
+        """
+        Public Integration Hook for Future Addons:
+        Find the currently active open folio for a given guest/partner.
+        :param partner_id: res.partner record or integer ID
+        :param hotel_id: optional hotel.hotel record or integer ID
+        :return: hotel.guest.folio record (single record or empty recordset)
+        """
+        p_id = partner_id.id if hasattr(partner_id, "id") else partner_id
+        if not p_id:
+            return self.browse()
+
+        domain = [
+            ("partner_id", "=", p_id),
+            ("state", "in", ("draft", "open", "partially_paid")),
+        ]
+        if hotel_id:
+            h_id = hotel_id.id if hasattr(hotel_id, "id") else hotel_id
+            domain.append(("hotel_id", "=", h_id))
+
+        return self.search(domain, limit=1, order="id desc")
 
     def add_charge(
             self,
@@ -474,6 +606,43 @@ class HotelGuestFolio(models.Model):
             "context": ctx,
         }
 
+    @api.depends("commission_ids", "commission_ids.state")
+    def _compute_commission_count(self):
+        for folio in self:
+            folio.commission_count = len(folio.commission_ids.filtered(lambda c: c.state != "cancelled"))
+
+    def action_view_agent_commission(self):
+        self.ensure_one()
+        commissions = self.commission_ids.filtered(lambda c: c.state != "cancelled")
+        if not commissions and self.reservation_id:
+            commissions = self.reservation_id.commission_ids.filtered(lambda c: c.state != "cancelled")
+        if not commissions:
+            raise UserError(_("No commission record found for this folio."))
+        if len(commissions) == 1:
+            return {
+                "type": "ir.actions.act_window",
+                "name": _("Agent Commission"),
+                "res_model": "hotel.agent.commission",
+                "view_mode": "form",
+                "res_id": commissions.id,
+            }
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Agent Commissions"),
+            "res_model": "hotel.agent.commission",
+            "view_mode": "list,form",
+            "domain": [("id", "in", commissions.ids)],
+        }
+
+    def _auto_create_agent_commission(self):
+        """
+        Create agent commission record and per-room lines when a folio is checked out
+        or invoice is paid. Delegates to the reservation's commission creator.
+        """
+        for folio in self:
+            if folio.reservation_id and folio.reservation_id.booking_source == "travel_agent":
+                folio.reservation_id._create_agent_commission_record(folio=folio)
+
     def action_register_payment(self):
         """Open payment registration wizard linked with the folio's invoice."""
         self.ensure_one()
@@ -520,6 +689,10 @@ class AccountMove(models.Model):
             if folios:
                 folios._compute_amounts()
                 folios._sync_folio_payment_state()
+                # Auto-create agent commissions when invoice becomes fully paid
+                for folio in folios:
+                    if folio.invoice_id and folio.invoice_id.payment_state in ("paid", "in_payment"):
+                        folio._auto_create_agent_commission()
         return res
 
     def _compute_payment_state(self):

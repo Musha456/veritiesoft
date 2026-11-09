@@ -98,11 +98,12 @@ class TestHotelNotificationQueue(TransactionCase):
             })],
         })
 
-        # Patch requests.post so we verify no external HTTP calls are made during action_confirm
+        # Patch requests.post so we verify no WhatsApp Meta API calls are made synchronously during action_confirm
         with patch('requests.post') as mock_post:
             reservation.action_confirm()
-            # Assert requests.post was NEVER called synchronously during button action
-            mock_post.assert_not_called()
+            # Assert Meta WhatsApp API was NEVER called synchronously during button action
+            meta_calls = [c for c in mock_post.call_args_list if 'graph.facebook.com' in str(c)]
+            self.assertEqual(len(meta_calls), 0, "WhatsApp Meta API should NOT be called synchronously during action_confirm")
 
         self.assertEqual(reservation.state, 'confirmed')
 

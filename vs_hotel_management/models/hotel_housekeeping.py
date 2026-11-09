@@ -83,6 +83,8 @@ class HotelHousekeeping(models.Model):
         [
             ("pending", "Pending"),
             ("in_progress", "In Progress"),
+            ("inspection_required", "Inspection Required"),
+            ("revision_required", "Revision Required"),
             ("done", "Done"),
             ("cancelled", "Cancelled"),
         ],
@@ -123,8 +125,16 @@ class HotelHousekeeping(models.Model):
     )
 
     assigned_to = fields.Many2one(
-        "res.users",
+        "res.partner",
         string="Assigned To",
+        domain=[("is_housekeeping_staff", "=", True)],
+        tracking=True,
+    )
+
+    inspector_id = fields.Many2one(
+        "res.partner",
+        string="Inspector",
+        domain=[("is_housekeeping_manager", "=", True)],
         tracking=True,
     )
 
@@ -140,11 +150,6 @@ class HotelHousekeeping(models.Model):
         index=True,
     )
 
-    assigned_to_domain = fields.Many2many(
-        "res.users",
-        compute="_compute_assigned_to_domain",
-    )
-
     duration_seconds = fields.Integer(
         string="Elapsed Time (Seconds)",
         compute="_compute_duration_seconds",
@@ -153,6 +158,18 @@ class HotelHousekeeping(models.Model):
     whatsapp_log_count = fields.Integer(
         string="WhatsApp Logs",
         compute="_compute_whatsapp_log_count",
+    )
+
+    inspection_ids = fields.One2many(
+        "hotel.task.inspection",
+        "housekeeping_id",
+        string="Inspection History",
+        readonly=True,
+    )
+
+    inspection_count = fields.Integer(
+        string="Inspections",
+        compute="_compute_inspection_count",
     )
 
     @api.depends("started_at", "completed_at", "state")
@@ -184,6 +201,11 @@ class HotelHousekeeping(models.Model):
                 ("task_reference", "=", f"{task._name},{task.id}")
             ])
 
+    @api.depends("inspection_ids")
+    def _compute_inspection_count(self):
+        for task in self:
+            task.inspection_count = len(task.inspection_ids)
+
     def action_view_whatsapp_logs(self):
         self.ensure_one()
         return {
@@ -199,17 +221,20 @@ class HotelHousekeeping(models.Model):
             },
         }
 
-    @api.depends()
-    def _compute_assigned_to_domain(self):
-        group = self.env.ref(
-            "vs_hotel_management.group_hotel_housekeeping_user",
-            raise_if_not_found=False,
-        )
-
-        users = group.user_ids.filtered(lambda u: u.active) if group else self.env["res.users"]
-
-        for record in self:
-            record.assigned_to_domain = users
+    def action_view_inspections(self):
+        self.ensure_one()
+        return {
+            "name": _("Inspection History"),
+            "type": "ir.actions.act_window",
+            "res_model": "hotel.task.inspection",
+            "view_mode": "list,form",
+            "domain": [("housekeeping_id", "=", self.id)],
+            "context": {
+                "default_housekeeping_id": self.id,
+                "default_task_type": "housekeeping",
+                "default_room_id": self.room_id.id,
+            },
+        }
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -225,7 +250,7 @@ class HotelHousekeeping(models.Model):
         return self.search(
             [
                 ("room_id", "=", room.id),
-                ("state", "in", ("pending", "in_progress")),
+                ("state", "in", ("pending", "in_progress", "inspection_required", "revision_required")),
             ],
             limit=1,
         )
@@ -242,18 +267,28 @@ class HotelHousekeeping(models.Model):
     ):
         existing = self._find_active_task(room)
 
-        user_id = assigned_to.id if hasattr(assigned_to, 'id') else (int(assigned_to) if assigned_to else False)
+        # assigned_to may be a partner record, partner id, or a user record
+        partner_id = False
+        if assigned_to:
+            if hasattr(assigned_to, '_name'):
+                if assigned_to._name == 'res.partner':
+                    partner_id = assigned_to.id
+                elif assigned_to._name == 'res.users':
+                    partner_id = assigned_to.partner_id.id
+            else:
+                partner_id = int(assigned_to)
+
         instructions = instruction_notes or _("Checkout room housekeeping cleaning")
 
         if existing:
             vals = {}
-            if user_id and not existing.assigned_to:
-                vals["assigned_to"] = user_id
+            if partner_id and not existing.assigned_to:
+                vals["assigned_to"] = partner_id
             if instructions and not existing.instruction_notes:
                 vals["instruction_notes"] = instructions
             if vals:
                 existing.write(vals)
-            if user_id:
+            if partner_id:
                 existing._notify_assigned_user(event="assigned")
                 existing._notify_whatsapp_task(event="assigned")
                 existing._notify_sms_task(event="assigned")
@@ -270,16 +305,16 @@ class HotelHousekeeping(models.Model):
             "housekeeping_type": "checkout",
             "state": "pending",
             "scheduled_date": fields.Datetime.now(),
-            "assigned_to": user_id,
+            "assigned_to": partner_id,
             "instruction_notes": instructions,
         })
 
-        if user_id:
+        if partner_id:
             task._notify_assigned_user(event="assigned")
             task._notify_whatsapp_task(event="assigned")
             task._notify_sms_task(event="assigned")
 
-        if auto_start and user_id:
+        if auto_start and partner_id:
             task.action_start()
 
         return task
@@ -295,7 +330,7 @@ class HotelHousekeeping(models.Model):
                 raise UserError(
                     _(
                         "Please assign housekeeping task %s "
-                        "to a user before starting."
+                        "to a staff member before starting."
                     )
                     % task.display_name
                 )
@@ -313,9 +348,9 @@ class HotelHousekeeping(models.Model):
     def action_done(self):
         self.ensure_one()
 
-        if self.state != "in_progress":
+        if self.state not in ("in_progress", "revision_required"):
             raise UserError(
-                _("Only housekeeping tasks in progress can be completed.")
+                _("Only housekeeping tasks in progress or revision required can be completed.")
             )
 
         return {
@@ -331,12 +366,168 @@ class HotelHousekeeping(models.Model):
             },
         }
 
+    def action_submit_inspection(self, completed_at=None):
+        """Called by the completion wizard to move task to inspection_required."""
+        self.ensure_one()
+        if self.state not in ("in_progress", "revision_required"):
+            raise UserError(
+                _("Only tasks in progress or revision required can be submitted for inspection.")
+            )
+
+        vals = {
+            "state": "inspection_required",
+        }
+        if completed_at:
+            vals["completed_at"] = completed_at
+
+        self.write(vals)
+
+        # Notify inspector if set
+        if self.inspector_id:
+            self._notify_inspection_required(self.inspector_id)
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Housekeeping"),
+            "res_model": self._name,
+            "res_id": self.id,
+            "view_mode": "form",
+            "target": "current",
+        }
+
+    def action_approve_inspection(self, inspector=None, remarks=""):
+        """Manager approves inspection — task moves to Done, room to available."""
+        self.ensure_one()
+        if self.state != "inspection_required":
+            raise UserError(
+                _("Only tasks in 'Inspection Required' state can be approved.")
+            )
+
+        inspector_partner = inspector or self.inspector_id or self.env.user.partner_id
+        attempt = len(self.inspection_ids) + 1
+
+        self.env["hotel.task.inspection"].create({
+            "task_type": "housekeeping",
+            "housekeeping_id": self.id,
+            "room_id": self.room_id.id,
+            "company_id": self.company_id.id,
+            "assigned_partner_id": self.assigned_to.id if self.assigned_to else False,
+            "inspector_id": inspector_partner.id,
+            "inspector_user_id": self.env.user.id,
+            "result": "passed",
+            "remarks": remarks or "",
+            "attempt_number": attempt,
+        })
+
+        self.write({
+            "state": "done",
+            "inspector_id": inspector_partner.id,
+        })
+
+        # Mark room as available if no active maintenance
+        if self.room_id:
+            active_maintenance = self.env["hotel.maintenance"].search([
+                ("room_id", "=", self.room_id.id),
+                ("state", "in", ("pending", "in_progress", "inspection_required", "revision_required")),
+            ], limit=1)
+            if not active_maintenance:
+                self.room_id.write({"status": "available"})
+
+        self._notify_inspection_passed()
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Housekeeping"),
+            "res_model": self._name,
+            "res_id": self.id,
+            "view_mode": "form",
+            "target": "current",
+        }
+
+    def action_reject_inspection(self, inspector=None, remarks=""):
+        """Manager rejects inspection — task goes back to Revision Required."""
+        self.ensure_one()
+        if self.state != "inspection_required":
+            raise UserError(
+                _("Only tasks in 'Inspection Required' state can be rejected.")
+            )
+        if not remarks or not remarks.strip():
+            raise UserError(
+                _("Inspection remarks are mandatory when rejecting / requesting revision.")
+            )
+
+        inspector_partner = inspector or self.inspector_id or self.env.user.partner_id
+        attempt = len(self.inspection_ids) + 1
+
+        self.env["hotel.task.inspection"].create({
+            "task_type": "housekeeping",
+            "housekeeping_id": self.id,
+            "room_id": self.room_id.id,
+            "company_id": self.company_id.id,
+            "assigned_partner_id": self.assigned_to.id if self.assigned_to else False,
+            "inspector_id": inspector_partner.id,
+            "inspector_user_id": self.env.user.id,
+            "result": "failed",
+            "remarks": remarks.strip(),
+            "attempt_number": attempt,
+        })
+
+        self.write({
+            "state": "revision_required",
+            "inspector_id": inspector_partner.id,
+        })
+
+        self._notify_inspection_failed(remarks.strip())
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Housekeeping"),
+            "res_model": self._name,
+            "res_id": self.id,
+            "view_mode": "form",
+            "target": "current",
+        }
+
+    def action_resubmit(self):
+        """Staff resubmits task for inspection after revision."""
+        self.ensure_one()
+        if self.state != "revision_required":
+            raise UserError(
+                _("Only tasks in 'Revision Required' state can be resubmitted.")
+            )
+
+        self.write({"state": "inspection_required"})
+
+        if self.inspector_id:
+            self._notify_inspection_required(self.inspector_id)
+
+        return True
+
+    def action_open_inspection_wizard(self):
+        """Open the inspection decision wizard (for managers)."""
+        self.ensure_one()
+        if self.state != "inspection_required":
+            raise UserError(_("This task is not pending inspection."))
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Inspect Housekeeping Task"),
+            "res_model": "hotel.task.inspection.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "default_task_type": "housekeeping",
+                "default_housekeeping_id": self.id,
+                "default_inspector_id": self.inspector_id.id if self.inspector_id else self.env.user.partner_id.id,
+            },
+        }
+
     def action_cancel(self):
         for task in self:
-            if task.state in ("done", "in_progress"):
+            if task.state in ("done", "in_progress", "inspection_required"):
                 raise UserError(
                     _(
-                        "Housekeeping tasks that are completed or in progress "
+                        "Housekeeping tasks that are completed, in progress, or pending inspection "
                         "cannot be cancelled."
                     )
                 )
@@ -362,7 +553,6 @@ class HotelHousekeeping(models.Model):
 
         return True
 
-   
     @api.model
     def cron_start_scheduled_tasks(self):
         parameters = self.env["ir.config_parameter"].sudo()

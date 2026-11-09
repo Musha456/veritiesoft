@@ -14,6 +14,30 @@ class ResPartner(models.Model):
         help="Enable this option if this contact operates as a travel agency or agent.",
     )
 
+    is_housekeeping_staff = fields.Boolean(
+        string="Housekeeping Staff",
+        help="Enable this option to designate this contact as an operational housekeeping staff member.",
+        index=True,
+    )
+
+    is_housekeeping_manager = fields.Boolean(
+        string="Housekeeping Manager",
+        help="Enable this option to designate this contact as a housekeeping manager authorized to conduct and approve inspections.",
+        index=True,
+    )
+
+    is_maintenance_staff = fields.Boolean(
+        string="Maintenance Staff",
+        help="Enable this option to designate this contact as an operational maintenance technician.",
+        index=True,
+    )
+
+    is_maintenance_manager = fields.Boolean(
+        string="Maintenance Manager",
+        help="Enable this option to designate this contact as a maintenance manager authorized to conduct and approve repair inspections.",
+        index=True,
+    )
+
     agent_commission_percentage = fields.Float(
         string="Commission (%)",
         help="Default commission percentage applied to this travel agent.",
@@ -87,12 +111,93 @@ class ResPartner(models.Model):
         compute="_compute_hotel_guest_statistics",
     )
 
+    housekeeping_task_count = fields.Integer(
+        string="Housekeeping Tasks",
+        compute="_compute_hotel_staff_statistics",
+    )
+
+    maintenance_task_count = fields.Integer(
+        string="Maintenance Tasks",
+        compute="_compute_hotel_staff_statistics",
+    )
+
+    agent_commission_count = fields.Integer(
+        string="Commissions",
+        compute="_compute_agent_commission_statistics",
+    )
+
+    def _compute_agent_commission_statistics(self):
+        AgentCommission = self.env["hotel.agent.commission"].sudo()
+        for partner in self:
+            partner.agent_commission_count = AgentCommission.search_count([
+                ("agent_id", "=", partner.id),
+            ])
+
+    def action_view_agent_commissions(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Agent Commissions"),
+            "res_model": "hotel.agent.commission",
+            "view_mode": "list,form",
+            "domain": [("agent_id", "=", self.id)],
+            "context": {"default_agent_id": self.id},
+        }
+
+    def action_send_whatsapp_message(self):
+        self.ensure_one()
+        return {
+            "name": _("Send WhatsApp Message"),
+            "type": "ir.actions.act_window",
+            "res_model": "hotel.whatsapp.composer",
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "default_partner_id": self.id,
+                "default_phone_number": (getattr(self, "mobile", False) or self.phone or ""),
+                "default_company_id": self.company_id.id if self.company_id else self.env.company.id,
+            },
+        }
+
+    def _compute_hotel_staff_statistics(self):
+        Housekeeping = self.env["hotel.housekeeping"].sudo()
+        Maintenance = self.env["hotel.maintenance"].sudo()
+        for partner in self:
+            partner.housekeeping_task_count = Housekeeping.search_count([
+                "|", ("assigned_to", "=", partner.id), ("inspector_id", "=", partner.id)
+            ])
+            partner.maintenance_task_count = Maintenance.search_count([
+                "|", ("assigned_to", "=", partner.id), ("inspector_id", "=", partner.id)
+            ])
+
+    def action_view_housekeeping_tasks(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Housekeeping Tasks"),
+            "res_model": "hotel.housekeeping",
+            "view_mode": "list,kanban,form",
+            "domain": ["|", ("assigned_to", "=", self.id), ("inspector_id", "=", self.id)],
+            "context": {"default_assigned_to": self.id},
+        }
+
+    def action_view_maintenance_tasks(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Maintenance Tasks"),
+            "res_model": "hotel.maintenance",
+            "view_mode": "list,kanban,form",
+            "domain": ["|", ("assigned_to", "=", self.id), ("inspector_id", "=", self.id)],
+            "context": {"default_assigned_to": self.id},
+        }
+
     def _compute_hotel_guest_statistics(self):
-        Reservation = self.env["hotel.reservation"]
-        RoomBooking = self.env["hotel.room.booking"]
-        Folio = self.env["hotel.guest.folio"]
-        AccountMove = self.env["account.move"]
-        WhatsappLog = self.env["hotel.whatsapp.log"]
+        Reservation = self.env["hotel.reservation"].sudo()
+        RoomBooking = self.env["hotel.room.booking"].sudo()
+        Folio = self.env["hotel.guest.folio"].sudo()
+        AccountMove = self.env["account.move"].sudo()
+        WhatsappLog = self.env["hotel.whatsapp.log"].sudo()
 
         for partner in self:
             partner.reservation_count = Reservation.search_count([

@@ -501,7 +501,7 @@ class HotelHotel(models.Model):
             hotel.service_count = len(hotel.service_ids)
             hotel.gallery_count = len(hotel.image_ids)
 
-            Reservation = self.env["hotel.reservation"]
+            Reservation = self.env["hotel.reservation"].sudo()
             reservations = Reservation.search([("hotel_id", "=", hotel.id)])
             hotel.reservation_count = len(reservations)
             hotel.guest_count = len(reservations.mapped("partner_id"))
@@ -590,7 +590,7 @@ class HotelHotel(models.Model):
     def action_view_guests(self):
         self.ensure_one()
 
-        guest_ids = self.env["hotel.reservation"].search(
+        guest_ids = self.env["hotel.reservation"].sudo().search(
             [("hotel_id", "=", self.id)]
         ).mapped("partner_id").ids
 

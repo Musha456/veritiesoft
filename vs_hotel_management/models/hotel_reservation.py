@@ -85,6 +85,7 @@ class HotelReservation(models.Model):
         "res.partner",
         required=True,
         tracking=True,
+        string="Guest"
     )
 
     guest_phone = fields.Char(related="partner_id.phone", string="Guest Phone")
@@ -222,6 +223,14 @@ class HotelReservation(models.Model):
         currency_field="currency_id",
     )
 
+    net_room_amount = fields.Monetary(
+        string="Net Room Amount",
+        compute="_compute_amounts",
+        store=True,
+        currency_field="currency_id",
+        help="Room charges after deducting room discounts.",
+    )
+
     service_amount = fields.Monetary(
         compute="_compute_amounts",
         store=True,
@@ -291,19 +300,32 @@ class HotelReservation(models.Model):
     )
 
     reference = fields.Char(
-        string="Reference",
+        string="External / OTA Reference",
         tracking=True,
-        help="External booking reference or OTA reservation number.",
+        index=True,
+        help="External booking reference or OTA reservation number (e.g. Booking.com confirmation number, Expedia booking ID, Airbnb code, or Travel Agent reference). Useful for searching and matching guest reservations from third-party channels.",
+    )
+
+    expected_check_in = fields.Datetime(
+        string="Expected Arrival",
+        tracking=True,
+        help="Expected arrival date and time for the guest.",
+    )
+
+    expected_check_out = fields.Datetime(
+        string="Expected Departure",
+        tracking=True,
+        help="Expected departure date and time for the guest.",
     )
 
     arrival_time = fields.Float(
-        string="Expected Arrival",
-        help="Expected arrival time.",
+        string="Expected Arrival Time",
+        help="Expected arrival time of day.",
     )
 
     departure_time = fields.Float(
-        string="Expected Departure",
-        help="Expected departure time.",
+        string="Expected Departure Time",
+        help="Expected departure time of day.",
     )
 
     payment_status = fields.Selection(
@@ -421,6 +443,24 @@ class HotelReservation(models.Model):
         string="Guest Folios",
     )
 
+    commission_ids = fields.One2many(
+        "hotel.agent.commission",
+        "reservation_id",
+        string="Agent Commissions",
+    )
+
+    commission_id = fields.Many2one(
+        "hotel.agent.commission",
+        string="Agent Commission Record",
+        compute="_compute_agent_commission_record",
+        store=True,
+    )
+
+    commission_count = fields.Integer(
+        string="Commission Records",
+        compute="_compute_commission_count",
+    )
+
     folio_count = fields.Integer(
         string="Folio Count",
         compute="_compute_folio_balance",
@@ -464,6 +504,20 @@ class HotelReservation(models.Model):
         compute="_compute_formatted_dates",
         help="Formatted check-out date and time in the hotel's business timezone.",
     )
+
+    travel_agent_commission_enabled = fields.Boolean(
+        string="Travel Agent Commission Enabled",
+        compute="_compute_travel_agent_commission_enabled",
+        help="True when travel agent commission feature is enabled in settings.",
+    )
+
+    @api.depends()
+    def _compute_travel_agent_commission_enabled(self):
+        enabled = self.env["ir.config_parameter"].sudo().get_param(
+            "vs_hotel_management.enable_travel_agent_commission", "False"
+        ).lower() in ("true", "1", "yes")
+        for rec in self:
+            rec.travel_agent_commission_enabled = enabled
 
     @api.depends("check_in", "check_out", "hotel_id.timezone")
     def _compute_formatted_dates(self):
@@ -524,6 +578,17 @@ class HotelReservation(models.Model):
             active_folios = reservation.folio_ids.filtered(lambda f: f.state != "cancelled")
             reservation.folio_id = active_folios[:1] if active_folios else self.env["hotel.guest.folio"]
 
+    @api.depends("commission_ids", "commission_ids.state")
+    def _compute_agent_commission_record(self):
+        for res in self:
+            active_comm = res.commission_ids.filtered(lambda c: c.state != "cancelled")
+            res.commission_id = active_comm[:1] if active_comm else False
+
+    @api.depends("commission_ids", "commission_ids.state")
+    def _compute_commission_count(self):
+        for res in self:
+            res.commission_count = len(res.commission_ids.filtered(lambda c: c.state != "cancelled"))
+
     @api.depends("folio_ids", "folio_ids.state", "folio_ids.paid_amount", "folio_ids.balance_amount", "folio_ids.total_amount")
     def _compute_payment_status(self):
         for reservation in self:
@@ -556,8 +621,24 @@ class HotelReservation(models.Model):
                     rooms.append(line.room_category_id.name)
             reservation.booked_rooms_display = ", ".join(rooms) if rooms else "-"
 
+    @api.onchange("booking_source")
+    def _onchange_booking_source(self):
+        """Reset all travel-agent fields when booking source is changed away from travel_agent."""
+        for record in self:
+            if record.booking_source != "travel_agent":
+                record.agent_id = False
+                record.agent_commission_percentage = 0.0
+                record.agent_commission_amount = 0.0
+
     @api.onchange("agent_id")
     def _onchange_agent_id(self):
+        if self.booking_source != "travel_agent":
+            # Safety guard – never populate agent fields unless source is travel_agent
+            self.agent_id = False
+            self.agent_commission_percentage = 0.0
+            self.agent_commission_amount = 0.0
+            return
+
         if self.agent_id:
             if self.agent_id.agent_commission_percentage:
                 self.agent_commission_percentage = self.agent_id.agent_commission_percentage
@@ -568,12 +649,23 @@ class HotelReservation(models.Model):
                 )
         else:
             self.agent_commission_percentage = 0.0
+            self.agent_commission_amount = 0.0
 
-    @api.depends("room_amount", "agent_commission_percentage", "agent_id")
+    @api.depends(
+        "net_room_amount",
+        "room_amount",
+        "room_discount_amount",
+        "line_ids.room_amount",
+        "line_ids.discount_amount",
+        "agent_commission_percentage",
+        "agent_id",
+        "booking_source",
+    )
     def _compute_agent_commission(self):
         for res in self:
-            if res.agent_id and res.agent_commission_percentage:
-                res.agent_commission_amount = (res.room_amount * res.agent_commission_percentage) / 100.0
+            if res.booking_source == "travel_agent" and res.agent_id and res.agent_commission_percentage:
+                net_room = res.net_room_amount if res.net_room_amount else max(res.room_amount - res.room_discount_amount, 0.0)
+                res.agent_commission_amount = (net_room * res.agent_commission_percentage) / 100.0
             else:
                 res.agent_commission_amount = 0.0
 
@@ -759,6 +851,7 @@ class HotelReservation(models.Model):
             reservation.tax_amount = (sum(lines.mapped("tax_amount")) + sum(lines.mapped("service_tax_amount")))
             reservation.subtotal = sum(lines.mapped("subtotal"))
             reservation.total_amount = sum(lines.mapped("total"))
+            reservation.net_room_amount = max(reservation.room_amount - reservation.room_discount_amount, 0.0)
 
     @api.depends(
         "line_ids",
@@ -804,10 +897,20 @@ class HotelReservation(models.Model):
 
     def action_view_guest_folios(self):
         self.ensure_one()
+        folios = self.folio_ids.filtered(lambda f: f.state != "cancelled") or self.folio_ids
+        if len(folios) == 1:
+            return {
+                "type": "ir.actions.act_window",
+                "name": _("Guest Folio"),
+                "res_model": "hotel.guest.folio",
+                "view_mode": "form",
+                "res_id": folios.id,
+                "target": "current",
+            }
 
         return {
             "type": "ir.actions.act_window",
-            "name": _("Guest Folio"),
+            "name": _("Guest Folios"),
             "res_model": "hotel.guest.folio",
             "view_mode": "list,form",
             "domain": [
@@ -816,6 +919,7 @@ class HotelReservation(models.Model):
             "context": {
                 "default_partner_id": self.partner_id.id,
                 "default_reservation_id": self.id,
+                "default_hotel_id": self.hotel_id.id,
             },
         }
 
@@ -1090,16 +1194,27 @@ class HotelReservation(models.Model):
         for vals in vals_list:
             if vals.get("name", "/") == "/":
                 vals["name"] = (sequence.next_by_code("hotel.reservation") or "/")
+            if vals.get("partner_id"):
+                partner = self.env["res.partner"].browse(vals["partner_id"])
+                if not partner.is_hotel_guest:
+                    partner.sudo().write({"is_hotel_guest": True})
 
         records = super().create(vals_list)
 
         for reservation in records:
+            if reservation.partner_id and not reservation.partner_id.is_hotel_guest:
+                reservation.partner_id.sudo().write({"is_hotel_guest": True})
             if reservation.state != "draft":
                 reservation._validate_reservation()
 
         return records
 
     def write(self, vals):
+
+        if vals.get("partner_id"):
+            partner = self.env["res.partner"].browse(vals["partner_id"])
+            if not partner.is_hotel_guest:
+                partner.sudo().write({"is_hotel_guest": True})
 
         locked_states = (
             "reserved",
@@ -1117,9 +1232,14 @@ class HotelReservation(models.Model):
             "partner_id",
             "booking_date",
         }
-        
+
+        # If booking_source is being changed away from travel_agent, clear agent fields
+        if "booking_source" in vals and vals.get("booking_source") != "travel_agent":
+            vals.setdefault("agent_id", False)
+            vals.setdefault("agent_commission_percentage", 0.0)
+
         for reservation in self:
-            
+
             # ---------------------------------------------------------
             # Reservation-level fields
             # ---------------------------------------------------------
@@ -1134,6 +1254,11 @@ class HotelReservation(models.Model):
                 )
 
         res = super().write(vals)
+
+        if vals.get("state") == "checked_out":
+            for reservation in self:
+                if reservation.booking_source == "travel_agent" and not reservation.commission_ids.filtered(lambda c: c.state != "cancelled"):
+                    reservation._create_agent_commission_record()
 
         date_or_lines_changed = any(k in vals for k in ("check_in", "check_out", "line_ids"))
         if date_or_lines_changed:
@@ -1794,12 +1919,147 @@ class HotelReservation(models.Model):
                     folio.action_create_invoice()
 
             # -------------------------------------------------
+            # Create Travel Agent Commission Record & Lines
+            # -------------------------------------------------
+            reservation._create_agent_commission_record(folio=folio)
+
+            # -------------------------------------------------
             # Update Reservation State
             # -------------------------------------------------
             reservation.state = "checked_out"
             reservation._notify_reservation(event="checkout")
 
         return True
+
+    def _create_agent_commission_record(self, folio=None):
+        """Create travel agent commission record and per-room lines upon checkout."""
+        ICP = self.env["ir.config_parameter"].sudo()
+        commission_enabled = ICP.get_param(
+            "vs_hotel_management.enable_travel_agent_commission", "False"
+        ).lower() in ("true", "1", "yes")
+
+        if not commission_enabled:
+            return False
+
+        auto_create_bill = ICP.get_param(
+            "vs_hotel_management.auto_create_agent_bill", "False"
+        ).lower() in ("true", "1", "yes")
+
+        Commission = self.env["hotel.agent.commission"].sudo()
+        CommissionLine = self.env["hotel.agent.commission.line"].sudo()
+
+        created_commissions = self.env["hotel.agent.commission"]
+
+        for reservation in self:
+            if reservation.booking_source != "travel_agent":
+                continue
+            if not reservation.agent_id or not reservation.agent_commission_percentage:
+                continue
+
+            existing_comm = Commission.search([
+                ("reservation_id", "=", reservation.id),
+                ("state", "!=", "cancelled"),
+            ], limit=1)
+
+            target_folio = folio or reservation.folio_id or reservation.folio_ids.filtered(lambda f: f.state != "cancelled")[:1]
+
+            if existing_comm:
+                comm_record = existing_comm
+            else:
+                comm_vals = {
+                    "agent_id": reservation.agent_id.id,
+                    "reservation_id": reservation.id,
+                    "folio_id": target_folio.id if target_folio else False,
+                    "company_id": reservation.company_id.id or self.env.company.id,
+                    "date": fields.Date.context_today(reservation),
+                    "state": "draft",
+                    "notes": _("Commission created on checkout for Reservation %s") % reservation.name,
+                }
+                comm_record = Commission.create(comm_vals)
+                created_commissions |= comm_record
+
+            if target_folio and not comm_record.folio_id:
+                comm_record.folio_id = target_folio.id
+
+            # Create / ensure per-room commission lines
+            for line in reservation.line_ids:
+                if not line.room_id and not line.room_category_id:
+                    continue
+
+                existing_line = CommissionLine.search([
+                    ("commission_id", "=", comm_record.id),
+                    ("reservation_line_id", "=", line.id),
+                ], limit=1)
+                if existing_line:
+                    continue
+
+                base_amt = line.room_amount
+                disc_amt = line.discount_amount
+                net_room_amt = max(base_amt - disc_amt, 0.0)
+                comm_pct = reservation.agent_commission_percentage
+                comm_amt = (net_room_amt * comm_pct) / 100.0
+
+                room_name = (
+                    f"Room {line.room_id.room_number}" if line.room_id and line.room_id.room_number
+                    else (line.room_id.display_name if line.room_id else (line.room_category_id.name if line.room_category_id else _("Room")))
+                )
+
+                line_vals = {
+                    "commission_id": comm_record.id,
+                    "reservation_id": reservation.id,
+                    "folio_id": target_folio.id if target_folio else False,
+                    "reservation_line_id": line.id,
+                    "room_booking_id": line.room_booking_id.id if line.room_booking_id else False,
+                    "room_id": line.room_id.id if line.room_id else False,
+                    "room_name": room_name,
+                    "date": fields.Date.context_today(reservation),
+                    "night_count": line.night_count or 1.0,
+                    "base_amount": base_amt,
+                    "discount_amount": disc_amt,
+                    "room_amount": net_room_amt,
+                    "commission_percentage": comm_pct,
+                    "commission_amount": comm_amt,
+                    "notes": _("%(room)s (%(nights)d night(s)) - %(cat)s") % {
+                        "room": room_name,
+                        "nights": int(line.night_count or 1),
+                        "cat": line.room_category_id.name if line.room_category_id else "",
+                    },
+                }
+                CommissionLine.create(line_vals)
+
+            comm_record._compute_totals()
+
+            if comm_record.state == "draft":
+                comm_record.state = "confirmed"
+
+            if auto_create_bill and not comm_record.invoice_id and comm_record.commission_line_ids:
+                try:
+                    comm_record.action_create_vendor_bill()
+                except Exception as e:
+                    comm_record.message_post(body=_("Auto-creating vendor bill failed: %s") % str(e))
+
+        return created_commissions
+
+    def action_view_agent_commission(self):
+        self.ensure_one()
+        commissions = self.commission_ids.filtered(lambda c: c.state != "cancelled")
+        if not commissions:
+            raise UserError(_("No commission record found for this reservation."))
+        if len(commissions) == 1:
+            return {
+                "type": "ir.actions.act_window",
+                "name": _("Agent Commission"),
+                "res_model": "hotel.agent.commission",
+                "view_mode": "form",
+                "res_id": commissions.id,
+            }
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Agent Commissions"),
+            "res_model": "hotel.agent.commission",
+            "view_mode": "list,form",
+            "domain": [("id", "in", commissions.ids)],
+        }
 
     def _create_guest_folio(self):
         Folio = self.env["hotel.guest.folio"]
@@ -2278,12 +2538,13 @@ class HotelReservation(models.Model):
     def _check_reservation_manager(self):
         if self.env.is_superuser():
             return
-        if not self.env.user.has_group(
-                "vs_hotel_management.group_hotel_room_manager"
+        if not (
+            self.env.user.has_group("vs_hotel_management.group_hotel_manager")
+            or self.env.user.has_group("vs_hotel_management.group_hotel_reservation_user")
         ):
             raise AccessError(
                 _(
-                    "Only a hotel manager can perform "
+                    "Only a hotel manager or reservation manager can perform "
                     "this operation."
                 )
             )
@@ -2317,6 +2578,127 @@ class HotelReservation(models.Model):
                                 "for overlapping dates."
                             ) % room.display_name
                         )
+
+    @api.model
+    def get_available_rooms_for_dates(self, hotel_id, check_in, check_out, category_id=None, min_capacity=None):
+        """
+        Public Integration Method for Online Booking Engine & OTA Channel Manager:
+        Query operational rooms available for booking across specified dates.
+        :param hotel_id: hotel.hotel record or ID
+        :param check_in: Datetime or str
+        :param check_out: Datetime or str
+        :param category_id: optional hotel.room.category record or ID
+        :param min_capacity: optional integer guest count
+        :return: list of dicts with room and room type information
+        """
+        h_id = hotel_id.id if hasattr(hotel_id, "id") else hotel_id
+        domain = [
+            ("hotel_id", "=", h_id),
+            ("building_id.status", "=", "operational"),
+            ("status", "in", ("available", "reserved")),
+        ]
+        if category_id:
+            c_id = category_id.id if hasattr(category_id, "id") else category_id
+            domain.append(("room_category_id", "=", c_id))
+        if min_capacity:
+            domain.append(("max_adults", ">=", int(min_capacity)))
+
+        rooms = self.env["hotel.room"].search(domain)
+        available_rooms = []
+        for room in rooms:
+            if room.is_available(check_in=check_in, check_out=check_out, raise_exception=False):
+                default_rate_plan = self.env["hotel.rate.plan"].search([
+                    ("room_category_id", "=", room.room_category_id.id),
+                    ("is_active", "=", True),
+                ], limit=1, order="id asc")
+                available_rooms.append({
+                    "room_id": room.id,
+                    "room_name": room.name,
+                    "room_number": room.room_number,
+                    "category_id": room.room_category_id.id,
+                    "category_name": room.room_category_id.name,
+                    "building_id": room.building_id.id,
+                    "floor_id": room.floor_id.id if room.floor_id else False,
+                    "max_adults": room.max_adults,
+                    "max_children": room.max_children,
+                    "rate_plan_id": default_rate_plan.id if default_rate_plan else False,
+                    "rate_plan_name": default_rate_plan.name if default_rate_plan else "",
+                    "base_price": default_rate_plan.base_price if default_rate_plan else room.room_category_id.base_price,
+                })
+        return available_rooms
+
+    @api.model
+    def create_online_reservation(self, booking_data):
+        """
+        Public Integration Method for Online Booking Engine & OTA Channel Manager:
+        Creates a reservation from online/external booking payloads.
+        :param booking_data: dict with keys:
+            hotel_id, check_in, check_out, guest_name, guest_email, guest_phone,
+            rooms: list of dicts [{"room_id": ..., "rate_plan_id": ... (optional)}],
+            adults (optional), children (optional), reference (optional), notes (optional),
+            booking_source (optional, default 'website')
+        :return: created hotel.reservation record
+        """
+        Partner = self.env["res.partner"].sudo()
+        email = booking_data.get("guest_email")
+        phone = booking_data.get("guest_phone")
+        name = booking_data.get("guest_name", "Online Guest")
+
+        partner = False
+        if email:
+            partner = Partner.search([("email", "=ilike", email.strip())], limit=1)
+        if not partner and phone:
+            partner = Partner.search([("phone", "=", phone.strip())], limit=1)
+        if not partner:
+            partner = Partner.create({
+                "name": name,
+                "email": email,
+                "phone": phone,
+                "is_hotel_guest": True,
+            })
+        else:
+            if not partner.is_hotel_guest:
+                partner.write({"is_hotel_guest": True})
+
+        hotel_id = booking_data.get("hotel_id")
+        check_in = booking_data.get("check_in")
+        check_out = booking_data.get("check_out")
+
+        line_vals = []
+        for r_item in booking_data.get("rooms", []):
+            room = self.env["hotel.room"].browse(r_item.get("room_id"))
+            rate_plan_id = r_item.get("rate_plan_id")
+            if not rate_plan_id:
+                rate_plan = self.env["hotel.rate.plan"].search([
+                    ("room_category_id", "=", room.room_category_id.id),
+                    ("is_active", "=", True),
+                ], limit=1)
+                rate_plan_id = rate_plan.id if rate_plan else False
+
+            line_vals.append((0, 0, {
+                "room_id": room.id,
+                "room_category_id": room.room_category_id.id,
+                "rate_plan_id": rate_plan_id,
+                "building_id": room.building_id.id if room.building_id else False,
+                "floor_id": room.floor_id.id if room.floor_id else False,
+                "check_in": check_in,
+                "check_out": check_out,
+            }))
+
+        res_vals = {
+            "hotel_id": hotel_id,
+            "partner_id": partner.id,
+            "check_in": check_in,
+            "check_out": check_out,
+            "adults": booking_data.get("adults", 1),
+            "children": booking_data.get("children", 0),
+            "booking_source": booking_data.get("booking_source", "website"),
+            "reference": booking_data.get("reference", ""),
+            "notes": booking_data.get("notes", ""),
+            "line_ids": line_vals,
+        }
+        reservation = self.create(res_vals)
+        return reservation
 
     _hotel_reservation_name_unique = models.Constraint(
         'unique(name, company_id)',

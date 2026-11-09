@@ -10,8 +10,7 @@
                 <field name="cover_image" widget="image" options="{'size': [40, 40]}"/>
                 <field name="display_name"/>
                 <field name="bed_type_id"/>
-                <field name="active" widget="boolean_toggle"/>
-            </list>
+                </list>
         </field>
     </record>
 
@@ -103,7 +102,7 @@
                         <button name="action_view_reservations"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="calendar_today"
+                                icon="fa-calendar"
                                 invisible="reservation_count == 0">
 
                             <field name="reservation_count"
@@ -115,7 +114,7 @@
                         <button name="action_view_housekeeping"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="cleaning_services"
+                                icon="fa-paint-brush"
                                 invisible="housekeeping_count == 0">
 
                             <field name="housekeeping_count"
@@ -127,7 +126,7 @@
                         <button name="action_view_maintenance"
                                 type="object"
                                 class="oe_stat_button"
-                                icon="build"
+                                icon="fa-wrench"
                                 invisible="maintenance_count == 0">
 
                             <field name="maintenance_count"
@@ -168,12 +167,12 @@
                                 <field name="building_id"/>
                                 <field name="floor_id" invisible="not building_id"
                                        domain="[('building_id', '=', building_id)]"/>
-                                <field name="active" widget="boolean_toggle"/>
                                 <field name="company_id" groups="base.group_multi_company"/>
                             </group>
 
                             <group>
                                 <field name="bed_type_id"/>
+                <field name="bed_type_icon" widget="image" options="{'size': [32, 32]}" readonly="1" invisible="not bed_type_icon"/>
                                 <field name="bed_count"/>
                                 <field name="amenity_ids" widget="many2many_tags"/>
                             </group>
@@ -396,6 +395,7 @@
                 <field name="building_id"/>
                 <field name="floor_id"/>
                 <field name="bed_type_id"/>
+                <field name="bed_type_icon"/>
                 <field name="bed_count"/>
                 <field name="active"/>
                 <field name="amenity_type_ids"/>
@@ -442,15 +442,12 @@
 
                                 </div>
 
-                                <!-- Status Badge -->
-                                <div class="hotel_room_status">
-
-                                    <span t-attf-class="badge hotel_room_status_badge hotel_status_#{record.status.raw_value}">
-
+                                <!-- Status Ribbon Banner (Top-Right of Image) -->
+                                <div class="position-absolute top-0 end-0 m-2" style="z-index: 5;">
+                                    <span t-attf-class="badge px-2 py-1 text-uppercase fw-semibold shadow-sm hotel_status_#{record.status.raw_value}"
+                                          style="backdrop-filter: blur(4px); font-size: 0.72rem; letter-spacing: 0.5px; opacity: 0.92; border-radius: 4px;">
                                         <field name="status"/>
-
                                     </span>
-
                                 </div>
                             </div>
 
@@ -477,13 +474,9 @@
                                     <!-- Category -->
 
                                     <div class="hotel_room_category">
-
-                                        <span class="badge bg-light text-dark">
-
+                                        <span class="text-muted" style="border: none; font-size: 0.78rem; font-weight: 500;">
                                             <field name="room_category_id"/>
-
                                         </span>
-
                                     </div>
 
                                 </div>
@@ -501,24 +494,16 @@
 
                                 </div>
 
-                                <!-- Bed -->
-
-                                <div class="hotel_room_bed mt-2">
-
-                                    <i class="fa fa-bed" title="Hotel Room Bed"/>
-
-                                    <field name="bed_type_id"/>
-
-                                    <span class="text-muted">
-
-                                        (
-
-                                        <field name="bed_count"/>
-
-                                        )
-
-                                    </span>
-
+                                                                <!-- Bed -->
+                                <div class="hotel_room_bed mt-1 d-flex align-items-center gap-1 small text-muted">
+                                    <t t-if="record.bed_type_icon.raw_value">
+                                        <field name="bed_type_icon" widget="image" options="{'preview_image': 'bed_type_icon', 'size': [16, 16]}" style="width: 16px; height: 16px; object-fit: contain;"/>
+                                    </t>
+                                    <t t-else="">
+                                        <i class="fa fa-bed text-secondary" title="Bed Type"/>
+                                    </t>
+                                    <span><field name="bed_type_id"/></span>
+                                    <span class="text-muted">(<field name="bed_count"/>)</span>
                                 </div>
 
                                 <!-- Divider -->

@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <!-- ========================================================= -->
+    <!-- Agent Commission Form View (Folio Style)                  -->
+    <!-- ========================================================= -->
+    <record id="view_hotel_agent_commission_form" model="ir.ui.view">
+        <field name="name">hotel.agent.commission.form</field>
+        <field name="model">hotel.agent.commission</field>
+        <field name="arch" type="xml">
+
+            <form string="Agent Commission">
+
+                <header>
+
+                    <button name="action_confirm"
+                            string="Confirm"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'draft'"/>
+
+                    <button name="action_send_commission_email"
+                            string="Send by Email"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'cancelled'"/>
+
+                    <button name="action_print_commission_report"
+                            string="Print Statement"
+                            type="object"
+                            class="btn-secondary"/>
+
+                    <button name="action_create_vendor_bill"
+                            string="Create Vendor Bill"
+                            type="object"
+                            class="btn-primary"
+                            invisible="invoice_id or state == 'cancelled'"/>
+
+                    <button name="action_bill"
+                            string="Mark as Billed"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'confirmed' or invoice_id"/>
+
+                    <button name="action_mark_paid"
+                            string="Mark as Paid"
+                            type="object"
+                            class="btn-success"
+                            invisible="state not in ('confirmed', 'billed') or invoice_id"/>
+
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state in ('paid', 'cancelled')"/>
+
+                    <button name="action_reset_to_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state not in ('confirmed', 'cancelled') or invoice_id"/>
+
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="draft,confirmed,billed,paid"/>
+
+                </header>
+
+                <sheet>
+
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_bill"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="receipt_long"
+                                invisible="not invoice_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Vendor Bill</span>
+                            </div>
+                        </button>
+
+                        <button name="action_view_reservation"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="calendar_month"
+                                invisible="not reservation_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Reservation</span>
+                            </div>
+                        </button>
+
+                        <button name="action_view_folio"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="folder"
+                                invisible="not folio_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Guest Folio</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <span class="text-muted fw-semibold">Commission Record</span>
+                        <h1 class="mt-1">
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Travel Agent &amp; Booking Details">
+                            <field name="agent_id" readonly="state != 'draft'"/>
+                            <field name="reservation_id" readonly="state != 'draft'"/>
+                            <field name="folio_id" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Accounting &amp; Payment">
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="company_id" readonly="1"/>
+                            <field name="invoice_id" readonly="1" invisible="not invoice_id"/>
+                            <field name="payment_state" widget="badge" invisible="not invoice_id"/>
+                            <field name="commission_email_sent" widget="boolean_toggle" readonly="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Folio-style Per-Room Commission Lines Notebook -->
+                    <notebook>
+                        <page string="Room Commission Lines" name="commission_lines">
+                            <field name="commission_line_ids" nolabel="1" readonly="state in ('billed', 'paid')">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="room_id"/>
+                                    <field name="night_count" string="Nights"/>
+<!--                                    <field name="base_amount"-->
+<!--                                           widget="monetary"-->
+<!--                                           options="{'currency_field': 'currency_id'}"-->
+<!--                                           sum="Total Base"/>-->
+<!--                                    <field name="discount_amount"-->
+<!--                                           widget="monetary"-->
+<!--                                           options="{'currency_field': 'currency_id'}"-->
+<!--                                           sum="Total Discount"/>-->
+                                    <field name="room_amount"
+                                           string="Net Room Amount"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"
+                                           sum="Total Net"/>
+                                    <field name="commission_percentage" string="Comm. %"/>
+                                    <field name="commission_amount"
+                                           string="Commission"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"
+                                           sum="Total Commission"/>
+                                    <field name="notes" string="Description"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+
+                            <!-- Folio-style Totals Footer -->
+                            <group class="oe_subtotal_footer mt-3" string="Commission Summary">
+                                <field name="total_base_amount"
+                                       readonly="1"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                                <field name="total_discount_amount"
+                                       readonly="1"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                                <field name="total_room_amount"
+                                       string="Total Net Room Amount"
+                                       readonly="1"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                                <field name="total_commission_amount"
+                                       string="Payable Commission"
+                                       readonly="1"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       class="oe_subtotal_footer_separator fw-bold fs-5 text-primary"/>
+                            </group>
+                        </page>
+
+                        <page string="Internal Notes" name="notes">
+                            <field name="notes" nolabel="1" placeholder="Add internal notes about this commission or billing instructions..."/>
+                        </page>
+                    </notebook>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+    <!-- ========================================================= -->
+    <!-- Agent Commission List View                                 -->
+    <!-- ========================================================= -->
+    <record id="view_hotel_agent_commission_list" model="ir.ui.view">
+        <field name="name">hotel.agent.commission.list</field>
+        <field name="model">hotel.agent.commission</field>
+        <field name="arch" type="xml">
+            <list string="Agent Commissions">
+
+                <field name="name"/>
+                <field name="agent_id"/>
+                <field name="reservation_id"/>
+                <field name="folio_id"/>
+                <field name="date"/>
+
+                <field name="total_base_amount"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"
+                       optional="hide"/>
+
+                <field name="total_discount_amount"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"
+                       optional="hide"/>
+
+                <field name="total_room_amount"
+                       string="Net Room Amount"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+
+                <field name="total_commission_amount"
+                       string="Commission Amount"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+
+                <field name="invoice_id" optional="show"/>
+
+                <field name="state"
+                       widget="badge"
+                       decoration-muted="state in ('draft', 'cancelled')"
+                       decoration-warning="state == 'confirmed'"
+                       decoration-info="state == 'billed'"
+                       decoration-success="state == 'paid'"/>
+                <field name="commission_email_sent" widget="boolean" optional="show" string="Email Sent"/>
+
+                <field name="currency_id" column_invisible="1"/>
+
+            </list>
+        </field>
+    </record>
+
+    <!-- ========================================================= -->
+    <!-- Agent Commission Search View                               -->
+    <!-- ========================================================= -->
+    <record id="view_hotel_agent_commission_search" model="ir.ui.view">
+        <field name="name">hotel.agent.commission.search</field>
+        <field name="model">hotel.agent.commission</field>
+        <field name="arch" type="xml">
+
+            <search string="Agent Commissions">
+
+                <field name="name" string="Reference"/>
+                <field name="agent_id" string="Travel Agent"/>
+                <field name="reservation_id" string="Reservation"/>
+                <field name="folio_id" string="Folio"/>
+
+                <separator/>
+
+                <filter name="draft"
+                        string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+
+                <filter name="confirmed"
+                        string="Confirmed"
+                        domain="[('state', '=', 'confirmed')]"/>
+
+                <filter name="billed"
+                        string="Billed"
+                        domain="[('state', '=', 'billed')]"/>
+
+                <filter name="paid"
+                        string="Paid"
+                        domain="[('state', '=', 'paid')]"/>
+
+                <filter name="cancelled"
+                        string="Cancelled"
+                        domain="[('state', '=', 'cancelled')]"/>
+
+                <separator/>
+
+                <group>
+                    <filter name="group_agent"
+                            string="Travel Agent"
+                            context="{'group_by': 'agent_id'}"/>
+                    <filter name="group_state"
+                            string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_date"
+                            string="Date"
+                            context="{'group_by': 'date'}"/>
+                </group>
+
+            </search>
+
+        </field>
+    </record>
+
+    <!-- ========================================================= -->
+    <!-- Action                                                     -->
+    <!-- ========================================================= -->
+    <record id="action_hotel_agent_commission" model="ir.actions.act_window">
+        <field name="name">Agent Commissions</field>
+        <field name="res_model">hotel.agent.commission</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hotel_agent_commission_search"/>
+        <field name="context">{}</field>
+            <field name="group_ids" eval="[(6, 0, [
+            ref('vs_hotel_management.group_hotel_billing_user'),
+            ref('vs_hotel_management.group_hotel_billing_manager'),
+            ref('vs_hotel_management.group_hotel_gm_user'),
+            ref('vs_hotel_management.group_hotel_manager'),
+            ref('vs_hotel_management.group_hotel_gm_bridge'),
+            ref('vs_hotel_management.group_hotel_admin_user'),
+            ref('vs_hotel_management.group_hotel_admin'),
+            ref('vs_hotel_management.group_hotel_admin_bridge'),
+        ])]"/>
+    </record>
+
+</odoo>

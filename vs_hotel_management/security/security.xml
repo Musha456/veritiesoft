@@ -3,175 +3,306 @@
     <data noupdate="0">
 
         <!-- ========================================================== -->
-        <!-- Hotel Top Level Category -->
+        <!-- Module Category: Hotel Management                          -->
         <!-- ========================================================== -->
         <record model="ir.module.category" id="module_category_hotel">
             <field name="name">Hotel Management</field>
+            <field name="description">User access permissions for the Hotel Management System</field>
             <field name="sequence">1</field>
         </record>
 
         <!-- ========================================================== -->
-        <!-- Hotel Privileges (Scopes) -->
+        <!-- 5 Privileges — one per primary role.                       -->
+        <!-- Each renders as a separate dropdown on the User form.      -->
+        <!-- Ordering: lowest sequence = leftmost dropdown.             -->
         <!-- ========================================================== -->
-        <record model="res.groups.privilege" id="privilege_hotel_management">
-            <field name="name">Settings</field>
-            <field name="category_id" ref="vs_hotel_management.module_category_hotel"/>
-            <field name="sequence">0</field>
-        </record>
 
-        <record model="res.groups.privilege" id="privilege_hotel_reservation">
-            <field name="name">Reservation</field>
+        <record model="res.groups.privilege" id="privilege_hotel_gm">
+            <field name="name">General Manager</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel"/>
             <field name="sequence">10</field>
+            <field name="placeholder">No</field>
         </record>
 
-        <record model="res.groups.privilege" id="privilege_hotel_room">
-            <field name="name">Room</field>
+        <record model="res.groups.privilege" id="privilege_hotel_front_office">
+            <field name="name">Front Office</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel"/>
-            <field name="sequence">11</field>
+            <field name="sequence">20</field>
+            <field name="placeholder">No</field>
         </record>
 
         <record model="res.groups.privilege" id="privilege_hotel_housekeeping">
             <field name="name">Housekeeping</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel"/>
-            <field name="sequence">12</field>
+            <field name="sequence">30</field>
+            <field name="placeholder">No</field>
         </record>
+
 
         <record model="res.groups.privilege" id="privilege_hotel_maintenance">
             <field name="name">Maintenance</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel"/>
-            <field name="sequence">13</field>
+            <field name="sequence">50</field>
+            <field name="placeholder">No</field>
         </record>
 
-        <record model="res.groups.privilege" id="privilege_hotel_billing">
-            <field name="name">Billing</field>
+
+        <record model="res.groups.privilege" id="privilege_hotel_accountant">
+            <field name="name">Accountant</field>
             <field name="category_id" ref="vs_hotel_management.module_category_hotel"/>
-            <field name="sequence">14</field>
+            <field name="sequence">40</field>
+            <field name="placeholder">No</field>
         </record>
 
-        <record model="res.groups.privilege" id="privilege_hotel_reporting">
-            <field name="name">Reporting</field>
-            <field name="category_id" ref="vs_hotel_management.module_category_hotel"/>
-            <field name="sequence">15</field>
-        </record>
+        <!-- ============================================================
+             IMPORTANT: record ordering matters.
+             Bridge groups reference departmental managers, so all
+             departmental User + Manager groups must be defined FIRST,
+             then bridge groups, then GM + Admin (which ref the bridges).
+        ============================================================ -->
 
         <!-- ========================================================== -->
-        <!-- Settings Groups -->
+        <!-- Role 1 User: Hotel Administrator User (define early)       -->
         <!-- ========================================================== -->
-        <record id="group_hotel_setting_manager" model="res.groups">
-            <field name="name">Settings Manager</field>
-            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_management"/>
+        <record id="group_hotel_admin_user" model="res.groups">
+            <field name="name">Hotel Administrator User</field>
+            <field name="sequence">10</field>
+            <field name="privilege_id" eval="False"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="comment">Hotel Administrator User: full read access across all hotel models; can manage settings and configuration.</field>
         </record>
 
         <!-- ========================================================== -->
-        <!-- Reservation Groups -->
+        <!-- Role 2 User: General Manager User (define early)           -->
+        <!-- ========================================================== -->
+        <record id="group_hotel_gm_user" model="res.groups">
+            <field name="name">General Manager User</field>
+            <field name="sequence">10</field>
+            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_gm"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">General Manager User: broad read access across all hotel operations for oversight and reporting.</field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- Role 3: Front Office (User & Manager)                      -->
         <!-- ========================================================== -->
         <record id="group_hotel_reservation_user" model="res.groups">
-            <field name="name">Reservation User</field>
-            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_reservation"/>
+            <field name="name">Front Office User</field>
+            <field name="sequence">10</field>
+            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_front_office"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="comment">Front Desk staff: view and process guests, check-in, check-out, reservations, and room bookings.</field>
         </record>
 
         <record id="group_hotel_reservation_manager" model="res.groups">
-            <field name="name">Reservation Manager</field>
-            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_reservation"/>
+            <field name="name">Front Office Manager</field>
+            <field name="sequence">20</field>
+            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_front_office"/>
             <field name="implied_ids" eval="[(4, ref('group_hotel_reservation_user'))]"/>
+            <field name="comment">Front Office Manager: departmental oversight, room configuration, pricing, overrides, reservation management, and folio creation.</field>
         </record>
 
         <!-- ========================================================== -->
-        <!-- Room Groups -->
-        <!-- ========================================================== -->
-        <record id="group_hotel_room_user" model="res.groups">
-            <field name="name">Room User</field>
-            <field name="comment">The user will have access of read and write permission</field>
-            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_room"/>
-            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
-        </record>
-
-        <!-- ========================================================== -->
-        <!-- Housekeeping Groups -->
+        <!-- Role 4: Housekeeping (User & Manager)                      -->
         <!-- ========================================================== -->
         <record id="group_hotel_housekeeping_user" model="res.groups">
             <field name="name">Housekeeping User</field>
+            <field name="sequence">10</field>
             <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_housekeeping"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="comment">Housekeeping Staff: execute cleaning tasks and submit for inspection.</field>
         </record>
 
         <record id="group_hotel_housekeeping_manager" model="res.groups">
             <field name="name">Housekeeping Manager</field>
+            <field name="sequence">20</field>
             <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_housekeeping"/>
             <field name="implied_ids" eval="[(4, ref('group_hotel_housekeeping_user'))]"/>
+            <field name="comment">Housekeeping Manager: task assignment, cleaning inspection approvals, revision requests, and room cleaning management.</field>
         </record>
 
         <!-- ========================================================== -->
-        <!-- Maintenance Groups -->
+        <!-- Role 5: Accountant (User & Manager)                        -->
+        <!-- ========================================================== -->
+        <record id="group_hotel_billing_user" model="res.groups">
+            <field name="name">Accountant User</field>
+            <field name="sequence">10</field>
+            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_accountant"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Hotel Accountant: view and manage guest folios, record payments, and view invoices.</field>
+        </record>
+
+        <record id="group_hotel_billing_manager" model="res.groups">
+            <field name="name">Accountant Manager</field>
+            <field name="sequence">20</field>
+            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_accountant"/>
+            <field name="implied_ids" eval="[(4, ref('group_hotel_billing_user'))]"/>
+            <field name="comment">Finance &amp; Accounting Management: folio closing, cancellations, travel agent commissions, vendor bill generation, and financial approvals.</field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- Role 6: Maintenance (User & Manager)                       -->
         <!-- ========================================================== -->
         <record id="group_hotel_maintenance_user" model="res.groups">
             <field name="name">Maintenance User</field>
+            <field name="sequence">10</field>
             <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_maintenance"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="comment">Maintenance Technicians: execute repair tasks and submit for inspection.</field>
         </record>
 
         <record id="group_hotel_maintenance_manager" model="res.groups">
             <field name="name">Maintenance Manager</field>
+            <field name="sequence">20</field>
             <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_maintenance"/>
             <field name="implied_ids" eval="[(4, ref('group_hotel_maintenance_user'))]"/>
+            <field name="comment">Maintenance Manager: repair approvals, technician assignment, inspection approvals, equipment management, and out-of-order handling.</field>
         </record>
 
         <!-- ========================================================== -->
-        <!-- Billing Groups -->
+        <!-- BRIDGE GROUPS (privilege_id=False)                         -->
+        <!-- These must be defined AFTER the departmental managers      -->
+        <!-- they imply, and BEFORE GM + Admin that reference them.     -->
+        <!--                                                            -->
+        <!-- Bridge groups carry cross-department ACL permissions to GM -->
+        <!-- and Admin WITHOUT forcing other privilege dropdowns to      -->
+        <!-- auto-select (which would hide the "No" option for those    -->
+        <!-- departments on the User form).                             -->
         <!-- ========================================================== -->
-        <record id="group_hotel_billing_user" model="res.groups">
-            <field name="name">Billing User</field>
-            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_billing"/>
-            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
-        </record>
 
-        <record id="group_hotel_billing_manager" model="res.groups">
-            <field name="name">Billing Manager</field>
-            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_billing"/>
-            <field name="implied_ids" eval="[(4, ref('group_hotel_billing_user'))]"/>
-        </record>
-
-        <!-- ========================================================== -->
-        <!-- Reporting Groups -->
-        <!-- ========================================================== -->
-        <record id="group_hotel_reporting_user" model="res.groups">
-            <field name="name">Reporting User</field>
-            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_reporting"/>
-            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
-        </record>
-
-        <record id="group_hotel_reporting_manager" model="res.groups">
-            <field name="name">Reporting Manager</field>
-            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_reporting"/>
-            <field name="implied_ids" eval="[(4, ref('group_hotel_reporting_user'))]"/>
-        </record>
-
-        <!-- ========================================================== -->
-        <!-- Hotel General Manager (Full Access Across All Hotel Roles) -->
-        <!-- ========================================================== -->
-        <record id="group_hotel_room_manager" model="res.groups">
-            <field name="name">Hotel Manager</field>
-            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_room"/>
+        <!-- General Manager bridge: grants FO/HK/Maint/Acct manager ACLs -->
+        <record id="group_hotel_gm_bridge" model="res.groups">
+            <field name="name">General Manager (Bridge)</field>
+            <field name="privilege_id" eval="False"/>
             <field name="implied_ids" eval="[
-                (4, ref('group_hotel_room_user')),
-                (4, ref('group_hotel_reservation_manager')),
-                (4, ref('group_hotel_housekeeping_manager')),
-                (4, ref('group_hotel_maintenance_manager')),
-                (4, ref('group_hotel_billing_manager')),
-                (4, ref('group_hotel_reporting_manager')),
-                (4, ref('group_hotel_setting_manager'))
+                (6, 0, [
+                    ref('group_hotel_reservation_manager'),
+                    ref('group_hotel_housekeeping_manager'),
+                    ref('group_hotel_maintenance_manager'),
+                    ref('group_hotel_billing_manager')
+                ])
+            ]"/>
+            <field name="comment">Internal bridge — carries cross-dept manager ACL rights to General Manager without forcing privilege dropdowns to auto-select on the User form.</field>
+        </record>
+
+        <!-- Hotel Administrator bridge: grants GM + GM bridge permissions -->
+        <record id="group_hotel_admin_bridge" model="res.groups">
+            <field name="name">Hotel Administrator (Bridge)</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[
+                (6, 0, [
+                    ref('group_hotel_manager'),
+                    ref('group_hotel_gm_bridge')
+                ])
+            ]"/>
+            <field name="comment">Internal bridge — carries GM-level ACL rights to Hotel Admin without forcing the GM privilege dropdown on the User form.</field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- Role 2 Manager: General Manager                            -->
+        <!-- Defined AFTER bridge groups so ordering resolves correctly  -->
+        <!-- ========================================================== -->
+        <record id="group_hotel_manager" model="res.groups">
+            <field name="name">General Manager</field>
+            <field name="sequence">20</field>
+            <field name="privilege_id" ref="vs_hotel_management.privilege_hotel_gm"/>
+            <field name="implied_ids" eval="[
+                (6, 0, [
+                    ref('group_hotel_gm_user'),
+                    ref('group_hotel_gm_bridge')
+                ])
+            ]"/>
+            <field name="comment">General Manager: overarching operational management across all hotel departments. Gets cross-dept manager ACLs via bridge group — does NOT force other privilege dropdowns.</field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- Role 1 Manager: Hotel Administrator Manager                 -->
+        <!-- Defined AFTER GM and bridge groups                          -->
+        <!-- ========================================================== -->
+        <record id="group_hotel_admin" model="res.groups">
+            <field name="name">Hotel Administrator Manager</field>
+            <field name="sequence">20</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[
+                (6, 0, [
+                    ref('group_hotel_admin_user'),
+                    ref('group_hotel_admin_bridge')
+                ])
             ]"/>
             <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="comment">Hotel Administrator Manager: full administrative access across all hotel operations. Gets all permissions via bridge group — does NOT force other privilege dropdowns.</field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- Backward-Compatibility Aliases (privilege_id=False)        -->
+        <!-- Do NOT appear as dropdowns on the User form.               -->
+        <!-- Keep existing code/data references working.                -->
+        <!-- ========================================================== -->
+
+        <!-- Legacy: group_hotel_room maps to Front Office Manager -->
+        <record id="group_hotel_room" model="res.groups">
+            <field name="name">Room Manager</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[(4, ref('group_hotel_reservation_manager'))]"/>
+            <field name="comment">Legacy room management group — maps to Front Office Manager.</field>
+        </record>
+
+        <!-- Legacy: group_hotel_reporting maps to General Manager User -->
+        <record id="group_hotel_reporting" model="res.groups">
+            <field name="name">Reporting</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[(4, ref('group_hotel_gm_user'))]"/>
+            <field name="comment">Legacy reporting group — maps to General Manager User.</field>
+        </record>
+
+        <!-- Legacy: group_hotel_reservation maps to Front Office User -->
+        <record id="group_hotel_reservation" model="res.groups">
+            <field name="name">Reservation (Base)</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[(4, ref('group_hotel_reservation_user'))]"/>
+            <field name="comment">Legacy reservation group — maps to Front Office User.</field>
+        </record>
+
+        <!-- Other legacy aliases -->
+        <record id="group_hotel_room_manager" model="res.groups">
+            <field name="name">Room Manager (Alias)</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[(4, ref('group_hotel_room'))]"/>
+        </record>
+        <record id="group_hotel_room_user" model="res.groups">
+            <field name="name">Room User (Alias)</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[(4, ref('group_hotel_reservation_user'))]"/>
+        </record>
+        <record id="group_hotel_setting_manager" model="res.groups">
+            <field name="name">Settings Manager (Alias)</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[(4, ref('group_hotel_admin'))]"/>
+        </record>
+        <record id="group_hotel_housekeeping" model="res.groups">
+            <field name="name">Housekeeping (Base)</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[(4, ref('group_hotel_housekeeping_user'))]"/>
+        </record>
+        <record id="group_hotel_maintenance" model="res.groups">
+            <field name="name">Maintenance (Base)</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[(4, ref('group_hotel_maintenance_user'))]"/>
+        </record>
+        <record id="group_hotel_billing" model="res.groups">
+            <field name="name">Finance (Base)</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[(4, ref('group_hotel_billing_user'))]"/>
+        </record>
+        <record id="group_hotel_reporting_manager" model="res.groups">
+            <field name="name">Reporting Manager (Alias)</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[(4, ref('group_hotel_manager'))]"/>
+        </record>
+        <record id="group_hotel_reporting_user" model="res.groups">
+            <field name="name">Reporting User (Alias)</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[(4, ref('group_hotel_gm_user'))]"/>
         </record>
 
     </data>

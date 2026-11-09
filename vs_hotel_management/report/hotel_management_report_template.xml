@@ -1,0 +1,615 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========================================================== -->
+    <!-- Unified Hotel Management QWeb PDF Report Template          -->
+    <!-- ========================================================== -->
+    <template id="report_hotel_management_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="data" t-value="doc.get_report_data()"/>
+                <t t-set="hotel" t-value="data['hotel']"/>
+                <t t-set="currency" t-value="data['currency']"/>
+                <t t-set="kpis" t-value="data['kpis']"/>
+                <t t-set="rep_type" t-value="data['report_type']"/>
+
+                <div class="article o_report_layout_standard" t-att-data-oe-model="doc._name" t-att-data-oe-id="doc.id">
+                    
+                    <!-- BRAND HEADER -->
+                    <div class="row pb-3 mb-4 border-bottom align-items-center">
+                        <div class="col-7">
+                            <h2 class="mb-1 text-primary fw-bold" t-out="data['title']"/>
+                            <div class="text-muted small">
+                                <span class="fw-bold" t-out="hotel.name"/>
+                                <t t-if="hotel.code and hotel.code != '/'"> (<span t-out="hotel.code"/>)</t>
+                                <span class="mx-2">•</span>
+                                <span>Period: <strong><span t-out="data['date_from']"/></strong> to <strong><span t-out="data['date_to']"/></strong></span>
+                            </div>
+                            <t t-if="data.get('filter_desc')">
+                                <div class="text-muted small mt-1">
+                                    <span class="badge bg-light text-dark border" t-out="data['filter_desc']"/>
+                                </div>
+                            </t>
+                        </div>
+                        <div class="col-5 text-end">
+                            <t t-if="hotel.logo">
+                                <img t-att-src="image_data_uri(hotel.logo)" style="max-height: 55px; max-width: 180px;" alt="Hotel Logo"/>
+                            </t>
+                            <t t-elif="doc.company_id.logo">
+                                <img t-att-src="image_data_uri(doc.company_id.logo)" style="max-height: 55px; max-width: 180px;" alt="Company Logo"/>
+                            </t>
+                            <div class="text-muted small mt-1">
+                                Generated on <span t-out="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========================================================== -->
+                    <!-- 1. RESERVATION REGISTER & ANALYSIS                         -->
+                    <!-- ========================================================== -->
+                    <t t-if="rep_type == 'reservation_register'">
+                        <!-- KPI Cards -->
+                        <div class="row g-2 mb-4 text-center">
+                            <div class="col-3">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">Total Bookings</div>
+                                    <div class="fs-5 fw-bold text-dark" t-out="kpis['count']"/>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">Room Nights</div>
+                                    <div class="fs-5 fw-bold text-primary" t-out="kpis['total_nights']"/>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">Net Room Revenue</div>
+                                    <div class="fs-5 fw-bold text-success" t-out="kpis['total_net_room']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">Grand Total</div>
+                                    <div class="fs-5 fw-bold text-dark" t-out="kpis['total_amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Table -->
+                        <table class="table table-sm table-striped border align-middle small">
+                            <thead class="table-primary text-nowrap">
+                                <tr>
+                                    <th>Ref</th>
+                                    <th>Guest</th>
+                                    <th>Rooms</th>
+                                    <th>Source</th>
+                                    <th>Stay Dates</th>
+                                    <th class="text-center">Nights</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Net Room</th>
+                                    <th class="text-end">Total</th>
+                                    <th>Payment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="data['records']" t-as="rec">
+                                    <tr>
+                                        <td class="fw-bold" t-out="rec['name']"/>
+                                        <td>
+                                            <span t-out="rec['guest_name']"/>
+                                            <t t-if="rec['guest_phone']"><br/><span class="text-muted small" t-out="rec['guest_phone']"/></t>
+                                        </td>
+                                        <td t-out="rec['rooms']"/>
+                                        <td t-out="rec['source']"/>
+                                        <td>
+                                            <span t-out="rec['check_in']"/><br/>
+                                            <span class="text-muted" t-out="rec['check_out']"/>
+                                        </td>
+                                        <td class="text-center" t-out="rec['nights']"/>
+                                        <td>
+                                            <span class="badge bg-secondary" t-out="rec['state']"/>
+                                        </td>
+                                        <td class="text-end" t-out="rec['net_room_amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        <td class="text-end fw-bold" t-out="rec['total_amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        <td>
+                                            <span t-attf-class="badge #{'bg-success' if rec['payment_status'] == 'Paid' else ('bg-warning text-dark' if rec['payment_status'] == 'Partially Paid' else 'bg-danger')}" t-out="rec['payment_status']"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td colspan="5">TOTALS (<span t-out="kpis['count']"/> Records)</td>
+                                    <td class="text-center" t-out="kpis['total_nights']"/>
+                                    <td></td>
+                                    <td class="text-end" t-out="kpis['total_net_room']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <td class="text-end" t-out="kpis['total_amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </t>
+
+                    <!-- ========================================================== -->
+                    <!-- 2. FRONT DESK MOVEMENTS & IN-HOUSE                         -->
+                    <!-- ========================================================== -->
+                    <t t-elif="rep_type == 'frontdesk_movements'">
+                        <!-- Summary Pills -->
+                        <div class="row g-2 mb-4 text-center">
+                            <div class="col-4">
+                                <div class="p-2 border rounded bg-light border-primary">
+                                    <div class="text-muted small text-uppercase">Expected Arrivals</div>
+                                    <div class="fs-4 fw-bold text-primary" t-out="kpis['arrivals_count']"/>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 border rounded bg-light border-success">
+                                    <div class="text-muted small text-uppercase">Currently In-House</div>
+                                    <div class="fs-4 fw-bold text-success" t-out="kpis['in_house_count']"/>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 border rounded bg-light border-warning">
+                                    <div class="text-muted small text-uppercase">Expected Departures</div>
+                                    <div class="fs-4 fw-bold text-warning" t-out="kpis['departures_count']"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 1. Expected Arrivals Section -->
+                        <h5 class="text-primary border-bottom pb-1 mb-2 fw-bold">1. Expected Arrivals</h5>
+                        <t t-if="not data['arrivals']">
+                            <p class="text-muted fst-italic small mb-4">No expected arrivals for this date.</p>
+                        </t>
+                        <t t-else="">
+                            <table class="table table-sm table-striped border small mb-4">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ref</th>
+                                        <th>Guest</th>
+                                        <th>Rooms</th>
+                                        <th>Expected Time</th>
+                                        <th class="text-center">Nights</th>
+                                        <th class="text-center">Guests</th>
+                                        <th>Source</th>
+                                        <th class="text-end">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="data['arrivals']" t-as="a">
+                                        <tr>
+                                            <td class="fw-bold" t-out="a['res_name']"/>
+                                            <td>
+                                                <span t-out="a['guest']"/><br/>
+                                                <span class="text-muted small" t-out="a['phone']"/>
+                                            </td>
+                                            <td t-out="a['rooms']"/>
+                                            <td t-out="a['expected_time']"/>
+                                            <td class="text-center" t-out="a['nights']"/>
+                                            <td class="text-center"><span t-out="a['adults']"/>A / <span t-out="a['children']"/>C</td>
+                                            <td t-out="a['source']"/>
+                                            <td class="text-end fw-bold" t-out="a['balance']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <!-- 2. Currently In-House Section -->
+                        <h5 class="text-success border-bottom pb-1 mb-2 fw-bold">2. In-House Guests</h5>
+                        <t t-if="not data['in_house']">
+                            <p class="text-muted fst-italic small mb-4">No guests currently in-house.</p>
+                        </t>
+                        <t t-else="">
+                            <table class="table table-sm table-striped border small mb-4">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ref</th>
+                                        <th>Guest</th>
+                                        <th>Rooms</th>
+                                        <th>Check-in</th>
+                                        <th>Check-out</th>
+                                        <th class="text-center">Guests</th>
+                                        <th>Folio</th>
+                                        <th class="text-end">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="data['in_house']" t-as="h">
+                                        <tr>
+                                            <td class="fw-bold" t-out="h['res_name']"/>
+                                            <td>
+                                                <span t-out="h['guest']"/><br/>
+                                                <span class="text-muted small" t-out="h['phone']"/>
+                                            </td>
+                                            <td class="fw-bold text-primary" t-out="h['rooms']"/>
+                                            <td t-out="h['check_in']"/>
+                                            <td t-out="h['check_out']"/>
+                                            <td class="text-center"><span t-out="h['adults']"/>A / <span t-out="h['children']"/>C</td>
+                                            <td t-out="h['folio_name']"/>
+                                            <td class="text-end fw-bold" t-out="h['balance']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <!-- 3. Expected Departures Section -->
+                        <h5 class="text-warning border-bottom pb-1 mb-2 fw-bold">3. Expected Departures</h5>
+                        <t t-if="not data['departures']">
+                            <p class="text-muted fst-italic small mb-4">No departures scheduled for this date.</p>
+                        </t>
+                        <t t-else="">
+                            <table class="table table-sm table-striped border small mb-4">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ref</th>
+                                        <th>Guest</th>
+                                        <th>Rooms</th>
+                                        <th>Checkout Time</th>
+                                        <th>Folio</th>
+                                        <th>Payment</th>
+                                        <th class="text-end">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="data['departures']" t-as="d">
+                                        <tr>
+                                            <td class="fw-bold" t-out="d['res_name']"/>
+                                            <td>
+                                                <span t-out="d['guest']"/><br/>
+                                                <span class="text-muted small" t-out="d['phone']"/>
+                                            </td>
+                                            <td t-out="d['rooms']"/>
+                                            <td t-out="d['checkout_time']"/>
+                                            <td t-out="d['folio_name']"/>
+                                            <td>
+                                                <span t-attf-class="badge #{'bg-success' if d['payment_status'] == 'Paid' else 'bg-danger'}" t-out="d['payment_status']"/>
+                                            </td>
+                                            <td class="text-end fw-bold text-danger" t-out="d['balance']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                    </t>
+
+                    <!-- ========================================================== -->
+                    <!-- 3. ROOM OCCUPANCY & KPI PERFORMANCE (ADR & RevPAR)         -->
+                    <!-- ========================================================== -->
+                    <t t-elif="rep_type == 'occupancy_performance'">
+                        <!-- Hospitality KPI Cards -->
+                        <div class="row g-2 mb-4 text-center">
+                            <div class="col-4">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">Occupancy Rate</div>
+                                    <div class="fs-4 fw-bold text-primary"><span t-out="'%.1f' % kpis['occupancy_rate']"/>%</div>
+                                    <div class="text-muted small"><span t-out="kpis['occupied_nights']"/> / <span t-out="kpis['available_nights']"/> nights</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">Average Daily Rate (ADR)</div>
+                                    <div class="fs-4 fw-bold text-success" t-out="kpis['adr']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <div class="text-muted small">Revenue / Occupied Night</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">RevPAR</div>
+                                    <div class="fs-4 fw-bold text-dark" t-out="kpis['revpar']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <div class="text-muted small">Revenue / Available Room</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Breakdown Table -->
+                        <table class="table table-sm table-striped border small">
+                            <thead class="table-primary text-nowrap">
+                                <tr>
+                                    <th>Room Category / Type</th>
+                                    <th class="text-center">Total Rooms</th>
+                                    <th class="text-center">Available Nights</th>
+                                    <th class="text-center">Occupied Nights</th>
+                                    <th class="text-center">Occupancy %</th>
+                                    <th class="text-end">Room Revenue</th>
+                                    <th class="text-end">ADR</th>
+                                    <th class="text-end">RevPAR</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="data['categories']" t-as="c">
+                                    <tr>
+                                        <td class="fw-bold" t-out="c['category']"/>
+                                        <td class="text-center" t-out="c['total_rooms']"/>
+                                        <td class="text-center" t-out="c['available_nights']"/>
+                                        <td class="text-center" t-out="c['occupied_nights']"/>
+                                        <td class="text-center fw-bold"><span t-out="'%.1f' % c['occupancy_rate']"/>%</td>
+                                        <td class="text-end" t-out="c['room_revenue']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        <td class="text-end" t-out="c['adr']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        <td class="text-end" t-out="c['revpar']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td>OVERALL TOTALS</td>
+                                    <td class="text-center" t-out="kpis['total_rooms']"/>
+                                    <td class="text-center" t-out="kpis['available_nights']"/>
+                                    <td class="text-center" t-out="kpis['occupied_nights']"/>
+                                    <td class="text-center"><span t-out="'%.1f' % kpis['occupancy_rate']"/>%</td>
+                                    <td class="text-end" t-out="kpis['total_room_revenue']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <td class="text-end" t-out="kpis['adr']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <td class="text-end" t-out="kpis['revpar']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </t>
+
+                    <!-- ========================================================== -->
+                    <!-- 4. FOLIO REVENUE & FINANCIAL SUMMARY                       -->
+                    <!-- ========================================================== -->
+                    <t t-elif="rep_type == 'financial_revenue'">
+                        <!-- KPI Cards -->
+                        <div class="row g-2 mb-4 text-center">
+                            <div class="col-3">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">Total Billed</div>
+                                    <div class="fs-5 fw-bold text-dark" t-out="kpis['total_billed']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">Taxes</div>
+                                    <div class="fs-5 fw-bold text-muted" t-out="kpis['total_tax']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">Total Payments</div>
+                                    <div class="fs-5 fw-bold text-success" t-out="kpis['total_paid']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">Outstanding Balance</div>
+                                    <div class="fs-5 fw-bold text-danger" t-out="kpis['total_balance']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Table -->
+                        <table class="table table-sm table-striped border small">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>Folio Ref</th>
+                                    <th>Guest</th>
+                                    <th>Stay Dates</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Untaxed</th>
+                                    <th class="text-end">Tax</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-end">Paid</th>
+                                    <th class="text-end">Balance</th>
+                                    <th>Invoice</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="data['records']" t-as="rec">
+                                    <tr>
+                                        <td class="fw-bold" t-out="rec['name']"/>
+                                        <td t-out="rec['guest']"/>
+                                        <td><span t-out="rec['check_in']"/> - <span t-out="rec['check_out']"/></td>
+                                        <td>
+                                            <span class="badge bg-secondary" t-out="rec['state']"/>
+                                        </td>
+                                        <td class="text-end" t-out="rec['untaxed']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        <td class="text-end" t-out="rec['tax']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        <td class="text-end fw-bold" t-out="rec['total']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        <td class="text-end text-success" t-out="rec['paid']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        <td class="text-end text-danger fw-bold" t-out="rec['balance']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        <td>
+                                            <span t-out="rec['invoice']"/><br/>
+                                            <span class="badge bg-light text-dark border" t-out="rec['invoice_state']"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td colspan="4">TOTALS (<span t-out="kpis['folio_count']"/> Folios)</td>
+                                    <td class="text-end" t-out="kpis['total_untaxed']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <td class="text-end" t-out="kpis['total_tax']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <td class="text-end" t-out="kpis['total_billed']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <td class="text-end" t-out="kpis['total_paid']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <td class="text-end text-danger" t-out="kpis['total_balance']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </t>
+
+                    <!-- ========================================================== -->
+                    <!-- 5. TRAVEL AGENT COMMISSIONS                                -->
+                    <!-- ========================================================== -->
+                    <t t-elif="rep_type == 'agent_commissions'">
+                        <!-- KPI Cards -->
+                        <div class="row g-2 mb-4 text-center">
+                            <div class="col-4">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">Net Room Production</div>
+                                    <div class="fs-5 fw-bold text-dark" t-out="kpis['total_net_room']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">Paid Commission</div>
+                                    <div class="fs-5 fw-bold text-success" t-out="kpis['total_paid_commission']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted small text-uppercase">Unpaid Commission</div>
+                                    <div class="fs-5 fw-bold text-danger" t-out="kpis['total_unpaid_commission']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Table -->
+                        <table class="table table-sm table-striped border small">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>Ref</th>
+                                    <th>Date</th>
+                                    <th>Travel Agent</th>
+                                    <th>Reservation</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Net Room Amount</th>
+                                    <th class="text-end">Commission</th>
+                                    <th>Vendor Bill</th>
+                                    <th>Payment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="data['records']" t-as="rec">
+                                    <tr>
+                                        <td class="fw-bold" t-out="rec['name']"/>
+                                        <td t-out="rec['date']"/>
+                                        <td class="fw-bold" t-out="rec['agent_name']"/>
+                                        <td t-out="rec['reservation']"/>
+                                        <td>
+                                            <span class="badge bg-secondary" t-out="rec['state']"/>
+                                        </td>
+                                        <td class="text-end" t-out="rec['net_room_amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        <td class="text-end fw-bold" t-out="rec['commission_amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        <td t-out="rec['invoice']"/>
+                                        <td>
+                                            <span t-attf-class="badge #{'bg-success' if rec['is_paid'] else 'bg-warning text-dark'}">
+                                                <t t-if="rec['is_paid']">Paid</t>
+                                                <t t-else="">Pending</t>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td colspan="5">TOTALS (<span t-out="kpis['commission_count']"/> Commissions)</td>
+                                    <td class="text-end" t-out="kpis['total_net_room']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <td class="text-end text-primary" t-out="kpis['total_commission']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </t>
+
+                    <!-- ========================================================== -->
+                    <!-- 6. OPERATIONS SUMMARY (HOUSEKEEPING & MAINTENANCE)         -->
+                    <!-- ========================================================== -->
+                    <t t-elif="rep_type == 'operations_summary'">
+                        <!-- Summary Pills -->
+                        <div class="row g-2 mb-4 text-center">
+                            <div class="col-3">
+                                <div class="p-2 border rounded bg-light border-primary">
+                                    <div class="text-muted small text-uppercase">Housekeeping Tasks</div>
+                                    <div class="fs-5 fw-bold text-primary"><span t-out="kpis['hk_completed']"/> / <span t-out="kpis['hk_total']"/> done</div>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-2 border rounded bg-light border-warning">
+                                    <div class="text-muted small text-uppercase">HK Pending</div>
+                                    <div class="fs-5 fw-bold text-warning" t-out="kpis['hk_pending']"/>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-2 border rounded bg-light border-info">
+                                    <div class="text-muted small text-uppercase">Maintenance Requests</div>
+                                    <div class="fs-5 fw-bold text-info"><span t-out="kpis['maint_completed']"/> / <span t-out="kpis['maint_total']"/> done</div>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-2 border rounded bg-light border-danger">
+                                    <div class="text-muted small text-uppercase">Maint Pending</div>
+                                    <div class="fs-5 fw-bold text-danger" t-out="kpis['maint_pending']"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Housekeeping Section -->
+                        <t t-if="data['housekeeping']">
+                            <h5 class="text-primary border-bottom pb-1 mb-2 fw-bold">Housekeeping Tasks</h5>
+                            <table class="table table-sm table-striped border small mb-4">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ref</th>
+                                        <th>Room</th>
+                                        <th>Type</th>
+                                        <th>Priority</th>
+                                        <th>Scheduled</th>
+                                        <th>Assigned Staff</th>
+                                        <th>Completed At</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="data['housekeeping']" t-as="hk">
+                                        <tr>
+                                            <td class="fw-bold" t-out="hk['name']"/>
+                                            <td class="fw-bold text-primary" t-out="hk['room']"/>
+                                            <td t-out="hk['type']"/>
+                                            <td t-out="hk['priority']"/>
+                                            <td t-out="hk['scheduled']"/>
+                                            <td t-out="hk['assigned_to']"/>
+                                            <td t-out="hk['completed_at']"/>
+                                            <td>
+                                                <span t-attf-class="badge #{'bg-success' if hk['state'] == 'Done' else 'bg-secondary'}" t-out="hk['state']"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <!-- Maintenance Section -->
+                        <t t-if="data['maintenance']">
+                            <h5 class="text-info border-bottom pb-1 mb-2 fw-bold">Maintenance Requests</h5>
+                            <table class="table table-sm table-striped border small mb-4">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ref</th>
+                                        <th>Room</th>
+                                        <th>Type</th>
+                                        <th>Priority</th>
+                                        <th>Scheduled</th>
+                                        <th>Technician</th>
+                                        <th>Completed At</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="data['maintenance']" t-as="m">
+                                        <tr>
+                                            <td class="fw-bold" t-out="m['name']"/>
+                                            <td class="fw-bold text-primary" t-out="m['room']"/>
+                                            <td t-out="m['type']"/>
+                                            <td t-out="m['priority']"/>
+                                            <td t-out="m['scheduled']"/>
+                                            <td t-out="m['assigned_to']"/>
+                                            <td t-out="m['completed_at']"/>
+                                            <td>
+                                                <span t-attf-class="badge #{'bg-success' if m['state'] == 'Completed' else 'bg-secondary'}" t-out="m['state']"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                    </t>
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

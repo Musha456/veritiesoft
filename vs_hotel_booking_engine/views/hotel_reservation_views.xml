@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_hotel_reservation_form_inherit_booking_engine" model="ir.ui.view">
+        <field name="name">hotel.reservation.form.inherit.booking.engine</field>
+        <field name="model">hotel.reservation</field>
+        <field name="inherit_id" ref="vs_hotel_management.view_hotel_reservation_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Accompanying Guests" name="page_accompanying_guests">
+                    <field name="accompanying_guest_ids">
+                        <list editable="bottom">
+                            <field name="name"/>
+                            <field name="id_type"/>
+                            <field name="id_number"/>
+                            <field name="age_category"/>
+                            <field name="gender"/>
+                            <field name="phone"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Online Booking &amp; Advance Payment" name="page_advance_payment">
+                    <group>
+                        <group string="Advance Payment Details">
+                            <field name="advance_payment_choice"/>
+                            <field name="advance_payment_amount"/>
+                            <field name="advance_paid_amount"/>
+                            <field name="advance_payment_status"
+                                   widget="badge"
+                                   decoration-success="advance_payment_status == 'paid'"
+                                   decoration-info="advance_payment_status == 'pay_at_hotel'"
+                                   decoration-warning="advance_payment_status == 'unpaid'"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

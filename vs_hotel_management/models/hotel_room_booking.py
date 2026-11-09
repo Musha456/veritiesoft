@@ -6,7 +6,7 @@ class HotelRoomBooking(models.Model):
     _name = "hotel.room.booking"
     _description = "Hotel Room Booking"
     _inherit = ["mail.thread", "mail.activity.mixin"]
-    _order = "check_in, room_id"
+    _order = "check_in desc, room_id"
     _check_company_auto = True
 
     name = fields.Char(
@@ -317,7 +317,7 @@ class HotelRoomBooking(models.Model):
 
             if mark_dirty:
                 booking.room_id.write({"status": "dirty"})
-                self.env["hotel.housekeeping"].create_checkout_task(
+                self.env["hotel.housekeeping"].sudo().create_checkout_task(
                     room=booking.room_id,
                     reservation=booking.reservation_id,
                     room_booking=booking,

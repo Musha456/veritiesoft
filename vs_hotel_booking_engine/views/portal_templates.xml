@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Portal Home: Hotel Reservations Tile -->
+    <template id="portal_my_home_hotel" name="Portal My Home: Hotel Reservations" inherit_id="portal.portal_my_home" priority="25">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/vs_hotel_management/static/description/icon.png'"/>
+                <t t-set="title">Hotel Reservations</t>
+                <t t-set="url" t-value="'/my/reservations'"/>
+                <t t-set="placeholder_count" t-value="'reservation_count'"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Portal Breadcrumbs -->
+    <template id="portal_breadcrumbs_hotel" name="Portal Breadcrumbs: Hotel" inherit_id="portal.portal_breadcrumbs">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'hotel_reservations' or reservation" class="breadcrumb-item">
+                <a t-if="reservation" href="/my/reservations">Hotel Reservations</a>
+                <t t-else="">Hotel Reservations</t>
+            </li>
+            <li t-if="reservation" class="breadcrumb-item active">
+                <t t-out="reservation.name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <!-- Portal: Reservations List -->
+    <template id="portal_my_reservations" name="My Hotel Reservations">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="fw-bold mb-0">My Hotel Reservations</h3>
+                <a href="/hotel/book" class="btn btn-primary btn-sm">
+                    <i class="fa fa-plus me-1"/> Book New Room
+                </a>
+            </div>
+
+            <!-- Filters -->
+            <div class="btn-group btn-group-sm mb-3" role="group">
+                <a href="/my/reservations?filterby=all"
+                   t-att-class="'btn ' + ('btn-primary' if filterby == 'all' else 'btn-outline-secondary')">
+                    All
+                </a>
+                <a href="/my/reservations?filterby=active"
+                   t-att-class="'btn ' + ('btn-primary' if filterby == 'active' else 'btn-outline-secondary')">
+                    Active / Upcoming
+                </a>
+                <a href="/my/reservations?filterby=completed"
+                   t-att-class="'btn ' + ('btn-primary' if filterby == 'completed' else 'btn-outline-secondary')">
+                    Past / Completed
+                </a>
+                <a href="/my/reservations?filterby=cancelled"
+                   t-att-class="'btn ' + ('btn-primary' if filterby == 'cancelled' else 'btn-outline-secondary')">
+                    Cancelled
+                </a>
+            </div>
+
+            <t t-if="not reservations">
+                <div class="alert alert-info py-4 text-center">
+                    <i class="fa fa-info-circle fa-2x mb-2"/>
+                    <p class="mb-0">You have no reservations matching this filter.</p>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="table-responsive bg-white rounded-3 shadow-sm border">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Reference</th>
+                                <th>Hotel Property</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Rooms</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-end">Balance</th>
+                                <th class="text-center">Status</th>
+                                <th/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="reservations" t-as="res">
+                                <tr>
+                                    <td>
+                                        <a t-att-href="'/my/reservation/%s' % res.id" class="fw-bold text-decoration-none">
+                                            <t t-out="res.name"/>
+                                        </a>
+                                    </td>
+                                    <td><t t-out="res.hotel_id.name"/></td>
+                                    <td><t t-out="res.check_in.strftime('%d %b %Y')"/></td>
+                                    <td><t t-out="res.check_out.strftime('%d %b %Y')"/></td>
+                                    <td>
+                                        <t t-out="', '.join(res.line_ids.mapped('room_id.room_number'))"/>
+                                    </td>
+                                    <td class="text-end fw-semibold">
+                                        <t t-out="res.currency_id.symbol"/><t t-out="'%.2f' % res.total_amount"/>
+                                    </td>
+                                    <td class="text-end fw-bold" t-att-class="res.folio_balance > 0 ? 'text-danger' : 'text-success'">
+                                        <t t-out="res.currency_id.symbol"/><t t-out="'%.2f' % res.folio_balance"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge"
+                                              t-att-class="{
+                                                  'bg-success': res.state in ('confirmed', 'completed'),
+                                                  'bg-primary': res.state == 'check_in',
+                                                  'bg-secondary': res.state == 'checked_out',
+                                                  'bg-danger': res.state == 'cancelled',
+                                                  'bg-warning text-dark': res.state == 'draft'
+                                              }">
+                                            <t t-out="dict(res._fields['state'].selection).get(res.state, res.state)"/>
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a t-att-href="'/my/reservation/%s' % res.id" class="btn btn-sm btn-outline-primary">
+                                            View Stay &#8594;
+                                        </a>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Portal: Detailed Reservation View -->
+    <template id="portal_my_reservation_detail" name="My Reservation Detail">
+        <t t-call="portal.portal_layout">
+            <div class="o_hotel_booking_engine" t-att-style="theme_style">
+
+                <!-- Success / Error Alert Messages -->
+                <div t-if="success_message" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="fa fa-check-circle me-1"/> <t t-out="success_message"/>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"/>
+                </div>
+                <div t-if="error_message" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="fa fa-exclamation-triangle me-1"/> <t t-out="error_message"/>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"/>
+                </div>
+
+                <!-- Header Card with Hotel Logo & Brand Styling -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden o_portal_hotel_card">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <t t-if="hotel.logo">
+                                    <img t-att-src="'/web/image/hotel.hotel/%s/logo' % hotel.id"
+                                         style="max-height: 50px; max-width: 120px; object-fit: contain;"
+                                         alt="Hotel Logo"/>
+                                </t>
+                                <div>
+                                    <small class="text-muted text-uppercase fw-bold">Reservation Reference</small>
+                                    <h3 class="fw-bold mb-0 text-hotel-primary"><t t-out="reservation.name"/></h3>
+                                    <small class="text-muted"><t t-out="hotel.name"/></small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge fs-6 px-3 py-2"
+                                      t-att-class="{
+                                          'bg-success': reservation.state in ('confirmed', 'completed'),
+                                          'bg-primary': reservation.state == 'check_in',
+                                          'bg-secondary': reservation.state == 'checked_out',
+                                          'bg-danger': reservation.state == 'cancelled',
+                                          'bg-warning text-dark': reservation.state == 'draft'
+                                      }">
+                                    <t t-out="dict(reservation._fields['state'].selection).get(reservation.state, reservation.state)"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <!-- Stay Details -->
+                    <div class="col-12 col-md-4">
+                        <div class="card border-0 shadow-sm rounded-3 h-100 p-3">
+                            <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                                <i class="fa fa-calendar text-hotel-primary me-1"/> Stay Schedule
+                            </h6>
+                            <div class="mb-2">
+                                <small class="text-muted">Check-in</small>
+                                <div class="fw-bold"><t t-out="reservation.check_in.strftime('%d %b %Y, %H:%M')"/></div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Check-out</small>
+                                <div class="fw-bold"><t t-out="reservation.check_out.strftime('%d %b %Y, %H:%M')"/></div>
+                            </div>
+                            <div>
+                                <small class="text-muted">Duration</small>
+                                <div class="fw-bold"><t t-out="reservation.night_count"/> night(s)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guest Details -->
+                    <div class="col-12 col-md-4">
+                        <div class="card border-0 shadow-sm rounded-3 h-100 p-3">
+                            <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                                <i class="fa fa-user text-hotel-primary me-1"/> Guest Information
+                            </h6>
+                            <div class="mb-2">
+                                <small class="text-muted">Primary Guest</small>
+                                <div class="fw-bold"><t t-out="reservation.partner_id.name"/></div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Phone / Email</small>
+                                <div><t t-out="reservation.partner_id.phone or '-'"/></div>
+                                <div class="small text-muted"><t t-out="reservation.partner_id.email or '-'"/></div>
+                            </div>
+                            <div t-if="reservation.partner_id.id_number">
+                                <small class="text-muted">Identification</small>
+                                <div class="fw-bold"><t t-out="reservation.partner_id.id_number"/></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment & Folio Balance -->
+                    <div class="col-12 col-md-4">
+                        <div class="card border-0 shadow-sm rounded-3 h-100 p-3">
+                            <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                                <i class="fa fa-credit-card text-hotel-primary me-1"/> Billing Summary
+                            </h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Total Charges:</span>
+                                <span class="fw-bold"><t t-out="reservation.currency_id.symbol"/><t t-out="'%.2f' % reservation.total_amount"/></span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Advance Paid:</span>
+                                <span class="fw-bold text-success"><t t-out="reservation.currency_id.symbol"/><t t-out="'%.2f' % reservation.advance_paid_amount"/></span>
+                            </div>
+                            <div class="d-flex justify-content-between border-top pt-2">
+                                <span class="fw-bold text-dark">Outstanding Balance:</span>
+                                <span class="fw-bold fs-5 text-danger"><t t-out="reservation.currency_id.symbol"/><t t-out="'%.2f' % reservation.folio_balance"/></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booked Rooms Table with Change Room Feature -->
+                <div class="card border-0 shadow-sm rounded-3 mb-4 p-4">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                        <h5 class="fw-bold text-dark mb-0">
+                            <i class="fa fa-bed text-hotel-primary me-2"/>Booked Rooms &amp; Room Assignment
+                        </h5>
+                        <small class="text-muted">You can switch rooms to another available room before check-in.</small>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Assigned Room</th>
+                                    <th>Category</th>
+                                    <th>Floor</th>
+                                    <th class="text-end">Nightly Rate</th>
+                                    <th class="text-end">Room Total</th>
+                                    <th class="text-end" t-if="allow_switch">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="reservation.line_ids" t-as="line">
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-light text-dark border fs-6 px-3 py-2">
+                                                Room <t t-out="line.room_id.room_number"/>
+                                            </span>
+                                        </td>
+                                        <td><t t-out="line.room_category_id.name"/></td>
+                                        <td><t t-out="line.floor_id.name or 'Main'" /></td>
+                                        <td class="text-end"><t t-out="line.currency_id.symbol"/><t t-out="'%.2f' % line.room_price"/></td>
+                                        <td class="text-end fw-bold"><t t-out="line.currency_id.symbol"/><t t-out="'%.2f' % line.total"/></td>
+                                        <td class="text-end" t-if="allow_switch">
+                                            <!-- Switch Room Modal Trigger -->
+                                            <button type="button" class="btn btn-sm btn-hotel-outline"
+                                                    data-bs-toggle="modal"
+                                                    t-att-data-bs-target="'#switchRoomModal_%s' % line.id">
+                                                <i class="fa fa-exchange me-1"/> Change Room
+                                            </button>
+
+                                            <!-- Modal for Switching Room -->
+                                            <div class="modal fade" t-att-id="'switchRoomModal_%s' % line.id" tabindex="-1">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content text-start">
+                                                        <form t-att-action="'/my/reservation/%s/switch_room' % reservation.id" method="POST">
+                                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                                            <input type="hidden" name="line_id" t-att-value="line.id"/>
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title fw-bold">Change Room Assignment</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"/>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p class="text-muted small">
+                                                                    Currently assigned to <b>Room <t t-out="line.room_id.room_number"/></b> (<t t-out="line.room_category_id.name"/>).
+                                                                    Select another operational available room in this category:
+                                                                </p>
+                                                                <t t-set="avail_rooms" t-value="reservation.get_available_switch_rooms(line.id)"/>
+                                                                <t t-if="not avail_rooms">
+                                                                    <div class="alert alert-warning mb-0">
+                                                                        No other rooms are currently available in this category for your stay dates.
+                                                                    </div>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label fw-semibold">Select New Room</label>
+                                                                        <select class="form-select" name="new_room_id" required="required">
+                                                                            <t t-foreach="avail_rooms" t-as="ar">
+                                                                                <option t-att-value="ar['id']">
+                                                                                    Room <t t-out="ar['room_number']"/> - Floor: <t t-out="ar['floor']"/>
+                                                                                </option>
+                                                                            </t>
+                                                                        </select>
+                                                                    </div>
+                                                                </t>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-hotel-primary" t-if="avail_rooms">
+                                                                    Confirm Room Change
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Accompanying Guests Section -->
+                <div class="card border-0 shadow-sm rounded-3 mb-4 p-4" t-if="reservation.accompanying_guest_ids">
+                    <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                        <i class="fa fa-users text-hotel-primary me-2"/>Accompanying Guests
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Guest Name</th>
+                                    <th>Category</th>
+                                    <th>ID Type</th>
+                                    <th>ID Number</th>
+                                    <th>Contact</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="reservation.accompanying_guest_ids" t-as="ag">
+                                    <tr>
+                                        <td><b><t t-out="ag.name"/></b></td>
+                                        <td><t t-out="dict(ag._fields['age_category'].selection).get(ag.age_category, ag.age_category)"/></td>
+                                        <td><t t-out="dict(ag._fields['id_type'].selection).get(ag.id_type, ag.id_type)"/></td>
+                                        <td><t t-out="ag.id_number or '-'"/></td>
+                                        <td><t t-out="ag.phone or '-'"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a t-att-href="'/my/reservation/%s/voucher' % reservation.id" class="btn btn-hotel-primary px-4">
+                            <i class="fa fa-download me-1"/> Download Official Voucher (PDF)
+                        </a>
+                        <button type="button" class="btn btn-outline-danger px-4" t-if="allow_cancel"
+                                data-bs-toggle="modal" data-bs-target="#cancelReservationModal">
+                            <i class="fa fa-times-circle me-1"/> Cancel Reservation
+                        </button>
+                    </div>
+                    <a href="/my/reservations" class="btn btn-outline-secondary">
+                        &#8592; Back to All Reservations
+                    </a>
+                </div>
+
+                <!-- Modal for Cancelling Reservation -->
+                <div class="modal fade" id="cancelReservationModal" tabindex="-1" t-if="allow_cancel">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content text-start">
+                            <form t-att-action="'/my/reservation/%s/cancel' % reservation.id" method="POST">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-bold text-danger">Cancel Reservation</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"/>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="text-muted">
+                                        Are you sure you want to cancel reservation <strong><t t-out="reservation.name"/></strong>?
+                                        This action will release your reserved rooms according to the hotel cancellation policy.
+                                    </p>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Reason for Cancellation (Optional)</label>
+                                        <textarea class="form-control" name="cancel_reason" rows="2" placeholder="Change of plans, travel delay..."/>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Reservation</button>
+                                    <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+</odoo>

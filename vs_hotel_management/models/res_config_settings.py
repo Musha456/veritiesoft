@@ -266,6 +266,20 @@ class ResConfigSettings(models.TransientModel):
         help="Default commission percentage applied to travel agents when not set on their contact profile.",
     )
 
+    hotel_auto_create_agent_bill = fields.Boolean(
+        string="Auto-create Agent Vendor Bill",
+        config_parameter="vs_hotel_management.auto_create_agent_bill",
+        default=False,
+        help="Automatically generate a vendor bill for the travel agent when the commission record is created upon checkout.",
+    )
+
+    hotel_auto_send_agent_commission_email = fields.Boolean(
+        string="Auto-send Commission Email on Bill Payment",
+        config_parameter="vs_hotel_management.auto_send_agent_commission_email",
+        default=True,
+        help="Automatically send an email with commission details and paid bill details to the travel agent when the vendor bill is paid.",
+    )
+
     # ---------------------------------------------------------
     # Rate Plan & Discounts Defaults
     # ---------------------------------------------------------

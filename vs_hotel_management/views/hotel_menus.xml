@@ -11,99 +11,153 @@
 
 
     <!-- =========================================================
-         4. FRONT DESK
+         FRONT DESK (Restructured & Optimized)
     ========================================================== -->
     <menuitem id="menu_hotel_front_desk"
               name="Front Desk"
               parent="menu_hotel_main"
-              sequence="4"/>
+              sequence="10"
+              groups="vs_hotel_management.group_hotel_reservation_user,vs_hotel_management.group_hotel_manager"/>
 
-    <!-- Guests-->
-    <menuitem id="menu_hotel_guests"
-              name="Guests"
-              parent="menu_hotel_front_desk"
-              action="action_hotel_guest"
-              sequence="1"/>
-
-    <!-- Check In -->
-    <menuitem id="menu_hotel_reservation_checked_in"
-              name="Check-in"
-              parent="menu_hotel_front_desk"
-              action="action_hotel_reservation_checked_in"
-              sequence="1"/>
-
-    <!-- Check Out -->
-    <menuitem id="menu_hotel_reservation_checked_out"
-              name="Check-out"
-              parent="menu_hotel_front_desk"
-              action="action_hotel_reservation_checked_out"
-              sequence="1"/>
-
-    <!-- Reservations -->
+    <!-- 1. Reservations -->
     <menuitem id="menu_hotel_reservation"
               name="Reservations"
               parent="menu_hotel_front_desk"
               action="action_hotel_reservation"
-              sequence="1"/>
+              sequence="10"/>
+
+    <!-- 2. Check In -->
+    <menuitem id="menu_hotel_reservation_checked_in"
+              name="Check-in"
+              parent="menu_hotel_front_desk"
+              action="action_hotel_reservation_checked_in"
+              sequence="20"/>
+
+    <!-- 3. Check Out -->
+    <menuitem id="menu_hotel_reservation_checked_out"
+              name="Check-out"
+              parent="menu_hotel_front_desk"
+              action="action_hotel_reservation_checked_out"
+              sequence="30"/>
+
+    <!-- 4. Guests -->
+    <menuitem id="menu_hotel_guests"
+              name="Guests"
+              parent="menu_hotel_front_desk"
+              action="action_hotel_guest"
+              sequence="40"/>
+
+    <!-- 5. Travel Agents -->
+    <menuitem id="menu_hotel_travel_agents"
+              name="Travel Agents"
+              parent="menu_hotel_front_desk"
+              action="action_hotel_travel_agent"
+              sequence="50"
+              groups="vs_hotel_management.group_hotel_reservation_user,vs_hotel_management.group_hotel_manager"/>
 
 
     <!-- =========================================================
-         4. OPERATIONS
+         OPERATIONS
     ========================================================== -->
     <menuitem id="menu_hotel_operations"
               name="Operations"
               parent="menu_hotel_main"
-              sequence="4"/>
-
+              sequence="20"/>
 
     <!-- Room Availability -->
     <menuitem id="menu_hotel_room_availability"
               name="Room Availability"
               parent="menu_hotel_operations"
               action="action_hotel_room_booking_calendar"
-              sequence="2"/>
+              sequence="10"
+              groups="vs_hotel_management.group_hotel_reservation_manager,vs_hotel_management.group_hotel_manager"/>
 
     <!-- Room Bookings -->
     <menuitem id="menu_hotel_room_booking"
               name="Room Bookings"
               parent="menu_hotel_operations"
               action="action_hotel_room_booking"
-              sequence="3"/>
+              sequence="20"
+              groups="vs_hotel_management.group_hotel_reservation_manager,vs_hotel_management.group_hotel_manager"/>
 
     <!-- Housekeeping-->
     <menuitem id="menu_hotel_housekeeping"
               name="Housekeeping"
               parent="menu_hotel_operations"
               action="action_hotel_housekeeping"
-              sequence="4"/>
+              sequence="30"
+              groups="vs_hotel_management.group_hotel_housekeeping_user,vs_hotel_management.group_hotel_manager"/>
 
     <!-- Maintenance-->
     <menuitem id="menu_hotel_maintenance"
               name="Maintenance"
               parent="menu_hotel_operations"
               action="action_hotel_maintenance"
-              sequence="40"/>
-<!-- Guest Folios-->
+              sequence="40"
+              groups="vs_hotel_management.group_hotel_maintenance_user,vs_hotel_management.group_hotel_manager"/>
+
+    <!-- Guest Folios-->
     <menuitem id="menu_hotel_guest_folio"
-          name="Guest Folios"
-          parent="menu_hotel_operations"
-          action="action_hotel_guest_folio"
-          sequence="10"/>
+              name="Guest Folios"
+              parent="menu_hotel_operations"
+              action="action_hotel_guest_folio"
+              sequence="50"
+              groups="vs_hotel_management.group_hotel_billing_user,vs_hotel_management.group_hotel_reservation_user,vs_hotel_management.group_hotel_manager"/>
+
+    <!-- =========================================================
+         TRAVEL AGENT COMMISSIONS
+    ========================================================== -->
+    <menuitem id="menu_hotel_agent_commission_root"
+              name="Agent Commissions"
+              parent="menu_hotel_operations"
+              sequence="60"
+              groups="vs_hotel_management.group_hotel_billing_user,vs_hotel_management.group_hotel_manager"/>
+
+    <menuitem id="menu_hotel_agent_commission"
+              name="Commission Management"
+              parent="menu_hotel_agent_commission_root"
+              action="action_hotel_agent_commission"
+              sequence="10"
+              groups="vs_hotel_management.group_hotel_billing_user,vs_hotel_management.group_hotel_manager"/>
 
 
     <!-- =========================================================
-         5. CONFIGURATION
+         REPORTING
+    ========================================================== -->
+    <menuitem id="menu_hotel_reporting"
+              name="Reporting"
+              parent="menu_hotel_main"
+              sequence="80"
+              groups="vs_hotel_management.group_hotel_reservation_manager,vs_hotel_management.group_hotel_billing_manager,vs_hotel_management.group_hotel_housekeeping_manager,vs_hotel_management.group_hotel_maintenance_manager,vs_hotel_management.group_hotel_gm_user,vs_hotel_management.group_hotel_manager"/>
+
+    <menuitem id="menu_hotel_report_wizard"
+              name="Hotel Reports Center"
+              parent="menu_hotel_reporting"
+              action="action_hotel_report_wizard"
+              sequence="10"/>
+
+    <menuitem id="menu_hotel_report_occupancy"
+              name="Room Availability &amp; Occupancy"
+              parent="menu_hotel_reporting"
+              action="action_hotel_room_booking_calendar"
+              sequence="20"/>
+
+
+    <!-- =========================================================
+         CONFIGURATION
     ========================================================== -->
     <menuitem id="menu_hotel_configuration"
               name="Configuration"
               parent="menu_hotel_main"
-              sequence="90"/>
+              sequence="90"
+              groups="vs_hotel_management.group_hotel_reservation_manager,vs_hotel_management.group_hotel_manager"/>
 
     <menuitem id="menu_hotel_configuration_settings"
               name="Settings"
               parent="menu_hotel_configuration"
               action="action_hotel_config_settings"
-              sequence="1"/>
+              sequence="10"
+              groups="vs_hotel_management.group_hotel_manager"/>
 
     <!-- =========================================================
          1. HOTEL SETUP
@@ -111,28 +165,29 @@
     <menuitem id="menu_hotel_setup"
               name="Hotel Setup"
               parent="menu_hotel_configuration"
-              sequence="1"/>
+              sequence="20"
+              groups="vs_hotel_management.group_hotel_reservation_manager,vs_hotel_management.group_hotel_manager"/>
 
     <!-- Hotel -->
     <menuitem id="menu_hotel_setup_hotel"
               name="Hotels"
               parent="menu_hotel_setup"
               action="action_hotel_hotel"
-              sequence="1"/>
+              sequence="10"/>
 
     <!-- Buildings -->
     <menuitem id="menu_hotel_setup_building"
               name="Buildings"
               parent="menu_hotel_setup"
               action="action_hotel_building"
-              sequence="2"/>
+              sequence="20"/>
 
     <!-- Floors -->
     <menuitem id="menu_hotel_setup_floor"
               name="Floors"
               parent="menu_hotel_setup"
               action="action_hotel_building_floor"
-              sequence="3"/>
+              sequence="30"/>
 
 
     <!-- =========================================================
@@ -141,42 +196,42 @@
     <menuitem id="menu_hotel_room_configuration"
               name="Room Configuration"
               parent="menu_hotel_configuration"
-              sequence="2"/>
+              sequence="30"/>
 
     <!-- Room Categories / Types -->
     <menuitem id="menu_hotel_room_category"
               name="Room Types"
               parent="menu_hotel_room_configuration"
               action="action_hotel_room_categories"
-              sequence="1"/>
+              sequence="10"/>
 
     <!-- Bed Types -->
     <menuitem id="menu_hotel_bed_type"
               name="Bed Types"
               parent="menu_hotel_room_configuration"
               action="action_hotel_bed_type"
-              sequence="2"/>
+              sequence="20"/>
 
     <!-- Amenity Types -->
     <menuitem id="menu_hotel_amenity_type"
               name="Amenity Types"
               parent="menu_hotel_room_configuration"
               action="action_hotel_amenity_type"
-              sequence="3"/>
+              sequence="30"/>
 
     <!-- Amenities -->
     <menuitem id="menu_hotel_amenity"
               name="Amenities"
               parent="menu_hotel_room_configuration"
               action="action_hotel_amenity"
-              sequence="4"/>
+              sequence="40"/>
 
     <!-- Rooms -->
     <menuitem id="menu_hotel_room"
               name="Rooms"
               parent="menu_hotel_room_configuration"
               action="action_hotel_room"
-              sequence="5"/>
+              sequence="50"/>
 
 
     <!-- =========================================================
@@ -185,42 +240,41 @@
     <menuitem id="menu_hotel_pricing"
               name="Pricing and Services"
               parent="menu_hotel_configuration"
-              sequence="3"/>
+              sequence="40"/>
 
     <!-- Rate Plans -->
     <menuitem id="menu_hotel_rate_plan"
               name="Rate Plans"
               parent="menu_hotel_pricing"
               action="action_hotel_rate_plan"
-              sequence="1"/>
+              sequence="10"/>
 
     <!-- Services -->
     <menuitem id="menu_hotel_service"
               name="Services"
               parent="menu_hotel_pricing"
               action="action_hotel_service"
-              sequence="2"/>
+              sequence="20"/>
 
     <!-- Discounts -->
     <menuitem id="menu_hotel_discount"
               name="Discounts"
               parent="menu_hotel_pricing"
               action="action_hotel_discount"
-              sequence="3"/>
+              sequence="30"/>
 
     <menuitem id="menu_hotel_whatsapp_log"
               name="WhatsApp Notifications"
               parent="vs_hotel_management.menu_hotel_pricing"
               action="action_hotel_whatsapp_log"
               sequence="90"
-              groups="base.group_system"/>
+              groups="vs_hotel_management.group_hotel_reservation_manager,base.group_system"/>
 
-     <menuitem id="menu_hotel_whatsapp_template"
+    <menuitem id="menu_hotel_whatsapp_template"
               name="WhatsApp Templates"
               parent="vs_hotel_management.menu_hotel_pricing"
               action="action_hotel_whatsapp_template"
               sequence="91"
-              groups="base.group_system"/>
-
+              groups="vs_hotel_management.group_hotel_reservation_manager,base.group_system"/>
 
 </odoo>

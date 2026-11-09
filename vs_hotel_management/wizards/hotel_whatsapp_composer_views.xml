@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_hotel_whatsapp_composer_form" model="ir.ui.view">
+        <field name="name">hotel.whatsapp.composer.form</field>
+        <field name="model">hotel.whatsapp.composer</field>
+        <field name="arch" type="xml">
+            <form string="Send WhatsApp Message">
+                <sheet>
+                    <div class="alert alert-info d-flex align-items-center mb-3" role="alert">
+                        <i class="fa fa-whatsapp fa-2x me-3 text-success"/>
+                        <div>
+                            <strong>WhatsApp Direct Messaging</strong>
+                            <div class="text-muted small">Compose and queue WhatsApp notifications directly to the guest or partner.</div>
+                        </div>
+                    </div>
+                    <group>
+                        <group string="Recipient Information">
+                            <field name="partner_id" readonly="1" options="{'no_open': True}"/>
+                            <field name="phone_number" placeholder="+1234567890"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Template &amp; Options">
+                            <field name="template_id" options="{'no_create': True, 'no_open': True}"
+                                   placeholder="Select template (optional)"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Message Text">
+                            <field name="message" placeholder="Type your WhatsApp message here..."
+                                   style="min-height: 140px; font-family: inherit; font-size: 1rem;"/>
+                        </page>
+                        <page string="Rendered Preview" invisible="not template_id">
+                            <field name="template_preview" readonly="1"
+                                   style="min-height: 120px; background-color: #f8f9fa;"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button name="action_send_whatsapp"
+                            string="Queue &amp; Send WhatsApp"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-paper-plane"/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hotel_whatsapp_composer" model="ir.actions.act_window">
+        <field name="name">Send WhatsApp Message</field>
+        <field name="res_model">hotel.whatsapp.composer</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

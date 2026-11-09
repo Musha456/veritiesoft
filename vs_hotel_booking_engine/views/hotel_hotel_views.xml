@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_hotel_hotel_form_inherit_theme" model="ir.ui.view">
+        <field name="name">hotel.hotel.form.inherit.theme</field>
+        <field name="model">hotel.hotel</field>
+        <field name="inherit_id" ref="vs_hotel_management.view_hotel_hotel_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Website Branding &amp; Theme" name="page_branding">
+                    <group string="Theme Colors (Dynamic Online Engine &amp; Portal)">
+                        <group>
+                            <field name="primary_color" widget="color"/>
+                            <field name="secondary_color" widget="color"/>
+                            <field name="accent_color" widget="color"/>
+                        </group>
+                        <group>
+                            <button name="action_extract_theme_colors"
+                                    type="object"
+                                    string="Auto-Detect Colors from Logo"
+                                    icon="fa-paint-brush"
+                                    class="btn-outline-primary mb-2"/>
+                            <div class="text-muted small">
+                                When a hotel logo is uploaded, colors are automatically detected.
+                                You can also customize the primary, secondary, and accent colors here.
+                                All online booking pages and guest portal views dynamically inherit these brand colors.
+                            </div>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

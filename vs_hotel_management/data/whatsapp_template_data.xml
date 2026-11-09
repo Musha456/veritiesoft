@@ -79,4 +79,49 @@
         <field name="notes">Meta WhatsApp template for guest checkout thank-you and folio billing summary.</field>
     </record>
 
+    <!-- 5. Task Inspection Required WhatsApp Template -->
+    <record id="hotel_task_inspection_required_whatsapp_template"
+            model="hotel.whatsapp.template">
+        <field name="name">hotel_task_inspection_required</field>
+        <field name="template_key">hotel_task_inspection_required</field>
+        <field name="language">en</field>
+        <field name="category">utility</field>
+        <field name="task_type">both</field>
+        <field name="event">inspection_required</field>
+        <field name="body_text">Inspection Required: {{1}} for Room {{2}} at {{3}} is ready for your inspection. Assigned Staff: {{4}}. View: {{5}}</field>
+        <field name="meta_status">draft</field>
+        <field name="active" eval="True"/>
+        <field name="notes">Meta WhatsApp template to notify inspector that a task awaits inspection.</field>
+    </record>
+
+    <!-- 6. Task Inspection Passed WhatsApp Template -->
+    <record id="hotel_task_inspection_passed_whatsapp_template"
+            model="hotel.whatsapp.template">
+        <field name="name">hotel_task_inspection_passed</field>
+        <field name="template_key">hotel_task_inspection_passed</field>
+        <field name="language">en</field>
+        <field name="category">utility</field>
+        <field name="task_type">both</field>
+        <field name="event">inspection_passed</field>
+        <field name="body_text">Inspection Passed: Your {{1}} for Room {{2}} has passed inspection and is now complete. Great work!</field>
+        <field name="meta_status">draft</field>
+        <field name="active" eval="True"/>
+        <field name="notes">Meta WhatsApp template to notify staff that their task passed inspection.</field>
+    </record>
+
+    <!-- 7. Task Inspection Revision Required WhatsApp Template -->
+    <record id="hotel_task_inspection_failed_whatsapp_template"
+            model="hotel.whatsapp.template">
+        <field name="name">hotel_task_inspection_failed</field>
+        <field name="template_key">hotel_task_inspection_failed</field>
+        <field name="language">en</field>
+        <field name="category">utility</field>
+        <field name="task_type">both</field>
+        <field name="event">inspection_failed</field>
+        <field name="body_text">Revision Required: Your {{1}} for Room {{2}} requires revision. Remarks: {{3}}. Please review and resubmit.</field>
+        <field name="meta_status">draft</field>
+        <field name="active" eval="True"/>
+        <field name="notes">Meta WhatsApp template to notify staff that their task requires revision.</field>
+    </record>
+
 </odoo>

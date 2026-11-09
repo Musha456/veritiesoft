@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_booking_engine" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.booking.engine</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="vs_hotel_management.res_config_settings_view_form_hotel"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='vs_hotel_management']" position="inside">
+                <block title="Online Booking Engine &amp; Guest Portal" id="block_booking_engine">
+                    <setting id="setting_advance_policy"
+                             string="Advance Booking Payment Policy"
+                             help="Configure whether online booking requires an advance payment or allows paying later at hotel.">
+                        <field name="advance_booking_payment_policy" widget="radio"/>
+                    </setting>
+
+                    <setting id="setting_advance_percentage"
+                             string="Advance Deposit Percentage (%)"
+                             help="Percentage of the room total required when a guest pays an advance deposit online."
+                             invisible="advance_booking_payment_policy not in ('optional', 'mandatory')">
+                        <div class="d-flex align-items-center gap-2">
+                            <field name="advance_booking_percentage" class="oe_inline"/>
+                            <span>%</span>
+                        </div>
+                    </setting>
+
+                    <setting id="setting_allow_room_change"
+                             string="Allow Room Change in Guest Portal"
+                             help="Allow guests to switch their assigned room to any other available room in the portal before check-in.">
+                        <field name="allow_guest_room_change"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -510,6 +510,15 @@
 
         </field>
 
+            <field name="group_ids" eval="[(6, 0, [
+            ref('vs_hotel_management.group_hotel_reservation_manager'),
+            ref('vs_hotel_management.group_hotel_gm_user'),
+            ref('vs_hotel_management.group_hotel_manager'),
+            ref('vs_hotel_management.group_hotel_gm_bridge'),
+            ref('vs_hotel_management.group_hotel_admin_user'),
+            ref('vs_hotel_management.group_hotel_admin'),
+            ref('vs_hotel_management.group_hotel_admin_bridge'),
+        ])]"/>
     </record>
 
 

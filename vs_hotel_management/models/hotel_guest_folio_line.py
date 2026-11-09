@@ -164,6 +164,24 @@ class HotelGuestFolioLine(models.Model):
         currency_field="currency_id",
     )
 
+    source_document = fields.Char(
+        string="Source Document",
+        help="External source document reference (e.g. POS Order, Laundry Order, Spa Booking, Transport).",
+        index=True,
+    )
+
+    source_model = fields.Char(
+        string="Source Model",
+        help="Technical model name of originating external record (e.g. pos.order, hotel.laundry.order).",
+        index=True,
+    )
+
+    source_res_id = fields.Integer(
+        string="Source Record ID",
+        help="Technical database ID of originating external record.",
+        index=True,
+    )
+
     @api.depends(
         "quantity",
         "unit_price",
@@ -172,6 +190,7 @@ class HotelGuestFolioLine(models.Model):
     )
     def _compute_amounts(self):
         for line in self:
+            currency = line.currency_id or line.company_id.currency_id
             gross = line.quantity * line.unit_price
 
             discount_amount = (
@@ -196,12 +215,18 @@ class HotelGuestFolioLine(models.Model):
                         - taxes["total_excluded"]
                 )
 
+            if currency:
+                discount_amount = currency.round(discount_amount)
+                amount_untaxed = currency.round(amount_untaxed)
+                tax_amount = currency.round(tax_amount)
+                total_amount = currency.round(amount_untaxed + tax_amount)
+            else:
+                total_amount = amount_untaxed + tax_amount
+
             line.discount_amount = discount_amount
             line.amount_untaxed = amount_untaxed
             line.tax_amount = tax_amount
-            line.total_amount = (
-                    amount_untaxed + tax_amount
-            )
+            line.total_amount = total_amount
 
     @api.model_create_multi
     def create(self, vals_list):

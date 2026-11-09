@@ -43,7 +43,7 @@ class HotelReservationLine(models.Model):
 
     building_id = fields.Many2one(
         "hotel.building",
-        domain="[('hotel_id','=',hotel_id)]",
+        domain="[('hotel_id', '=', hotel_id), ('status', '=', 'operational')]",
     )
 
     floor_id = fields.Many2one(
@@ -745,13 +745,22 @@ class HotelReservationLine(models.Model):
                         }
                     )
 
-    @api.constrains("room_id")
+    @api.constrains("room_id", "building_id")
     def _check_room_operational_status(self):
         for line in self:
             if not line.room_id:
                 continue
             if line.reservation_id and line.reservation_id.state in ("cancelled", "no_show"):
                 continue
+            building = line.building_id or line.room_id.building_id
+            if building and building.status != "operational":
+                raise ValidationError(
+                    _("Cannot book Room '%(room)s' because Building '%(building)s' is not operational (current status: %(status)s).") % {
+                        "room": line.room_id.display_name,
+                        "building": building.name,
+                        "status": dict(building._fields["status"].selection).get(building.status, building.status),
+                    }
+                )
             if line.room_id.status == "out_of_order":
                 raise ValidationError(_("Room '%s' is out of order.") % line.room_id.display_name)
             if line.room_id.status == "maintenance":

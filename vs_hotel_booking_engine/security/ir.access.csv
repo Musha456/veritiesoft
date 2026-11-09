@@ -1,0 +1,9 @@
+id,name,model_id,group_id/id,operation,domain
+access_hotel_reservation_guest_public,hotel.reservation.guest.public,hotel.reservation.guest,base.group_public,cru,
+access_hotel_reservation_guest_portal,hotel.reservation.guest.portal,hotel.reservation.guest,base.group_portal,cru,
+access_hotel_reservation_guest_user,hotel.reservation.guest.user,hotel.reservation.guest,vs_hotel_management.group_hotel_reservation_user,crud,
+access_hotel_reservation_guest_manager,hotel.reservation.guest.manager,hotel.reservation.guest,vs_hotel_management.group_hotel_manager,crud,
+access_hotel_room_review_public,hotel.room.review.public,hotel.room.review,base.group_public,cru,
+access_hotel_room_review_portal,hotel.room.review.portal,hotel.room.review,base.group_portal,cru,
+access_hotel_room_review_user,hotel.room.review.user,hotel.room.review,vs_hotel_management.group_hotel_reservation_user,crud,
+access_hotel_room_review_manager,hotel.room.review.manager,hotel.room.review,vs_hotel_management.group_hotel_manager,crud,

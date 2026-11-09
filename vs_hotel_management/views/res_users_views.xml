@@ -11,7 +11,8 @@
                 <button name="action_view_user_housekeeping_tasks"
                         type="object"
                         class="oe_stat_button"
-                        icon="check_box">
+                        icon="check_box"
+                        groups="vs_hotel_management.group_hotel_housekeeping_user,vs_hotel_management.group_hotel_manager">
                     <field name="housekeeping_task_count"
                            widget="statinfo"
                            string="Housekeeping"/>
@@ -20,30 +21,12 @@
                 <button name="action_view_user_maintenance_tasks"
                         type="object"
                         class="oe_stat_button"
-                        icon="build">
+                        icon="build"
+                        groups="vs_hotel_management.group_hotel_maintenance_user,vs_hotel_management.group_hotel_manager">
                     <field name="maintenance_task_count"
                            widget="statinfo"
                            string="Maintenance"/>
                 </button>
-
-            </xpath>
-
-            <xpath expr="//notebook" position="inside">
-
-                <page string="Hotel Roles" name="hotel_roles">
-                    <group>
-                        <group string="Management Roles">
-                            <field name="is_hotel_manager" widget="boolean_toggle"/>
-                            <field name="is_hotel_reservation_manager" widget="boolean_toggle"/>
-                            <field name="is_hotel_housekeeping_manager" widget="boolean_toggle"/>
-                            <field name="is_hotel_maintenance_manager" widget="boolean_toggle"/>
-                        </group>
-                        <group string="Staff Operations Roles">
-                            <field name="is_hotel_housekeeping_user" widget="boolean_toggle"/>
-                            <field name="is_hotel_maintenance_user" widget="boolean_toggle"/>
-                        </group>
-                    </group>
-                </page>
 
             </xpath>
 

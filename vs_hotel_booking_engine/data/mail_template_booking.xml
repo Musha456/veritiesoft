@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- ========================================================== -->
+        <!-- 1. Guest Thank You & Online Booking Request Email Template -->
+        <!-- ========================================================== -->
+        <record id="mail_template_hotel_booking_guest_thankyou" model="mail.template">
+            <field name="name">Hotel: Guest Online Booking Request Confirmation</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_reservation"/>
+            <field name="subject">Thank You for Booking with {{ object.hotel_id.name }} - Request {{ object.name }}</field>
+            <field name="email_from">{{ (object.hotel_id.email or object.company_id.email or user.email_formatted or 'reservations@hotel.com') }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+                        <!-- Header -->
+                        <tr>
+                            <td style="padding: 32px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: #ffffff; text-align: center;">
+                                <h1 style="margin: 0; font-size: 24px; font-weight: 700;" t-out="object.hotel_id.name"/>
+                                <p style="margin: 8px 0 0; font-size: 15px; opacity: 0.9;">Thank You For Choosing Us!</p>
+                                <div style="margin-top: 12px; display: inline-block; padding: 6px 16px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 13px; font-weight: 600;" t-out="object.name"/>
+                            </td>
+                        </tr>
+
+                        <!-- Greeting & Info -->
+                        <tr>
+                            <td style="padding: 28px 32px 16px;">
+                                <p style="margin: 0; font-size: 16px; line-height: 1.5;">
+                                    Dear <strong t-out="object.partner_id.name or 'Valued Guest'"/>,
+                                </p>
+                                <p style="margin: 12px 0 0; font-size: 14px; color: #475569; line-height: 1.6;">
+                                    We have received your online booking request for stay at <strong t-out="object.hotel_id.name"/>. Our front desk reservations team is reviewing your stay request and will confirm your arrival shortly. Below are your booking details:
+                                </p>
+                            </td>
+                        </tr>
+
+                        <!-- Booking Details Table -->
+                        <tr>
+                            <td style="padding: 0 32px 20px;">
+                                <div style="background-color: #f1f5f9; border-radius: 8px; padding: 20px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 14px;">
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #64748b; width: 45%;">Check-In:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="object.check_in"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #64748b;">Check-Out:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;" t-out="object.check_out"/>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #64748b;">Nights:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #0f172a;">
+                                                <span t-out="object.night_count"/> Night(s)
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #64748b;">Total Amount:</td>
+                                            <td style="padding: 6px 0; font-weight: 700; color: #2563eb; font-size: 16px;">
+                                                <span t-out="object.currency_id.symbol"/> <span t-out="object.total_amount"/>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="object.advance_payment_amount">
+                                            <td style="padding: 6px 0; color: #64748b;">Advance Deposit:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #059669;">
+                                                <span t-out="object.currency_id.symbol"/> <span t-out="object.advance_payment_amount"/>
+                                                (<span t-out="object.advance_payment_status"/>)
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Portal Access Call-to-Action -->
+                        <tr>
+                            <td style="padding: 10px 32px 30px; text-align: center;">
+                                <p style="margin: 0 0 16px; font-size: 14px; color: #475569;">
+                                    You can monitor your reservation status, review room details, or request pre-arrival room changes anytime in your self-service guest portal:
+                                </p>
+                                <a t-attf-href="/my/reservation/{{ object.id }}" style="display: inline-block; padding: 12px 28px; background-color: #2563eb; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">
+                                    View in Guest Portal
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!-- Footer -->
+                        <tr>
+                            <td style="padding: 20px 32px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center; font-size: 12px; color: #94a3b8;">
+                                <p style="margin: 0;">Need assistance? Contact our front desk at <span t-out="object.hotel_id.phone or object.company_id.phone or 'hotel front desk'"/>.</p>
+                                <p style="margin: 4px 0 0;"><strong t-out="object.hotel_id.name"/></p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- 2. Hotel Management New Booking Alert Email Template       -->
+        <!-- ========================================================== -->
+        <record id="mail_template_hotel_booking_manager_notification" model="mail.template">
+            <field name="name">Hotel: Management Online Booking Request Alert</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_reservation"/>
+            <field name="subject">[New Online Booking] {{ object.name }} - {{ object.partner_id.name }} ({{ object.hotel_id.name }})</field>
+            <field name="email_from">{{ (object.company_id.email or user.email_formatted or 'noreply@hotel.com') }}</field>
+            <field name="email_to">{{ (object.hotel_id.email or object.company_id.email) }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+                        <!-- Header -->
+                        <tr>
+                            <td style="padding: 24px 32px; background-color: #0f172a; color: #ffffff;">
+                                <h2 style="margin: 0; font-size: 20px; font-weight: 700;">New Online Booking Request</h2>
+                                <p style="margin: 4px 0 0; font-size: 14px; opacity: 0.8;" t-out="object.hotel_id.name"/>
+                            </td>
+                        </tr>
+
+                        <!-- Body -->
+                        <tr>
+                            <td style="padding: 24px 32px;">
+                                <p style="margin: 0 0 16px; font-size: 15px;">
+                                    A new online room reservation request <strong><span t-out="object.name"/></strong> has been submitted via the hotel booking engine.
+                                </p>
+
+                                <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin-bottom: 20px; font-size: 13px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="padding: 4px 0; color: #64748b; width: 40%;">Primary Guest:</td>
+                                            <td style="padding: 4px 0; font-weight: 600; color: #0f172a;"><span t-out="object.partner_id.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 4px 0; color: #64748b;">Contact:</td>
+                                            <td style="padding: 4px 0; color: #0f172a;"><span t-out="object.partner_id.phone"/> | <span t-out="object.partner_id.email"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 4px 0; color: #64748b;">Identity ID:</td>
+                                            <td style="padding: 4px 0; color: #0f172a;"><span t-out="object.partner_id.id_number or 'Not provided'"/> (<span t-out="object.partner_id.id_type or 'national_id'"/>)</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 4px 0; color: #64748b;">Dates:</td>
+                                            <td style="padding: 4px 0; font-weight: 600;"><span t-out="object.check_in"/> to <span t-out="object.check_out"/> (<span t-out="object.night_count"/> nights)</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 4px 0; color: #64748b;">Rooms Count:</td>
+                                            <td style="padding: 4px 0; font-weight: 600;"><span t-out="len(object.line_ids)"/> Room(s)</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 4px 0; color: #64748b;">Total Amount:</td>
+                                            <td style="padding: 4px 0; font-weight: 700; color: #2563eb;"><span t-out="object.currency_id.symbol"/> <span t-out="object.total_amount"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 4px 0; color: #64748b;">Advance Payment:</td>
+                                            <td style="padding: 4px 0;"><span t-out="object.advance_payment_choice"/> (Status: <span t-out="object.advance_payment_status"/>)</td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <p t-if="object.special_request" style="font-size: 13px; color: #475569; margin: 0 0 20px;">
+                                    <strong>Guest Special Requests:</strong><br/>
+                                    <span t-out="object.special_request"/>
+                                </p>
+
+                                <div style="text-align: center;">
+                                    <a t-attf-href="/web#id={{ object.id }}&amp;model=hotel.reservation&amp;view_type=form" style="display: inline-block; padding: 10px 24px; background-color: #0f172a; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px;">
+                                        Open Reservation in Odoo Backend
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+        <!-- ========================================================== -->
+        <!-- 3. Hotel Management Room Switch Notification Template      -->
+        <!-- ========================================================== -->
+        <record id="mail_template_hotel_room_change_manager" model="mail.template">
+            <field name="name">Hotel: Room Changed Notification</field>
+            <field name="model_id" ref="vs_hotel_management.model_hotel_reservation"/>
+            <field name="subject">[Room Change Notice] {{ object.name }} - {{ object.partner_id.name }}</field>
+            <field name="email_from">{{ (object.company_id.email or user.email_formatted or 'noreply@hotel.com') }}</field>
+            <field name="email_to">{{ (object.hotel_id.email or object.company_id.email) }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
+                    <div style="max-width: 580px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; padding: 24px; border: 1px solid #e2e8f0;">
+                        <h3 style="margin: 0 0 12px; color: #1e3a8a;">Guest Portal Room Change Notice</h3>
+                        <p style="margin: 0 0 14px; font-size: 14px;">
+                            Guest <strong><span t-out="object.partner_id.name"/></strong> has updated their room selection for reservation <strong><span t-out="object.name"/></strong>.
+                        </p>
+                        <div style="background-color: #f1f5f9; padding: 14px; border-radius: 6px; font-size: 13px; margin-bottom: 16px;">
+                            <p style="margin: 0;"><strong>Hotel:</strong> <span t-out="object.hotel_id.name"/></p>
+                            <p style="margin: 4px 0 0;"><strong>Stay Period:</strong> <span t-out="object.check_in"/> to <span t-out="object.check_out"/></p>
+                        </div>
+                        <p style="margin: 0; font-size: 12px; color: #64748b;">Housekeeping and front desk allocations have been automatically updated.</p>
+                    </div>
+                </div>
+            </field>
+        </record>
+
+    </data>
+</odoo>
