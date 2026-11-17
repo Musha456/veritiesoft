@@ -49,7 +49,28 @@
             <field name="auto_assign_room">1</field>
 
             <field name="allow_room_change">1</field>
+            <field name="hotel_type">luxury</field>
 
+        </record>
+
+        <record id="hotel_demo_resort" model="hotel.hotel">
+            <field name="name">Azure Bay Beach Resort &amp; Spa</field>
+            <field name="hotel_type">resort</field>
+            <field name="star_rating">5</field>
+            <field name="phone">+1 555-888-9999</field>
+            <field name="email">stay@azurebayresort.com</field>
+            <field name="website">https://www.azurebayresort.com</field>
+            <field name="street">500 Seaside Boulevard</field>
+            <field name="city">Key West</field>
+            <field name="state_id" ref="base.state_us_5"/>
+            <field name="country_id" ref="base.us"/>
+            <field name="currency_id" ref="base.USD"/>
+            <field name="language_id" ref="base.lang_en"/>
+            <field name="timezone">America/New_York</field>
+            <field name="require_guest_identification">1</field>
+            <field name="allow_room_change">1</field>
+            <field name="hero_title">Seaside Serenity &amp; Tropical Luxury</field>
+            <field name="hero_subtitle">Immerse yourself in panoramic turquoise ocean views, private cabanas, and world-class spa hospitality.</field>
         </record>
 
     </data>

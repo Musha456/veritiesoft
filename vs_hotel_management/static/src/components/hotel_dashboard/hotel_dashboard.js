@@ -10,8 +10,6 @@ export class HotelDashboard extends Component {
 
     trendChartRef = signal.ref();
     sourceChartRef = signal.ref();
-    revenueChartRef = signal.ref();
-    roomStatusChartRef = signal.ref();
 
     setup() {
         this.orm = useService("orm");
@@ -23,7 +21,7 @@ export class HotelDashboard extends Component {
         this.state = proxy({
             isLoading: true,
             selectedHotelId: "all",
-            selectedPreset: "this_month",
+            selectedPreset: "today",
             customDateFrom: "",
             customDateTo: "",
             hotels: [],
@@ -34,6 +32,7 @@ export class HotelDashboard extends Component {
             chartsData: {},
             upcomingArrivals: [],
             upcomingDepartures: [],
+            availableRooms: [],
         });
 
         onWillStart(async () => {
@@ -72,6 +71,7 @@ export class HotelDashboard extends Component {
             this.state.chartsData = data.charts || {};
             this.state.upcomingArrivals = data.upcoming_arrivals || [];
             this.state.upcomingDepartures = data.upcoming_departures || [];
+            this.state.availableRooms = data.available_rooms_list || [];
         } catch (error) {
             console.error("Error loading hotel dashboard data:", error);
             this.notification.add(_t("Failed to load hotel dashboard metrics."), {
@@ -97,14 +97,73 @@ export class HotelDashboard extends Component {
         await this.reload();
     }
 
+    onCustomDateFromChange(ev) {
+        this.state.customDateFrom = ev.target.value;
+    }
+
+    onCustomDateToChange(ev) {
+        this.state.customDateTo = ev.target.value;
+    }
+
+    async applyDateSearch() {
+        if (!this.state.customDateFrom || !this.state.customDateTo) {
+            this.notification.add(_t("Please select both From and To dates to filter."), {
+                type: "warning",
+            });
+            return;
+        }
+        this.state.selectedPreset = "custom";
+        await this.reload();
+    }
+
+    // =========================================================================
+    // QUICK RESERVATION FOR AVAILABLE ROOMS
+    // =========================================================================
+
+    async quickBookRoom(room) {
+        try {
+            this.state.isLoading = true;
+            const action = await this.orm.call(
+                "hotel.dashboard",
+                "action_quick_book_room",
+                [room.id]
+            );
+            if (action) {
+                this.action.doAction(action);
+            }
+        } catch (error) {
+            console.warn("Could not quick-create via RPC, opening form with defaults:", error);
+            this.action.doAction({
+                name: _t("New Reservation - Room %s", room.room_number),
+                type: "ir.actions.act_window",
+                res_model: "hotel.reservation",
+                views: [[false, "form"]],
+                target: "current",
+                context: {
+                    default_hotel_id: room.hotel_id,
+                    default_line_ids: [
+                        [0, 0, {
+                            room_id: room.id,
+                            room_category_id: room.category_id,
+                        }]
+                    ],
+                },
+            });
+        } finally {
+            this.state.isLoading = false;
+        }
+    }
+
+    // =========================================================================
+    // SMART & INFORMATIVE CHARTS
+    // =========================================================================
+
     renderAllCharts() {
         if (typeof Chart === "undefined") {
             return;
         }
         this.renderTrendChart();
         this.renderSourceChart();
-        this.renderRevenueChart();
-        this.renderRoomStatusChart();
     }
 
     destroyAllCharts() {
@@ -121,8 +180,10 @@ export class HotelDashboard extends Component {
         if (!canvas) return;
         if (this.charts.trend) this.charts.trend.destroy();
 
-        const data = this.state.chartsData.trend_7d || { labels: [], occupied: [], revenue: [] };
+        const data = this.state.chartsData.trend || { labels: [], occupied: [], revenue: [] };
         const ctx = canvas.getContext("2d");
+
+        const currencySym = this.state.currencySymbol;
 
         this.charts.trend = new Chart(ctx, {
             type: "bar",
@@ -132,10 +193,10 @@ export class HotelDashboard extends Component {
                     {
                         label: _t("Occupied Rooms"),
                         data: data.occupied,
-                        backgroundColor: "rgba(59, 130, 246, 0.65)",
-                        borderColor: "#3b82f6",
-                        borderWidth: 1,
+                        backgroundColor: "#334155",
+                        hoverBackgroundColor: "#0f172a",
                         borderRadius: 6,
+                        barThickness: 24,
                         yAxisID: "yRooms",
                     },
                     {
@@ -143,10 +204,13 @@ export class HotelDashboard extends Component {
                         data: data.revenue,
                         type: "line",
                         borderColor: "#10b981",
-                        backgroundColor: "rgba(16, 185, 129, 0.12)",
-                        borderWidth: 3,
-                        pointBackgroundColor: "#10b981",
+                        backgroundColor: "rgba(16, 185, 129, 0.08)",
+                        borderWidth: 2.5,
+                        pointBackgroundColor: "#ffffff",
+                        pointBorderColor: "#10b981",
+                        pointBorderWidth: 2,
                         pointRadius: 4,
+                        pointHoverRadius: 6,
                         fill: true,
                         tension: 0.35,
                         yAxisID: "yRev",
@@ -158,22 +222,55 @@ export class HotelDashboard extends Component {
                 maintainAspectRatio: false,
                 interaction: { mode: "index", intersect: false },
                 plugins: {
-                    legend: { position: "top", labels: { boxWidth: 12, font: { weight: "600" } } },
+                    legend: {
+                        position: "top",
+                        labels: {
+                            boxWidth: 10,
+                            font: { size: 12, weight: "600" },
+                            padding: 14,
+                        },
+                    },
+                    tooltip: {
+                        backgroundColor: "#0f172a",
+                        titleFont: { size: 13, weight: "bold" },
+                        bodyFont: { size: 12 },
+                        padding: 10,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function (context) {
+                                if (context.dataset.yAxisID === "yRev") {
+                                    return ` Revenue: ${currencySym}${Number(context.raw).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+                                }
+                                return ` Occupied: ${context.raw} rooms`;
+                            },
+                        },
+                    },
                 },
                 scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11, weight: "500" }, color: "#64748b" },
+                    },
                     yRooms: {
                         type: "linear",
                         display: true,
                         position: "left",
-                        title: { display: true, text: _t("Occupied Rooms") },
+                        title: { display: true, text: _t("Rooms Occupied"), color: "#64748b", font: { size: 11 } },
                         grid: { color: "#f1f5f9" },
+                        ticks: { stepSize: 1, color: "#64748b" },
                     },
                     yRev: {
                         type: "linear",
                         display: true,
                         position: "right",
-                        title: { display: true, text: _t("Revenue") },
+                        title: { display: true, text: _t("Revenue"), color: "#64748b", font: { size: 11 } },
                         grid: { drawOnChartArea: false },
+                        ticks: {
+                            color: "#64748b",
+                            callback: function (val) {
+                                return `${currencySym}${val}`;
+                            },
+                        },
                     },
                 },
             },
@@ -185,7 +282,7 @@ export class HotelDashboard extends Component {
         if (!canvas) return;
         if (this.charts.source) this.charts.source.destroy();
 
-        const data = this.state.chartsData.booking_sources || { labels: [], values: [] };
+        const data = this.state.chartsData.sources || { labels: [], values: [] };
         const ctx = canvas.getContext("2d");
 
         this.charts.source = new Chart(ctx, {
@@ -196,12 +293,10 @@ export class HotelDashboard extends Component {
                     {
                         data: data.values,
                         backgroundColor: [
-                            "#3b82f6",
-                            "#10b981",
-                            "#f59e0b",
-                            "#ef4444",
-                            "#8b5cf6",
-                            "#06b6d4",
+                            "#0f172a", // Dark Slate
+                            "#475569", // Slate
+                            "#94a3b8", // Light Slate
+                            "#cbd5e1", // Platinum
                         ],
                         borderWidth: 2,
                         borderColor: "#ffffff",
@@ -212,95 +307,28 @@ export class HotelDashboard extends Component {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: "bottom", labels: { boxWidth: 12, padding: 12 } },
+                    legend: {
+                        position: "bottom",
+                        labels: {
+                            boxWidth: 10,
+                            padding: 12,
+                            font: { size: 11, weight: "500" },
+                            color: "#475569",
+                        },
+                    },
+                    tooltip: {
+                        backgroundColor: "#0f172a",
+                        padding: 10,
+                        cornerRadius: 8,
+                    },
                 },
                 cutout: "68%",
             },
         });
     }
 
-    renderRevenueChart() {
-        const canvas = this.revenueChartRef.el;
-        if (!canvas) return;
-        if (this.charts.revenue) this.charts.revenue.destroy();
-
-        const data = this.state.chartsData.revenue_breakdown || { labels: [], values: [] };
-        const ctx = canvas.getContext("2d");
-
-        this.charts.revenue = new Chart(ctx, {
-            type: "bar",
-            data: {
-                labels: data.labels,
-                datasets: [
-                    {
-                        label: _t("Revenue Amount"),
-                        data: data.values,
-                        backgroundColor: [
-                            "rgba(59, 130, 246, 0.75)",
-                            "rgba(245, 158, 11, 0.75)",
-                            "rgba(16, 185, 129, 0.75)",
-                            "rgba(139, 92, 246, 0.75)",
-                            "rgba(239, 68, 68, 0.75)",
-                        ],
-                        borderRadius: 6,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: "#f1f5f9" },
-                    },
-                },
-            },
-        });
-    }
-
-    renderRoomStatusChart() {
-        const canvas = this.roomStatusChartRef.el;
-        if (!canvas) return;
-        if (this.charts.roomStatus) this.charts.roomStatus.destroy();
-
-        const data = this.state.chartsData.room_status || { labels: [], values: [] };
-        const ctx = canvas.getContext("2d");
-
-        this.charts.roomStatus = new Chart(ctx, {
-            type: "doughnut",
-            data: {
-                labels: data.labels,
-                datasets: [
-                    {
-                        data: data.values,
-                        backgroundColor: [
-                            "#10b981", // Available / Clean
-                            "#3b82f6", // Occupied
-                            "#ef4444", // Dirty
-                            "#8b5cf6", // Cleaning
-                            "#f59e0b", // Maintenance
-                            "#64748b", // Out of order
-                        ],
-                        borderWidth: 2,
-                        borderColor: "#ffffff",
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: "bottom", labels: { boxWidth: 10, padding: 10 } },
-                },
-                cutout: "62%",
-            },
-        });
-    }
-
     // =========================================================================
-    // DRILLDOWN ACTIONS (Interactive Navigation)
+    // DRILLDOWN ACTIONS
     // =========================================================================
 
     openArrivalsToday() {

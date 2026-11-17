@@ -95,7 +95,13 @@
     flex: 1;
     text-align: center;
     position: relative;
-    cursor: default;
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.2s ease;
+}
+
+.o_step_item:hover .o_step_circle {
+    transform: scale(1.08);
 }
 
 .o_step_item::before {
@@ -269,4 +275,170 @@
 /* Portal Customizations */
 .o_portal_hotel_card {
     border-left: 4px solid var(--hotel-primary) !important;
+}
+
+
+/* =========================================================
+   ADVANCED HERO BANNER, ZOOM-IN & FLOATING 50% GLASS SEARCH
+========================================================= */
+.o_hotel_hero_container {
+    position: relative;
+    overflow: hidden;
+    min-height: 520px;
+    box-shadow: inset 0 -30px 40px rgba(0, 0, 0, 0.4);
+}
+
+.o_hero_zoom_bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-position: center !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+    animation: heroZoomIn 14s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    transform-origin: center center;
+    will-change: transform;
+}
+
+@keyframes heroZoomIn {
+    0% {
+        transform: scale(1.0);
+    }
+    100% {
+        transform: scale(1.10);
+    }
+}
+
+.o_hero_search_card_wrapper {
+    position: relative;
+    z-index: 10;
+    margin-top: -75px; /* Floats half inside banner bottom edge, half outside into content */
+    margin-bottom: 2rem;
+}
+
+.o_hero_search_card_floating {
+    background: rgba(255, 255, 255, 0.50) !important;
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.65) !important;
+    border-radius: 1.25rem !important;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.16), 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+    animation: searchCardSlideUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.o_hero_search_card_floating:hover {
+    background: rgba(255, 255, 255, 0.62) !important;
+    box-shadow: 0 25px 50px rgba(15, 23, 42, 0.22) !important;
+}
+
+@keyframes searchCardSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(45px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.o_hero_search_card_floating .form-control,
+.o_hero_search_card_floating .form-select {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(203, 213, 225, 0.85);
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+.o_hero_search_card_floating .form-control:focus,
+.o_hero_search_card_floating .form-select:focus {
+    background: #ffffff;
+    border-color: var(--hotel-primary);
+    box-shadow: 0 0 0 3px rgba(var(--hotel-primary-rgb), 0.2);
+    transform: translateY(-1px);
+}
+
+/* =========================================================
+   MULTI-HOTEL CARDS FLEX / GRID LAYOUT
+========================================================= */
+.o_hotel_card_item {
+    border-radius: 1.15rem;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.o_hotel_card_item:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.14);
+    border-color: var(--hotel-primary);
+}
+
+.o_hotel_card_item.active-hotel-card {
+    border: 2px solid var(--hotel-primary);
+    box-shadow: 0 0 0 4px rgba(var(--hotel-primary-rgb), 0.18), 0 16px 36px rgba(15, 23, 42, 0.12);
+}
+
+.o_hotel_card_img_wrapper {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+    background: #0f172a;
+}
+
+.o_hotel_card_img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.o_hotel_card_item:hover .o_hotel_card_img {
+    transform: scale(1.08);
+}
+
+.o_hotel_type_badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(15, 23, 42, 0.78);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.o_hotel_star_badge {
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: #f59e0b;
+    font-weight: bold;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.bg-hotel-primary-subtle {
+    background-color: rgba(var(--hotel-primary-rgb), 0.1) !important;
 }

@@ -185,22 +185,9 @@
             <field name="comment">Internal bridge — carries cross-dept manager ACL rights to General Manager without forcing privilege dropdowns to auto-select on the User form.</field>
         </record>
 
-        <!-- Hotel Administrator bridge: grants GM + GM bridge permissions -->
-        <record id="group_hotel_admin_bridge" model="res.groups">
-            <field name="name">Hotel Administrator (Bridge)</field>
-            <field name="privilege_id" eval="False"/>
-            <field name="implied_ids" eval="[
-                (6, 0, [
-                    ref('group_hotel_manager'),
-                    ref('group_hotel_gm_bridge')
-                ])
-            ]"/>
-            <field name="comment">Internal bridge — carries GM-level ACL rights to Hotel Admin without forcing the GM privilege dropdown on the User form.</field>
-        </record>
-
         <!-- ========================================================== -->
         <!-- Role 2 Manager: General Manager                            -->
-        <!-- Defined AFTER bridge groups so ordering resolves correctly  -->
+        <!-- Defined AFTER GM bridge so ordering resolves correctly     -->
         <!-- ========================================================== -->
         <record id="group_hotel_manager" model="res.groups">
             <field name="name">General Manager</field>
@@ -213,6 +200,19 @@
                 ])
             ]"/>
             <field name="comment">General Manager: overarching operational management across all hotel departments. Gets cross-dept manager ACLs via bridge group — does NOT force other privilege dropdowns.</field>
+        </record>
+
+        <!-- Hotel Administrator bridge: grants GM + GM bridge permissions -->
+        <record id="group_hotel_admin_bridge" model="res.groups">
+            <field name="name">Hotel Administrator (Bridge)</field>
+            <field name="privilege_id" eval="False"/>
+            <field name="implied_ids" eval="[
+                (6, 0, [
+                    ref('group_hotel_manager'),
+                    ref('group_hotel_gm_bridge')
+                ])
+            ]"/>
+            <field name="comment">Internal bridge — carries GM-level ACL rights to Hotel Admin without forcing the GM privilege dropdown on the User form.</field>
         </record>
 
         <!-- ========================================================== -->
@@ -304,6 +304,7 @@
             <field name="privilege_id" eval="False"/>
             <field name="implied_ids" eval="[(4, ref('group_hotel_gm_user'))]"/>
         </record>
+
 
     </data>
 </odoo>

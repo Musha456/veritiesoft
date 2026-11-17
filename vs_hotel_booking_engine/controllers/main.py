@@ -3,11 +3,12 @@ import logging
 from datetime import datetime, date, timedelta
 from odoo import http, fields, _
 from odoo.http import request
+from odoo.addons.website.controllers.main import Website
 
 _logger = logging.getLogger(__name__)
 
 
-class HotelBookingEngineController(http.Controller):
+class HotelBookingEngineController(Website):
 
     @property
     def env(self):
@@ -19,77 +20,103 @@ class HotelBookingEngineController(http.Controller):
         except (RuntimeError, Exception):
             return getattr(self, "_test_env", None)
 
+    def _prepare_hotel_booking_values(self, hotel_id=None, **kwargs):
+        """
+        Prepare comprehensive context values for the Hotel Booking Engine & Hero Banner.
+        """
+        env = self._get_env()
+        all_hotels = env["hotel.hotel"].sudo().search([])
+        comp = env.company.sudo()
+        hotel = None
+        if hotel_id:
+            try:
+                hotel = env["hotel.hotel"].sudo().browse(int(hotel_id))
+            except Exception:
+                hotel = None
+        if not hotel or not hotel.exists():
+            if comp.default_hotel_id and comp.default_hotel_id.exists():
+                hotel = comp.default_hotel_id.sudo()
+            elif all_hotels:
+                hotel = all_hotels[0].sudo()
+
+        default_hotel_id = hotel.id if hotel else False
+        hero_img_url = "/vs_hotel_booking_engine/static/src/img/luxury_hero.jpg"
+        if getattr(comp, "hotel_banner_image", False):
+            hero_img_url = f"/web/image/res.company/{comp.id}/hotel_banner_image"
+        elif hotel and getattr(hotel, "hero_image", False):
+            hero_img_url = f"/web/image/hotel.hotel/{hotel.id}/hero_image"
+        elif hotel and getattr(hotel, "cover_image", False):
+            hero_img_url = f"/web/image/hotel.hotel/{hotel.id}/cover_image"
+        elif hotel and getattr(hotel, "logo", False):
+            hero_img_url = f"/web/image/hotel.hotel/{hotel.id}/logo"
+
+        hero_title = getattr(comp, "hotel_banner_title", False) or (hotel and getattr(hotel, "hero_title", False)) or _("Discover Extraordinary Stays & Luxury Escapes")
+        hero_subtitle = getattr(comp, "hotel_banner_subtitle", False) or (hotel and getattr(hotel, "hero_subtitle", False)) or _("Book your stay directly for exclusive best-rate guarantees, personalized service, and flexible check-in.")
+        enable_multiple_hotel_support = getattr(comp, "enable_multiple_hotel_support", True)
+
+        return {
+            "all_hotels": all_hotels,
+            "hotels": all_hotels,
+            "hotel": hotel,
+            "comp": comp,
+            "default_hotel_id": default_hotel_id,
+            "hero_img_url": hero_img_url,
+            "hero_title": hero_title,
+            "hero_subtitle": hero_subtitle,
+            "enable_multiple_hotel_support": enable_multiple_hotel_support,
+            "default_check_in": kwargs.get("check_in", ""),
+            "default_check_out": kwargs.get("check_out", ""),
+            "default_adults": int(kwargs.get("adults", 2)),
+            "default_children": int(kwargs.get("children", 0)),
+            "policy": getattr(comp, "advance_booking_payment_policy", "optional"),
+            "advance_percentage": getattr(comp, "advance_booking_percentage", 30.0),
+            "partner": env.user.partner_id if not env.user._is_public() else False,
+            "countries": env["res.country"].sudo().search([]),
+            "theme_style": getattr(hotel, "theme_style", "") if hotel else "",
+        }
+
+    @http.route("/", type="http", auth="public", website=True, sitemap=True)
+    def index(self, **kw):
+        """
+        Homepage Route Override: Serves the full-featured Hotel Online Booking Engine
+        directly on the root homepage http://localhost:8020/ with configured banner,
+        animated destination search card, and property showcase.
+        """
+        values = self._prepare_hotel_booking_values(**kw)
+        if not values.get("all_hotels"):
+            return request.render("vs_hotel_booking_engine.no_hotels_available", values)
+        return request.render("vs_hotel_booking_engine.booking_page", values)
+
     @http.route(["/hotel", "/hotel/book", "/hotel/booking"], type="http", auth="public", website=True, sitemap=True)
     def hotel_booking_page(self, hotel_id=None, **kwargs):
         """
-        Main Online Booking Engine & Homepage Banner:
-        Displays an advanced hero banner with dynamic hotel imagery, title & subtitle,
-        floating availability search card, multi-currency switcher, and 4-step booking workflow.
+        Dedicated booking engine route rendering the primary booking engine interface.
         """
-        env = self._get_env()
-        Hotel = env["hotel.hotel"].sudo()
-        hotels = Hotel.search([])
-        if not hotels:
-            return request.render("vs_hotel_booking_engine.no_hotels_available", {})
-
-        selected_hotel = Hotel.browse(int(hotel_id)) if hotel_id else hotels[0]
-        if not selected_hotel.exists():
-            selected_hotel = hotels[0]
-
-        # Dates default: tomorrow to +2 days
-        today = date.today()
-        default_ci = kwargs.get("check_in") or (today + timedelta(days=1)).strftime("%Y-%m-%d")
-        default_co = kwargs.get("check_out") or (today + timedelta(days=3)).strftime("%Y-%m-%d")
-
-        company = selected_hotel.company_id or env.company
-        policy = getattr(company, "advance_booking_payment_policy", "optional")
-        percentage = getattr(company, "advance_booking_percentage", 30.0)
-
-        # Active currencies for dynamic currency switcher
-        currencies = env["res.currency"].sudo().search([("active", "=", True)], order="id asc")
-        current_currency = selected_hotel.currency_id or env.company.currency_id
-
-        # Pre-fill logged-in user data
-        partner = env.user.partner_id if not env.user._is_public() else False
-
-        countries = env["res.country"].sudo().search([])
-
-        # Hero Image URL
-        hero_img_url = f"/web/image/hotel.hotel/{selected_hotel.id}/hero_image" if selected_hotel.hero_image else (
-            f"/web/image/hotel.hotel/{selected_hotel.id}/cover_image" if selected_hotel.cover_image else ""
-        )
-
-        values = {
-            "hotels": hotels,
-            "hotel": selected_hotel,
-            "hero_title": selected_hotel.hero_title or _("Experience Luxury & Authentic Comfort"),
-            "hero_subtitle": selected_hotel.hero_subtitle or _("Book your stay directly for exclusive best-rate guarantees, personalized service, and flexible check-in."),
-            "hero_img_url": hero_img_url,
-            "currencies": currencies,
-            "current_currency": current_currency,
-            "default_check_in": default_ci,
-            "default_check_out": default_co,
-            "default_adults": int(kwargs.get("adults", 2)),
-            "default_children": int(kwargs.get("children", 0)),
-            "policy": policy,
-            "advance_percentage": percentage,
-            "partner": partner,
-            "countries": countries,
-            "theme_style": selected_hotel.theme_style,
-        }
+        values = self._prepare_hotel_booking_values(hotel_id=hotel_id, **kwargs)
+        if not values.get("all_hotels"):
+            return request.render("vs_hotel_booking_engine.no_hotels_available", values)
         return request.render("vs_hotel_booking_engine.booking_page", values)
 
     @http.route("/hotel/booking/api/availability", type="jsonrpc", auth="public", methods=["POST"])
-    def check_availability_api(self, hotel_id, check_in, check_out, adults=1, children=0, currency_id=None):
+    def check_availability_api(self, hotel_id=None, check_in=None, check_out=None, adults=1, children=0, currency_id=None):
         """
         JSON-RPC Endpoint: Queries available room categories and operational rooms
-        for a selected hotel and date range with transparent pricing, multi-currency conversion,
-        and add-on services.
+        for a selected hotel and date range with transparent pricing and add-on services.
         """
         env = self._get_env()
         Hotel = env["hotel.hotel"].sudo()
-        hotel = Hotel.browse(int(hotel_id))
-        if not hotel.exists():
+        
+        # Default to configured default primary hotel if none supplied
+        if not hotel_id:
+            def_h = getattr(env.company, "default_hotel_id", False)
+            if def_h and def_h.exists():
+                hotel = def_h
+            else:
+                hotel = Hotel.search([], limit=1)
+        else:
+            hotel = Hotel.browse(int(hotel_id))
+
+        if not hotel or not hotel.exists():
             return {"error": _("Selected hotel does not exist.")}
 
         try:
@@ -184,10 +211,10 @@ class HotelBookingEngineController(http.Controller):
                     img_url = f"/web/image/hotel.room.category/{cat.id}/image"
                 else:
                     for r in rooms.filtered(lambda rm: rm.room_category_id.id == cat.id):
-                        if r.cover_image:
+                        if getattr(r, "cover_image", False):
                             img_url = f"/web/image/hotel.room/{r.id}/cover_image"
                             break
-                        elif r.image_ids:
+                        elif getattr(r, "image_ids", False):
                             img_url = f"/web/image/hotel.room.image/{r.image_ids[0].id}/image"
                             break
                 if not img_url:
@@ -296,7 +323,20 @@ class HotelBookingEngineController(http.Controller):
         if not category or not category.exists():
             return request.redirect("/hotel")
 
-        hotel = category.hotel_id
+        hotel = (room and room.hotel_id) or category.hotel_id
+        if not hotel:
+            company = env.company
+            hotel = getattr(company, "default_hotel_id", False) or env["hotel.hotel"].sudo().search([], limit=1)
+
+        # Currency and Price resolution
+        currency = (hotel and hotel.currency_id) or (category and getattr(category, "currency_id", False)) or env.company.currency_id
+        currency_symbol = currency.symbol if currency else "$"
+
+        base_price = getattr(category, "base_price", 0.0)
+        if not base_price and category.product_id:
+            base_price = category.product_id.list_price
+        if not base_price:
+            base_price = 100.0
 
         # Images list for carousel gallery
         images = []
@@ -325,9 +365,11 @@ class HotelBookingEngineController(http.Controller):
             "room": room,
             "images": images,
             "reviews": reviews,
-            "rating_avg": category.rating_avg or 5.0,
+            "rating_avg": getattr(category, "rating_avg", 5.0) or 5.0,
             "review_count": len(reviews),
-            "theme_style": hotel.theme_style,
+            "theme_style": (hotel and hotel.theme_style) or "",
+            "currency_symbol": currency_symbol,
+            "base_price": f"{base_price:,.2f}" if isinstance(base_price, (int, float)) else base_price,
         }
         return request.render("vs_hotel_booking_engine.room_detail_showcase_page", values)
 

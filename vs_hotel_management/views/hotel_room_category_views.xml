@@ -9,8 +9,11 @@
                 <field name="sequence" widget="handle"/>
                 <field name="image" widget="image" options="{'size': [32, 32]}"/>
                 <field name="name"/>
+                <field name="hotel_id" optional="show"/>
                 <field name="bed_type_id"/>
-                </list>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="base_price" widget="monetary"/>
+            </list>
         </field>
     </record>
 
@@ -67,7 +70,10 @@
 
                             <group>
                                 <field name="code" readonly="1"/>
+                                <field name="hotel_id"/>
                                 <field name="product_id"/>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="base_price" widget="monetary"/>
                                 <field name="company_id" groups="base.group_multi_company"/>
                             </group>
 

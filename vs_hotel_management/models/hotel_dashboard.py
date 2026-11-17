@@ -2,6 +2,7 @@
 from datetime import datetime, date, time, timedelta
 from dateutil.relativedelta import relativedelta
 from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
 
@@ -226,6 +227,30 @@ class HotelDashboard(models.AbstractModel):
                 "balance": f"{dep.folio_balance:,.2f}",
             })
 
+        # 9. Real-time Available Operational Rooms for Quick Reservation
+        available_rooms_records = Room.search(
+            [("status", "=", "available"), ("building_id.status", "in", ("operational", False))] + hotel_domain,
+            order="room_number asc",
+            limit=12,
+        )
+        available_rooms_list = []
+        for rm in available_rooms_records:
+            cat = rm.room_category_id
+            available_rooms_list.append({
+                "id": rm.id,
+                "room_number": rm.room_number,
+                "name": rm.name or rm.room_number,
+                "category_id": cat.id if cat else False,
+                "category_name": cat.name if cat else _("Standard Room"),
+                "hotel_id": rm.hotel_id.id if rm.hotel_id else False,
+                "hotel_name": rm.hotel_id.name if rm.hotel_id else "",
+                "floor_name": rm.floor_id.name if rm.floor_id else "",
+                "building_name": rm.building_id.name if rm.building_id else "",
+                "bed_type": cat.bed_type_id.name if cat and cat.bed_type_id else "",
+                "max_adults": cat.max_adults if cat else 2,
+                "nightly_rate": f"{cat.product_id.list_price:,.2f}" if cat and cat.product_id else "100.00",
+            })
+
         # Currency symbol
         currency = self.env.company.currency_id
         currency_symbol = currency.symbol or "$"
@@ -272,6 +297,7 @@ class HotelDashboard(models.AbstractModel):
             },
             "upcoming_arrivals": upcoming_arrivals,
             "upcoming_departures": upcoming_departures,
+            "available_rooms_list": available_rooms_list,
         }
 
     def _calculate_date_range(self, preset, today, date_from=None, date_to=None):
@@ -428,4 +454,79 @@ class HotelDashboard(models.AbstractModel):
                 ][:len(labels)],
                 "borderRadius": 6,
             }]
+        }
+
+    @api.model
+    def action_quick_book_room(self, room_id):
+        """
+        Quick Reservation: creates a draft reservation pre-populated with this room
+        in the line and returns an act_window action to open its form view.
+        """
+        Room = self.env["hotel.room"]
+        room = Room.browse(int(room_id))
+        if not room.exists():
+            raise UserError(_("Room not found."))
+
+        today = fields.Date.context_today(self)
+        try:
+            ci_hour = int(float(self.env["ir.config_parameter"].sudo().get_param("vs_hotel_management.checkin_time_default", 14.0)))
+        except (ValueError, TypeError):
+            ci_hour = 14
+        try:
+            co_hour = int(float(self.env["ir.config_parameter"].sudo().get_param("vs_hotel_management.checkout_time_default", 12.0)))
+        except (ValueError, TypeError):
+            co_hour = 12
+
+        check_in = datetime.combine(today, time(ci_hour, 0, 0))
+        check_out = datetime.combine(today + timedelta(days=1), time(co_hour, 0, 0))
+
+        # Find or create a default 'Walk-in Guest' partner
+        Partner = self.env["res.partner"]
+        guest = Partner.search([("name", "=", _("Walk-in Guest"))], limit=1)
+        if not guest:
+            guest = Partner.create({
+                "name": _("Walk-in Guest"),
+                "is_company": False,
+            })
+
+        # Rate plan
+        RatePlan = self.env["hotel.rate.plan"]
+        cat_id = room.room_category_id.id if room.room_category_id else False
+        rate_plan = RatePlan.search([
+            ("hotel_id", "=", room.hotel_id.id),
+            ("room_category_ids", "in", [cat_id] if cat_id else []),
+            ("state", "=", "active"),
+        ], limit=1)
+
+        nightly_price = rate_plan.base_price if rate_plan and rate_plan.base_price else (
+            room.room_category_id.product_id.list_price if room.room_category_id and room.room_category_id.product_id else 100.0
+        )
+
+        res_vals = {
+            "hotel_id": room.hotel_id.id,
+            "partner_id": guest.id,
+            "check_in": check_in,
+            "check_out": check_out,
+            "state": "draft",
+            "line_ids": [
+                (0, 0, {
+                    "room_id": room.id,
+                    "room_category_id": cat_id,
+                    "rate_plan_id": rate_plan.id if rate_plan else False,
+                    "night_count": 1,
+                    "room_price": nightly_price,
+                    "check_in": check_in,
+                    "check_out": check_out,
+                })
+            ]
+        }
+        reservation = self.env["hotel.reservation"].create(res_vals)
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("New Reservation - Room %s", room.room_number),
+            "res_model": "hotel.reservation",
+            "res_id": reservation.id,
+            "views": [[False, "form"]],
+            "target": "current",
         }

@@ -7,13 +7,57 @@
         <field name="inherit_id" ref="vs_hotel_management.res_config_settings_view_form_hotel"/>
         <field name="arch" type="xml">
             <xpath expr="//app[@name='vs_hotel_management']" position="inside">
-                <block title="Online Booking Engine &amp; Guest Portal" id="block_booking_engine">
+                <block title="Online Booking Engine &amp; Multi-Hotel Portal" id="block_booking_engine">
+                    <!-- Multi-Hotel Support Toggle -->
+                    <setting id="setting_multi_hotel_support"
+                             string="Multiple Hotel Support"
+                             help="When enabled, guests can browse and filter from all active hotel properties in an interactive card grid. When disabled, only the default primary hotel's room types are displayed directly.">
+                        <field name="enable_multiple_hotel_support"/>
+                    </setting>
+
+                    <!-- Default Primary Hotel -->
+                    <setting id="setting_booking_default_hotel"
+                             string="Default Primary Hotel"
+                             help="The primary default hotel property pre-selected on the homepage reservation search widget and room availability queries.">
+                        <field name="booking_default_hotel_id" placeholder="Select Default Hotel..."/>
+                    </setting>
+
+                    <!-- Main Booking Banner Image & Preview -->
+                    <setting id="setting_hotel_banner_image"
+                             string="Main Booking Banner Image"
+                             help="Hero banner image for the website homepage and booking portal. When empty, a luxury placeholder is displayed. When an image is uploaded, it shows the live preview here and dynamically serves as the banner background.">
+                        <div class="d-flex flex-column align-items-start gap-2">
+                            <field name="hotel_banner_image" widget="image" options="{'size': [260, 130]}" class="shadow-sm rounded border"/>
+                            <span class="text-muted small">
+                                <i class="fa fa-info-circle me-1"/>Landscape recommended (1920x1080px). Used as the global multi-hotel booking hero banner.
+                            </span>
+                        </div>
+                    </setting>
+
+                    <!-- Banner Title and Subtitle -->
+                    <setting id="setting_hotel_banner_content"
+                             string="Banner Headline &amp; Subtitle"
+                             help="Main headline and subtitle displayed in the website hero banner.">
+                        <div class="content-group">
+                            <div class="mb-2">
+                                <label for="hotel_banner_title" class="fw-bold small text-uppercase tracking-wider mb-1" string="Banner Headline"/>
+                                <field name="hotel_banner_title" placeholder="e.g. Discover Extraordinary Stays &amp; Luxury Escapes"/>
+                            </div>
+                            <div>
+                                <label for="hotel_banner_subtitle" class="fw-bold small text-uppercase tracking-wider mb-1" string="Banner Subtitle"/>
+                                <field name="hotel_banner_subtitle" placeholder="e.g. Book your stay directly for exclusive best-rate guarantees, personalized service, and flexible check-in."/>
+                            </div>
+                        </div>
+                    </setting>
+
+                    <!-- Advance Payment Policy -->
                     <setting id="setting_advance_policy"
                              string="Advance Booking Payment Policy"
                              help="Configure whether online booking requires an advance payment or allows paying later at hotel.">
                         <field name="advance_booking_payment_policy" widget="radio"/>
                     </setting>
 
+                    <!-- Advance Percentage -->
                     <setting id="setting_advance_percentage"
                              string="Advance Deposit Percentage (%)"
                              help="Percentage of the room total required when a guest pays an advance deposit online."
@@ -24,6 +68,7 @@
                         </div>
                     </setting>
 
+                    <!-- Allow Room Change in Portal -->
                     <setting id="setting_allow_room_change"
                              string="Allow Room Change in Guest Portal"
                              help="Allow guests to switch their assigned room to any other available room in the portal before check-in.">

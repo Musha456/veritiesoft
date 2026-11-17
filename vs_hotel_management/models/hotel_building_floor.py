@@ -52,6 +52,15 @@ class HotelFloor(models.Model):
         index=True,
     )
 
+    hotel_id = fields.Many2one(
+        "hotel.hotel",
+        related="building_id.hotel_id",
+        store=True,
+        readonly=True,
+        index=True,
+        string="Hotel",
+    )
+
     active = fields.Boolean(
         default=True,
         tracking=True,

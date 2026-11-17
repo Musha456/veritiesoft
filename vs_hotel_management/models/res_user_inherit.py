@@ -18,6 +18,21 @@ class ResUsers(models.Model):
         compute="_compute_hotel_task_counts",
     )
 
+    hotel_ids = fields.Many2many(
+        "hotel.hotel",
+        "res_users_hotel_rel",
+        "user_id",
+        "hotel_id",
+        string="Allowed Hotels",
+        help="Hotels this user is allowed to access. Leave empty for all hotels.",
+    )
+
+    default_hotel_id = fields.Many2one(
+        "hotel.hotel",
+        string="Default Hotel",
+        help="Default hotel property for this user.",
+    )
+
     def _compute_hotel_task_counts(self):
         Housekeeping = self.env["hotel.housekeeping"].sudo()
         Maintenance = self.env["hotel.maintenance"].sudo()

@@ -33,6 +33,30 @@ class HotelRoomCategory(models.Model):
         default=lambda self: self.env.company,
     )
 
+    currency_id = fields.Many2one(
+        "res.currency",
+        related="company_id.currency_id",
+        string="Currency",
+        readonly=True,
+    )
+
+    base_price = fields.Monetary(
+        string="Base Nightly Rate",
+        currency_field="currency_id",
+        compute="_compute_base_price",
+        readonly=False,
+        tracking=True,
+        help="Standard base nightly rate for rooms in this category.",
+    )
+
+    hotel_id = fields.Many2one(
+        "hotel.hotel",
+        string="Hotel",
+        index=True,
+        tracking=True,
+        help="Hotel property this room category belongs to. Leave empty if shared across all hotels.",
+    )
+
     image = fields.Image(
         max_width=1024,
         max_height=1024,
@@ -170,6 +194,21 @@ class HotelRoomCategory(models.Model):
             )
 
         return super().unlink()
+
+    @api.depends("product_id", "product_id.list_price")
+    def _compute_base_price(self):
+        RatePlan = self.env["hotel.rate.plan"]
+        for record in self:
+            rec_id = record._origin.id or record.id
+            plan = False
+            if rec_id and isinstance(rec_id, int):
+                plan = RatePlan.search([("room_category_ids", "in", rec_id), ("active", "=", True)], order="sequence, id", limit=1)
+            if plan and plan.base_price > 0:
+                record.base_price = plan.base_price
+            elif record.product_id and record.product_id.list_price > 0:
+                record.base_price = record.product_id.list_price
+            elif not record.base_price:
+                record.base_price = 100.0
 
     @api.depends("max_adults", "max_children")
     def _compute_max_occupancy(self):

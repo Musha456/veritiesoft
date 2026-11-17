@@ -111,6 +111,11 @@ class HotelHotel(models.Model):
         store=True,
     )
 
+    cover_image = fields.Image(
+        string="Cover Image",
+        compute="_compute_cover_image_field",
+    )
+
 
     booking_url = fields.Char()
 
@@ -180,6 +185,24 @@ class HotelHotel(models.Model):
             ("5", "★★★★★"),
         ],
         default="3",
+    )
+
+    hotel_type = fields.Selection(
+        [
+            ("resort", "Resort Hotel"),
+            ("luxury", "Luxury Hotel"),
+            ("boutique", "Boutique Hotel"),
+            ("business", "Business Hotel"),
+            ("city", "City Hotel"),
+            ("budget", "Budget / Economy Hotel"),
+            ("heritage", "Heritage / Historic Hotel"),
+            ("villa", "Villa / Serviced Apartment"),
+            ("bed_breakfast", "Bed & Breakfast"),
+        ],
+        string="Hotel Type",
+        default="luxury",
+        tracking=True,
+        help="Type or classification of the hotel property.",
     )
     # ---------------------------------------------------------
     # Reservation
@@ -451,6 +474,11 @@ class HotelHotel(models.Model):
     def _compute_hero_image(self):
         for hotel in self:
             hotel.hero_image = hotel.cover_image_id.image
+
+    @api.depends("hero_image", "cover_image_id", "cover_image_id.image")
+    def _compute_cover_image_field(self):
+        for hotel in self:
+            hotel.cover_image = hotel.hero_image or hotel.cover_image_id.image
 
 
     @api.depends(

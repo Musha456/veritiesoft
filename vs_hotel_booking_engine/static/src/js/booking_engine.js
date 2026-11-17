@@ -107,6 +107,18 @@ function initBookingEngine() {
     const currencySelect = document.getElementById("booking_currency_select");
     const searchBtn = document.getElementById("btn_search_availability");
 
+    // Initialize default dates (tomorrow and +3 days) if empty
+    if (checkInInput && !checkInInput.value) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        checkInInput.value = tomorrow.toISOString().split("T")[0];
+    }
+    if (checkOutInput && !checkOutInput.value) {
+        const dep = new Date();
+        dep.setDate(dep.getDate() + 3);
+        checkOutInput.value = dep.toISOString().split("T")[0];
+    }
+
     const step1Pane = document.getElementById("step1_room_showcase");
     const step2Pane = document.getElementById("step2_guest_and_services");
     const step3Pane = document.getElementById("step3_review_and_confirm");
@@ -254,12 +266,49 @@ function initBookingEngine() {
     const advancePercentageLabel = document.getElementById("advance_percentage_label");
     const advanceDepositAmountDisplay = document.getElementById("advance_deposit_amount_display");
 
-    // Stepper Navigation
-    function goToStep(step) {
+    // DOM References for Dedicated Step Pages & Checkout Header
+    const heroBannerContainer = document.querySelector(".o_hotel_hero_container");
+    const heroSearchCardWrapper = document.querySelector(".o_hero_search_card_wrapper");
+    const hotelPropertiesSection = document.querySelector(".o_hotel_properties_section");
+    const checkoutPageHeader = document.getElementById("checkout_page_header");
+    const checkoutHotelName = document.getElementById("checkout_hotel_name");
+    const checkoutStayDates = document.getElementById("checkout_stay_dates");
+    const checkoutHeaderRoomsBadge = document.getElementById("checkout_header_rooms_badge");
+    const btnCheckoutHeaderBack = document.getElementById("btn_checkout_header_back");
+
+    // Stepper Navigation: Displays each step on its own dedicated separate view
+    function goToStep(step, pushHistory = true) {
         currentStep = step;
-        step1Pane.classList.toggle("d-none", currentStep !== 1);
-        step2Pane.classList.toggle("d-none", currentStep !== 2);
-        step3Pane.classList.toggle("d-none", currentStep !== 3);
+        const isDedicatedPage = currentStep > 1;
+
+        if (step1Pane) step1Pane.classList.toggle("d-none", currentStep !== 1);
+        if (step2Pane) step2Pane.classList.toggle("d-none", currentStep !== 2);
+        if (step3Pane) step3Pane.classList.toggle("d-none", currentStep !== 3);
+
+        // Hide Hero Banner, Search Card & Multi-Hotel cards during Steps 2 & 3
+        // so that Step 2 (Guest Details) and Step 3 (Confirmation) appear on their own dedicated, full page!
+        if (heroBannerContainer) heroBannerContainer.classList.toggle("d-none", isDedicatedPage);
+        if (heroSearchCardWrapper) heroSearchCardWrapper.classList.toggle("d-none", isDedicatedPage);
+        if (hotelPropertiesSection) hotelPropertiesSection.classList.toggle("d-none", isDedicatedPage);
+        if (checkoutPageHeader) checkoutPageHeader.classList.toggle("d-none", !isDedicatedPage);
+
+        // Populate Checkout Header
+        if (isDedicatedPage) {
+            const selectedHotelOption = hotelSelect ? hotelSelect.options[hotelSelect.selectedIndex] : null;
+            if (checkoutHotelName && selectedHotelOption) {
+                checkoutHotelName.textContent = selectedHotelOption.text;
+            }
+            if (checkoutStayDates && checkInInput && checkOutInput) {
+                checkoutStayDates.innerHTML = `<i class="fa fa-calendar-check-o text-hotel-primary me-1"></i> ${checkInInput.value} &#8594; ${checkOutInput.value} (${nights} ${nights === 1 ? 'Night' : 'Nights'})`;
+            }
+            if (checkoutHeaderRoomsBadge) {
+                const count = selectedRooms.length;
+                checkoutHeaderRoomsBadge.textContent = `${count} ${count === 1 ? 'Room' : 'Rooms'} Selected`;
+            }
+            if (btnCheckoutHeaderBack) {
+                btnCheckoutHeaderBack.innerHTML = `<i class="fa fa-arrow-left me-1"></i> ${currentStep === 3 ? 'Back to Details' : 'Back to Rooms'}`;
+            }
+        }
 
         document.querySelectorAll(".o_step_item").forEach((item, idx) => {
             const stepNum = idx + 1;
@@ -267,7 +316,13 @@ function initBookingEngine() {
             item.classList.toggle("completed", stepNum < currentStep);
         });
 
-        window.scrollTo({ top: 380, behavior: "smooth" });
+        // Always smoothly scroll to the top of the step view
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        // Push history hash for smooth browser back / next navigation without page reload
+        if (pushHistory && window.history && window.history.pushState) {
+            window.history.pushState({ step: currentStep }, `Step ${currentStep}`, `#step${currentStep}`);
+        }
     }
 
     // Guest Selector Sync
@@ -303,13 +358,44 @@ function initBookingEngine() {
         });
     }
 
-    if (hotelSelect) {
-        hotelSelect.addEventListener("change", function () {
+    // Multi-Hotel Property Cards Click Selection
+    document.querySelectorAll(".o_hotel_card_item, .o_hotel_card_select_btn").forEach(cardEl => {
+        cardEl.addEventListener("click", function (e) {
+            e.preventDefault();
+            const hId = this.getAttribute("data-hotel-id") || this.closest(".o_hotel_card_item")?.getAttribute("data-hotel-id");
+            if (!hId) return;
+
+            if (hotelSelect) {
+                hotelSelect.value = hId;
+            }
+
+            document.querySelectorAll(".o_hotel_card_item").forEach(item => {
+                const itemId = item.getAttribute("data-hotel-id");
+                item.classList.toggle("active-hotel-card", itemId === hId);
+            });
+
             selectedRooms = [];
             selectedServices = [];
-            if (availableCategories.length > 0) {
-                fetchAvailability();
+            if (typeof updateStickyBar === "function") updateStickyBar();
+            fetchAvailability();
+
+            const showcase = document.getElementById("step1_room_showcase");
+            if (showcase) {
+                showcase.scrollIntoView({ behavior: "smooth", block: "start" });
             }
+        });
+    });
+
+    if (hotelSelect) {
+        hotelSelect.addEventListener("change", function () {
+            const hId = this.value;
+            document.querySelectorAll(".o_hotel_card_item").forEach(item => {
+                const itemId = item.getAttribute("data-hotel-id");
+                item.classList.toggle("active-hotel-card", itemId === hId);
+            });
+            selectedRooms = [];
+            selectedServices = [];
+            fetchAvailability();
         });
     }
 
@@ -367,9 +453,19 @@ function initBookingEngine() {
             });
 
             const resData = await response.json();
-            const data = resData.result;
-
             if (categoriesSpinner) categoriesSpinner.classList.add("d-none");
+
+            if (resData.error) {
+                console.error("[BookingEngine] Availability RPC error:", resData.error);
+                showError(resData.error.data?.message || resData.error.message || "Unable to connect to availability service.");
+                return;
+            }
+
+            const data = resData.result;
+            if (!data) {
+                showError("Unable to retrieve availability data.");
+                return;
+            }
 
             if (data.error) {
                 showError(data.error);
@@ -489,9 +585,10 @@ function initBookingEngine() {
                                     <span class="text-muted" style="font-size: 0.78rem;">/night</span>
                                 </div>
                             </div>
-                            <button type="button" class="btn btn-hotel-primary rounded-pill px-3 py-1.5 fw-semibold shadow-sm btn_open_room_modal"
+                            <button type="button" class="${selectedForThisCat > 0 ? 'btn btn-success text-white' : 'btn btn-hotel-primary'} rounded-pill px-3 py-1.5 fw-semibold shadow-sm btn_open_room_modal"
+                                    style="${selectedForThisCat > 0 ? 'background-color: #10b981 !important; border-color: #10b981 !important;' : ''}"
                                     data-category-id="${cat.id}">
-                                ${selectedForThisCat > 0 ? `<i class="fa fa-check-circle me-1"></i> ${selectedForThisCat} Selected` : '<i class="fa fa-plus-circle me-1"></i> Select Rooms'}
+                                ${selectedForThisCat > 0 ? `<i class="fa fa-check-circle me-1"></i> ${selectedForThisCat} ${selectedForThisCat === 1 ? 'Room' : 'Rooms'} Selected` : '<i class="fa fa-plus-circle me-1"></i> Select Rooms'}
                             </button>
                         </div>
                     </div>
@@ -607,7 +704,11 @@ function initBookingEngine() {
 
         if (count > 0) {
             if (selectedRoomsSummaryBar) selectedRoomsSummaryBar.classList.remove("d-none");
-            if (selectedRoomsCountBadge) selectedRoomsCountBadge.textContent = `${count} Room(s) Selected`;
+            if (selectedRoomsCountBadge) {
+                selectedRoomsCountBadge.textContent = `${count} ${count === 1 ? 'Room' : 'Rooms'} Selected`;
+                selectedRoomsCountBadge.className = "badge bg-success fs-6 me-2 px-3 py-2 rounded-pill shadow-sm";
+                selectedRoomsCountBadge.style = "background-color: #10b981 !important;";
+            }
         } else {
             if (selectedRoomsSummaryBar) selectedRoomsSummaryBar.classList.add("d-none");
         }
@@ -622,6 +723,9 @@ function initBookingEngine() {
         if (summaryRoomsSubtotal) summaryRoomsSubtotal.textContent = `${currencySymbol}${roomsTotal.toFixed(2)}`;
         if (summaryServicesSubtotal) summaryServicesSubtotal.textContent = `${currencySymbol}${servicesTotal.toFixed(2)}`;
         if (summaryGrandTotal) summaryGrandTotal.textContent = `${currencySymbol}${grandTotal.toFixed(2)}`;
+        if (checkoutHeaderRoomsBadge) {
+            checkoutHeaderRoomsBadge.textContent = `${count} ${count === 1 ? 'Room' : 'Rooms'} Selected`;
+        }
         if (summaryNightsCount) summaryNightsCount.textContent = `${nights} Night(s)`;
         if (advancePercentageLabel) advancePercentageLabel.textContent = `${advancePercentage}%`;
         if (advanceDepositAmountDisplay) advanceDepositAmountDisplay.textContent = `${currencySymbol}${advanceRequired.toFixed(2)}`;
@@ -805,6 +909,52 @@ function initBookingEngine() {
         });
     }
 
+    // Checkout Page Header Back Button
+    if (btnCheckoutHeaderBack) {
+        btnCheckoutHeaderBack.addEventListener("click", function () {
+            if (currentStep === 3) {
+                goToStep(2);
+            } else if (currentStep === 2) {
+                goToStep(1);
+            }
+        });
+    }
+
+    // Interactive Stepper Items Click Navigation (Allows jumping back/forth without losing state)
+    document.querySelectorAll(".o_step_item").forEach((item, idx) => {
+        item.addEventListener("click", function () {
+            const targetStep = idx + 1;
+            if (targetStep === 1) {
+                goToStep(1);
+            } else if (targetStep === 2) {
+                if (selectedRooms.length === 0) {
+                    showError("Please select at least one room to proceed.");
+                    return;
+                }
+                clearError();
+                goToStep(2);
+            } else if (targetStep === 3) {
+                if (selectedRooms.length === 0) {
+                    showError("Please select at least one room to proceed.");
+                    return;
+                }
+                if (!guestNameInput.value.trim() || !guestEmailInput.value.trim() || !guestPhoneInput.value.trim() || !guestIdNumberInput.value.trim()) {
+                    showError("Please fill in the required legal guest details in Step 2 first.");
+                    goToStep(2);
+                    return;
+                }
+                clearError();
+                goToStep(3);
+            }
+        });
+    });
+
+    // Browser Back / Forward History Handler
+    window.addEventListener("popstate", function (e) {
+        const step = (e.state && e.state.step) || 1;
+        goToStep(step, false);
+    });
+
     // Final Booking Submission
     if (btnSubmitFinalBooking) {
         btnSubmitFinalBooking.addEventListener("click", async function (e) {
@@ -924,19 +1074,10 @@ function initBookingEngine() {
         }
     }
 
-    // Only query room types when search parameters are present in URL or Search button is clicked
-    const urlParams = new URLSearchParams(window.location.search);
-    const hasSearchQuery = urlParams.has("check_in") || urlParams.has("check_out");
-
-    if (hasSearchQuery && checkInInput && checkOutInput && hotelSelect && hotelSelect.value) {
-        console.log("[BookingEngine] Initializing availability fetch from URL parameters for hotel", hotelSelect.value);
+    // Automatic initial room availability fetch for default primary hotel
+    if (checkInInput && checkOutInput && hotelSelect && hotelSelect.value) {
+        console.log("[BookingEngine] Auto-loading stays for primary hotel", hotelSelect.value);
         fetchAvailability();
-        setTimeout(() => {
-            const showcase = document.getElementById("step1_room_showcase");
-            if (showcase) {
-                showcase.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
-        }, 500);
     } else {
         renderInitialPrompt();
     }
